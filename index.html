@@ -429,23 +429,16 @@ async function toggleUserValidation(userId, isValidated) {
     resultsList.innerHTML = '<p style="text-align: center; color: #777;">Buscando...</p>';
 
     try {
-        // CORRECCIÓN: Se ha verificado la sintaxis de la consulta 'or' para asegurar que todas las columnas se incluyan.
-        const { data, error } = await supabaseClient
-            .from('atenciones_emergencia')
-            .select()
-            .or(
-                `"NFUA".ilike.%${searchTerm}%,` +
-                `"Episodio".ilike.%${searchTerm}%,` +
-                `"PACIENTE".ilike.%${searchTerm}%,` +
-                `"NroDocumento".ilike.%${searchTerm}%,` +
-                `"ApePaterno".ilike.%${searchTerm}%,` + // Aseguramos que busque en Apellido Paterno
-                `"ApeMaterno".ilike.%${searchTerm}%`  // Aseguramos que busque en Apellido Materno
-            )
-            .order('"FecAte"', { ascending: false });
+        // --- CAMBIO CLAVE: AHORA LLAMAMOS A LA FUNCIÓN RPC ---
+        // Usamos .rpc() para llamar a la función 'buscar_atenciones' que creamos en la base de datos.
+        const { data, error } = await supabaseClient.rpc('buscar_atenciones', {
+            termino_busqueda: searchTerm
+        });
 
         if (error) throw error;
 
         if (data && data.length > 0) {
+            // El resto del código para mostrar los resultados es el mismo.
             resultsList.innerHTML = data.map(item => {
                 const costoTotal = parseFloat(item.CostoTotal) || 0;
                 const estadoConsumo = costoTotal > 0 ? 'Con Consumo' : 'Sin Consumo';
@@ -464,7 +457,7 @@ async function toggleUserValidation(userId, isValidated) {
         }
 
     } catch (error) {
-        console.error('Error al buscar en Supabase:', error);
+        console.error('Error al llamar a la función de búsqueda RPC:', error);
         resultsList.innerHTML = `<p style="text-align: center; color: var(--danger-color);">Error al realizar la búsqueda: ${error.message}</p>`;
     }
 }
@@ -488,6 +481,7 @@ function showFuaDetails(fuaData) {
 </script>
 </body>
 </html>
+
 
 
 
