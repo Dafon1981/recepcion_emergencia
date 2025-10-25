@@ -227,7 +227,7 @@ async function loadPendingUsers() {
         const { data: users, error } = await supabaseClient
             .from('usuarios')
             .select('id, nombre_completo, email, esta_validado')
-            .order('fecha_registro', { ascending: true });
+          .order('nombre_completo', { ascending: true });
 
         if (error) throw error;
 
@@ -480,6 +480,7 @@ async function toggleUserValidation(userId, isValidated) {
 </script>
 </body>
 </html>
+
 
 
 
