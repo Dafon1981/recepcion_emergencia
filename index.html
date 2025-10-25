@@ -320,9 +320,68 @@
     function deleteFuaEntry(button) { button.parentElement.remove(); }
     function removeLastFuaEntry() { const container = document.getElementById('fua-entries-container'); const rows = container.querySelectorAll('.fua-entry-row'); if (rows.length > 1) { rows[rows.length - 1].remove(); } }
     function saveAllFuas() { alert(`Simulando guardado de ${document.querySelectorAll('.fua-entry-row').length} registros.`); }
-    function performSearch() { alert(`Buscando: ${document.getElementById('search-input').value}`); }
+    async function performSearch() {
+    const searchTerm = document.getElementById('search-input').value.trim();
+    const resultsList = document.getElementById('search-results-list');
+
+    if (!searchTerm) {
+        resultsList.innerHTML = '<p style="text-align: center; color: #777;">Por favor, ingrese un término para buscar.</p>';
+        return;
+    }
+
+    resultsList.innerHTML = '<p style="text-align: center; color: #777;">Buscando...</p>';
+
+    try {
+        // Consulta a Supabase. Busca en varias columnas a la vez.
+        const { data, error } = await supabaseClient
+            .from('atenciones_emergencia') // El nombre de tu tabla
+            .select() // Selecciona todas las columnas del resultado
+            .or(
+                `"NFUA".ilike.%${searchTerm}%,` +
+                `"Episodio".ilike.%${searchTerm}%,` +
+                `"PACIENTE".ilike.%${searchTerm}%,` +
+                `"NroDocumento".ilike.%${searchTerm}%,` +
+                `"ApePaterno".ilike.%${searchTerm}%,` +
+                `"ApeMaterno".ilike.%${searchTerm}%`
+            )
+            .order('"FecAte"', { ascending: false }); // Ordena por fecha de atención más reciente
+
+        if (error) {
+            throw error; // Lanza el error para que lo capture el bloque catch
+        }
+
+        if (data && data.length > 0) {
+            // Si hay resultados, los mostramos
+            resultsList.innerHTML = data.map(item => {
+                const costoTotal = parseFloat(item.CostoTotal) || 0;
+                const estadoConsumo = costoTotal > 0 ? 'Con Consumo' : 'Sin Consumo';
+                
+                // Creamos un elemento de lista para cada resultado
+                // NOTA: Para hacerlos clickeables y ver detalles, necesitaremos añadir una función y un modal,
+                // pero por ahora, solo mostramos la información principal.
+                return `
+                    <div style="padding: 10px; border-bottom: 1px solid #eee;">
+                        <p style="margin: 0; font-weight: bold; color: #333;">Paciente: ${item.PACIENTE || 'N/A'}</p>
+                        <p style="margin: 2px 0; font-size: 0.9em; color: #555;">FUA: ${item.NFUA || 'N/A'} | Episodio: ${item.Episodio || 'N/A'}</p>
+                        <p style="margin: 2px 0; font-size: 0.9em; color: #555;">Fecha Atención: ${item.FecAte || 'N/A'}</p>
+                        <p style="margin: 2px 0; font-size: 0.9em; font-weight: 500; color: ${costoTotal > 0 ? 'var(--danger-color)' : 'var(--success-color)'};">${estadoConsumo}</p>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            // Si no hay resultados
+            resultsList.innerHTML = '<p style="text-align: center; color: #777;">No se encontraron resultados para su búsqueda.</p>';
+        }
+
+    } catch (error) {
+        console.error('Error al buscar en Supabase:', error);
+        resultsList.innerHTML = `<p style="text-align: center; color: var(--danger-color);">Error al realizar la búsqueda: ${error.message}</p>`;
+    }
+}
+
     function handleVoiceSearch() { alert('Simulando búsqueda por voz...'); }
 </script>
 </body>
 </html>
+
 
