@@ -10,6 +10,18 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
     /* --- ESTILOS CSS (SIN CAMBIOS ) --- */
+
+    /* --- ESTILOS PARA EL INTERRUPTOR (SWITCH) DE VALIDACIÓN --- */
+.switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; }
+.slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; }
+input:checked + .slider { background-color: var(--success-color); }
+input:focus + .slider { box-shadow: 0 0 1px var(--success-color); }
+input:checked + .slider:before { transform: translateX(22px); }
+.slider.round { border-radius: 34px; }
+.slider.round:before { border-radius: 50%; }
+
     :root { --primary-color: #0A2A43; --accent-color: #D4AF37; --text-color-light: #FFFFFF; --background-color: #f0f2f5; --success-color: #28a745; --danger-color: #dc3545; }
     body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background-color ); display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
     .mobile-container { width: 390px; height: 700px; position: relative; overflow: hidden; border-radius: 45px; box-shadow: 0 15px 40px rgba(0,0,0,0.25); background: #ffffff; border: 12px solid #fff; }
@@ -201,6 +213,74 @@
         showLoginView();
     }
 
+
+// --- NUEVAS FUNCIONES PARA VALIDACIÓN DE USUARIOS ---
+
+/**
+ * Carga los usuarios desde Supabase y los muestra en la lista del panel de admin.
+ */
+async function loadPendingUsers() {
+    const userListContainer = document.getElementById('user-list-container');
+    userListContainer.innerHTML = '<li>Cargando usuarios...</li>'; // Mensaje de carga
+
+    try {
+        const { data: users, error } = await supabaseClient
+            .from('usuarios')
+            .select('id, nombre_completo, email, esta_validado')
+            .order('fecha_registro', { ascending: true });
+
+        if (error) throw error;
+
+        if (users && users.length > 0) {
+            userListContainer.innerHTML = users.map(user => `
+                <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
+                    <div>
+                        <strong style="display: block; color: #333;">${user.nombre_completo}</strong>
+                        <span style="font-size: 0.85em; color: #777;">${user.email}</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" ${user.esta_validado ? 'checked' : ''} onchange="toggleUserValidation('${user.id}', this.checked)">
+                        <span class="slider round"></span>
+                    </label>
+                </li>
+            `).join('');
+        } else {
+            userListContainer.innerHTML = '<li>No hay usuarios registrados.</li>';
+        }
+    } catch (error) {
+        console.error('Error al cargar usuarios:', error);
+        userListContainer.innerHTML = `<li style="color: var(--danger-color);">Error al cargar la lista: ${error.message}</li>`;
+    }
+}
+
+/**
+ * Actualiza el estado de validación de un usuario en Supabase.
+ * @param {string} userId - El ID del usuario a actualizar.
+ * @param {boolean} isValidated - El nuevo estado de validación (true o false).
+ */
+async function toggleUserValidation(userId, isValidated) {
+    try {
+        const { error } = await supabaseClient
+            .from('usuarios')
+            .update({ esta_validado: isValidated })
+            .eq('id', userId);
+
+        if (error) {
+            throw error;
+        }
+        console.log(`Usuario ${userId} actualizado a: ${isValidated ? 'VÁLIDO' : 'NO VÁLIDO'}`);
+        // Opcional: mostrar una pequeña notificación de éxito
+        
+    } catch (error) {
+        console.error('Error al actualizar el usuario:', error);
+        alert(`No se pudo actualizar el estado del usuario: ${error.message}`);
+        // Si hay un error, revertimos el switch a su estado anterior
+        loadPendingUsers();
+    }
+}
+
+
+    
     // --- FUNCIONES DE UI (SIN CAMBIOS) ---
     function initApp() {
         loginView.classList.add('hidden');
@@ -222,15 +302,32 @@
         let greeting = (hour < 12) ? 'Buenos días' : (hour < 18) ? 'Buenas tardes' : 'Buenas noches';
         greetingContainer.innerHTML = `<div class="chat-message ia-message">${greeting}, ${currentUser.nombre_completo}.</div>`;
     }
-    function handleMenuClick(section) {
-        if (section === 'contacto') { window.open('https://wa.me/51967188120', '_blank'  ); return; }
-        menuButtons.forEach(btn => btn.classList.add('hidden-by-view'));
-        assistantLogo.classList.add('hidden-by-view');
-        greetingContainer.style.opacity = '0';
-        appViews.forEach(view => view.classList.toggle('visible', view.id === `${section}-view`));
-        backButton.classList.add('visible');
-        chatView.classList.add('hidden-by-view');
+    async function handleMenuClick(section) {
+    // Si se hace clic en 'admin', primero pedimos la contraseña
+    if (section === 'admin') {
+        const password = prompt("Ingrese la contraseña de administrador:");
+        if (password !== 'mutter') {
+            alert("Contraseña incorrecta. Acceso denegado.");
+            return; // Detenemos la ejecución si la contraseña es incorrecta
+        }
+        // Si la contraseña es correcta, cargamos los usuarios pendientes
+        await loadPendingUsers(); 
     }
+
+    if (section === 'contacto') { 
+        window.open('https://wa.me/51967188120', '_blank' ); 
+        return; 
+    }
+
+    // El resto de la lógica para mostrar la vista correspondiente
+    menuButtons.forEach(btn => btn.classList.add('hidden-by-view'));
+    assistantLogo.classList.add('hidden-by-view');
+    greetingContainer.style.opacity = '0';
+    appViews.forEach(view => view.classList.toggle('visible', view.id === `${section}-view`));
+    backButton.classList.add('visible');
+    chatView.classList.add('hidden-by-view');
+}
+
     function returnToMenu() {
         appViews.forEach(view => view.classList.remove('visible'));
         backButton.classList.remove('visible');
@@ -383,5 +480,6 @@
 </script>
 </body>
 </html>
+
 
 
