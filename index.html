@@ -95,6 +95,81 @@ input:checked + .slider:before { transform: translateX(22px); }
     .add-fua-btn { background: var(--success-color); }
     .remove-fua-btn { background: var(--danger-color); }
     .save-all-btn { background: var(--primary-color); color: white; padding: 15px; border-radius: 10px; border: none; font-size: 18px; cursor: pointer; margin-top: auto; }
+/* --- ESTILOS PARA LA VENTANA MODAL DE DETALLES --- */
+.modal-overlay {
+    display: none; /* Oculto por defecto */
+    position: fixed; /* Se queda fijo en la pantalla */
+    z-index: 100; /* Se asegura de que esté por encima de todo */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Permite scroll si el contenido es muy largo */
+    background-color: rgba(0,0,0,0.6); /* Fondo negro semitransparente */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: 15px;
+    width: 90%; /* Ocupa el 90% del ancho del contenedor móvil */
+    max-width: 370px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    animation: fadeIn 0.3s;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.2em;
+    color: var(--primary-color);
+}
+
+.modal-close-btn {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.modal-close-btn:hover,
+.modal-close-btn:focus {
+    color: #333;
+}
+
+.modal-body p {
+    margin: 0 0 10px 0;
+    font-size: 0.95em;
+    line-height: 1.5;
+    color: #333;
+}
+
+.modal-body p strong {
+    color: var(--primary-color);
+    display: inline-block;
+    width: 110px; /* Alinea los valores */
+}
+
+@keyframes fadeIn {
+    from {opacity: 0; transform: scale(0.9);}
+    to {opacity: 1; transform: scale(1);}
+}
+
+
 </style>
 </head>
 <body>
@@ -201,6 +276,9 @@ input:checked + .slider:before { transform: translateX(22px); }
     const backButton = document.getElementById('back-button');
     const menuToggle = document.getElementById('menu-toggle');
     const greetingContainer = document.getElementById('greeting-container');
+    const detailsModal = document.getElementById('details-modal');
+const modalCloseBtn = document.getElementById('modal-close-btn');
+
 
     // --- FUNCIONES CONECTADAS A SUPABASE ---
 
@@ -644,21 +722,103 @@ async function loadObservados() {
 
 
     
+/**
+ * Muestra los detalles completos de un FUA en una ventana modal.
+ * @param {object} fuaData - El objeto completo con los datos del FUA.
+ */
 function showFuaDetails(fuaData) {
-    let detailsString = "Detalles de la Atención:\n\n";
-    for (const key in fuaData) {
-        if (key !== 'id' && key !== 'fecha_creacion') { // Excluimos campos internos
-            detailsString += `${key}: ${fuaData[key] || 'No especificado'}\n`;
+    const modal = document.getElementById('details-modal');
+    const modalBody = document.getElementById('modal-body');
+    
+    // Limpiamos el contenido anterior
+    modalBody.innerHTML = '';
+
+    // Creamos el contenido HTML para los detalles
+    let detailsHtml = '';
+    const camposMostrados = {
+        "PACIENTE": "Paciente",
+        "NroDocumento": "Documento",
+        "FecNac": "Fecha Nac.",
+        "Episodio": "Episodio",
+        "NFUA": "Nº FUA",
+        "FecAte": "Fecha Atención",
+        "ServicioAtencion": "Servicio",
+        "CostoTotal": "Costo Total",
+        "Observacion": "Observación"
+    };
+
+    for (const key in camposMostrados) {
+        if (fuaData.hasOwnProperty(key)) {
+            let valor = fuaData[key] || 'No especificado';
+            
+            // Formato especial para el costo
+            if (key === 'CostoTotal') {
+                valor = `S/ ${parseFloat(valor).toFixed(2)}`;
+            }
+
+            detailsHtml += `<p><strong>${camposMostrados[key]}:</strong> ${valor}</p>`;
         }
     }
-    alert(detailsString);
+
+    modalBody.innerHTML = detailsHtml;
+    modal.style.display = 'flex'; // Mostramos la ventana
+}
+
+/**
+ * Cierra la ventana modal de detalles.
+ */
+function closeDetailsModal() {
+    const modal = document.getElementById('details-modal');
+    modal.style.display = 'none';
 }
 
 
+
     function handleVoiceSearch() { alert('Simulando búsqueda por voz...'); }
+
+
+<!-- INICIO DE LA VENTANA MODAL DE DETALLES -->
+<div id="details-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Detalles de la Atención</h2>
+            <button id="modal-close-btn" class="modal-close-btn">&times;</button>
+        </div>
+        <div id="modal-body" class="modal-body">
+            <!-- El contenido de los detalles se insertará aquí con JavaScript -->
+        </div>
+    </div>
+</div>
+<!-- FIN DE LA VENTANA MODAL DE DETALLES -->
+
+
+ // --- EVENT LISTENERS (ESPERAN A QUE LA PÁGINA CARGUE) ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Definimos las variables del modal DENTRO de este bloque
+    const detailsModal = document.getElementById('details-modal');
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+
+    // Añadimos los listeners
+    if (modalCloseBtn) {
+        modalCloseBtn.addEventListener('click', closeDetailsModal);
+    }
+
+    // Cierra la ventana si se hace clic fuera del contenido
+    window.addEventListener('click', (event) => {
+        if (event.target == detailsModal) {
+            closeDetailsModal();
+        }
+    });
+
+    // ... aquí podríamos añadir otros listeners que necesitemos al inicio ...
+});
+
+
+    
 </script>
 </body>
 </html>
+
 
 
 
