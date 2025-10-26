@@ -227,31 +227,58 @@ input:checked + .slider:before { transform: translateX(22px); }
 }
 
 
-    async function handleRegister() {
-        const email = document.getElementById('reg-email').value.trim();
-        const password = document.getElementById('reg-password').value.trim();
-        const fullName = document.getElementById('reg-username').value.trim();
-        const whatsapp = document.getElementById('reg-whatsapp').value.trim();
-        if (!email || !password || !fullName) return alert("Por favor, complete todos los campos.");
-
-        const { data: authData, error: authError } = await supabaseClient.auth.signUp({ email, password });
-        if (authError) return alert(`Error en el registro: ${authError.message}`);
-        if (!authData.user) return alert("El registro falló. Por favor, intente de nuevo.");
-
-        const { error: insertError } = await supabaseClient.from('usuarios').insert({
-    id: authData.user.id, 
-    email: email, 
-    nombre_completo: fullName, 
-    telefono_whatsapp: whatsapp, 
-    rol: 'user', // <--- ¡AÑADE ESTA LÍNEA!
-    password_hash: 'hash_placeholder' // Esta línea puede variar
-});
-
-        if (insertError) return alert(`Error al guardar datos adicionales: ${insertError.message}`);
-
-        alert("¡Registro exitoso! Por favor, espera a que un administrador valide tu cuenta.");
-        showLoginView();
+ async function handleRegister() {
+    const email = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-password').value.trim();
+    const fullName = document.getElementById('reg-username').value.trim();
+    const whatsapp = document.getElementById('reg-whatsapp').value.trim();
+    
+    if (!email || !password || !fullName) {
+        return alert("Por favor, complete todos los campos.");
     }
+
+    // --- INICIO DE LA CORRECCIÓN ---
+
+    // 1. Primero, intentamos crear el usuario en el sistema de Autenticación.
+    const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+        email: email,
+        password: password
+    });
+
+    // 2. ¡PASO CLAVE! Si hay un error aquí, nos detenemos y no hacemos nada más.
+    if (authError) {
+        return alert(`Error en el registro: ${authError.message}`);
+    }
+    if (!authData.user) {
+        // Esto es por si ocurre un error raro donde no hay error pero tampoco usuario.
+        return alert("El registro falló. Por favor, intente de nuevo.");
+    }
+
+    // 3. SOLO SI el paso 1 fue exitoso, procedemos a guardar los datos en nuestra tabla 'usuarios'.
+    const { error: insertError } = await supabaseClient
+        .from('usuarios')
+        .insert({
+            id: authData.user.id,
+            email: email,
+            nombre_completo: fullName,
+            telefono_whatsapp: whatsapp,
+            rol: 'user' // Aseguramos que se asigne el rol 'user'
+        });
+
+    // 4. Si el insert falla (lo cual es raro si el paso 1 funcionó), informamos al usuario.
+    if (insertError) {
+        // En un caso real, aquí deberíamos borrar el usuario de auth que se acaba de crear para consistencia.
+        // Por ahora, solo mostramos el error.
+        return alert(`Error al guardar datos adicionales: ${insertError.message}`);
+    }
+
+    // 5. Si todo fue bien, mostramos el mensaje de éxito.
+    alert("¡Registro exitoso! Por favor, espera a que un administrador valide tu cuenta.");
+    showLoginView(); // Volvemos a la vista de login.
+    
+    // --- FIN DE LA CORRECIÓN ---
+}
+
 
 
 // --- NUEVAS FUNCIONES PARA VALIDACIÓN DE USUARIOS ---
@@ -521,6 +548,7 @@ function showFuaDetails(fuaData) {
 </script>
 </body>
 </html>
+
 
 
 
