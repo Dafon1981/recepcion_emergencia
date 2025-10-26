@@ -38,8 +38,8 @@ input:checked + .slider:before { transform: translateX(22px); }
     #main-app.hidden { display: none; }
     .header { position: absolute; top: 0; left: 0; right: 0; height: 90px; background: var(--primary-color); z-index: 5; display: flex; justify-content: center; align-items: center; }
     .header-title { color: var(--text-color-light); font-size: 24px; font-weight: bold; cursor: pointer; }
-    #assistant-logo { position: absolute; bottom: 30px; height: 85%; z-index: 1; transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); object-fit: cover; object-position: center bottom; }
-    #assistant-logo.initial-state { right: 50%; transform: translateX(50%); height: 90%; opacity: 1; }
+    #assistant-logo { position: absolute; bottom: 30px; height: 70%; z-index: 1; transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); object-fit: cover; object-position: center bottom; }
+    #assistant-logo.initial-state { right: 50%; transform: translateX(50%); height: 75%; opacity: 1; }
     #assistant-logo.side-state { right: -40px; transform: translateX(0); opacity: 1; height: 85%; }
     #assistant-logo.hidden-by-view { opacity: 0; }
     #assistant-logo.chat-mode-state { right: 50%; transform: translateX(50%); height: 95%; }
@@ -774,7 +774,65 @@ function closeDetailsModal() {
 
 
 
-    function handleVoiceSearch() { alert('Simulando búsqueda por voz...'); }
+   /**
+ * Inicia el reconocimiento de voz para realizar una búsqueda.
+ */
+function handleVoiceSearch() {
+    // Comprobamos si el navegador soporta la API de reconocimiento de voz
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        alert("Lo siento, tu navegador no soporta la búsqueda por voz.");
+        return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'es-PE'; // Español de Perú para mayor precisión
+    recognition.interimResults = false; // No queremos resultados parciales
+    recognition.maxAlternatives = 1; // Solo queremos la transcripción más probable
+
+    const searchInput = document.getElementById('search-input');
+    const originalPlaceholder = searchInput.placeholder;
+    
+    // Cuando el reconocimiento empieza
+    recognition.onstart = () => {
+        searchInput.placeholder = "Escuchando...";
+        console.log("Reconocimiento de voz iniciado. ¡Habla ahora!");
+    };
+
+    // Cuando el reconocimiento termina
+    recognition.onend = () => {
+        searchInput.placeholder = originalPlaceholder;
+        console.log("Reconocimiento de voz finalizado.");
+    };
+
+    // Cuando se obtiene un resultado
+    recognition.onresult = (event) => {
+        const speechResult = event.results[0][0].transcript;
+        console.log('Resultado de voz:', speechResult);
+        
+        // Ponemos el texto reconocido en la caja de búsqueda
+        searchInput.value = speechResult;
+        
+        // Ejecutamos la búsqueda automáticamente
+        performSearch();
+    };
+
+    // Si hay un error
+    recognition.onerror = (event) => {
+        console.error('Error en el reconocimiento de voz:', event.error);
+        searchInput.placeholder = originalPlaceholder;
+        if (event.error === 'no-speech') {
+            alert("No se detectó ninguna voz. Inténtalo de nuevo.");
+        } else if (event.error === 'not-allowed') {
+            alert("Permiso para usar el micrófono denegado. Por favor, habilítalo en la configuración de tu navegador.");
+        } else {
+            alert(`Ocurrió un error en el reconocimiento de voz: ${event.error}`);
+        }
+    };
+
+    // Iniciamos el proceso
+    recognition.start();
+}
 
 
 <!-- INICIO DE LA VENTANA MODAL DE DETALLES -->
@@ -818,6 +876,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
 
