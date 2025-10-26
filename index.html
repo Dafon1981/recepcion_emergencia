@@ -490,7 +490,66 @@ if (section === 'observados') {
     function addFuaEntry() { const container = document.getElementById('fua-entries-container'); const newEntryRow = document.createElement('div'); newEntryRow.className = 'fua-entry-row'; newEntryRow.innerHTML = `<input type="text" placeholder="Nº FUA o Episodio"><input type="date"><button class="delete-fua-btn" onclick="deleteFuaEntry(this)">X</button>`; container.appendChild(newEntryRow); }
     function deleteFuaEntry(button) { button.parentElement.remove(); }
     function removeLastFuaEntry() { const container = document.getElementById('fua-entries-container'); const rows = container.querySelectorAll('.fua-entry-row'); if (rows.length > 1) { rows[rows.length - 1].remove(); } }
-    function saveAllFuas() { alert(`Simulando guardado de ${document.querySelectorAll('.fua-entry-row').length} registros.`); }
+   async function saveAllFuas() {
+    const entryRows = document.querySelectorAll('#fua-entries-container .fua-entry-row');
+    if (entryRows.length === 0) {
+        return alert("No hay registros para guardar.");
+    }
+
+    const registrosParaGuardar = [];
+    let hayErrores = false;
+
+    entryRows.forEach(row => {
+        const nroFuaEpisodio = row.querySelector('.fua-episodio-input').value.trim();
+        const fechaObservacion = row.querySelector('.fua-fecha-input').value;
+        const observacion = row.querySelector('.fua-observacion-input').value.trim();
+
+        if (!nroFuaEpisodio || !fechaObservacion) {
+            hayErrores = true;
+            return; 
+        }
+
+        registrosParaGuardar.push({
+            nro_fua_episodio: nroFuaEpisodio,
+            fecha_observacion: fechaObservacion,
+            observacion: observacion
+        });
+    });
+
+    if (hayErrores) {
+        return alert("Algunas filas están incompletas. Por favor, complete al menos el Nº FUA/Episodio y la Fecha.");
+    }
+
+    if (registrosParaGuardar.length === 0) {
+        return alert("No hay registros válidos para guardar.");
+    }
+
+    const confirmacion = confirm(`¿Está seguro de que desea guardar ${registrosParaGuardar.length} registro(s) en la base de datos?`);
+    if (!confirmacion) {
+        return;
+    }
+
+    try {
+        // ¡AQUÍ OCURRE LA MAGIA!
+        const { error } = await supabaseClient
+            .from('observaciones')
+            .insert(registrosParaGuardar);
+
+        if (error) {
+            throw error;
+        }
+
+        alert(`¡Éxito! Se han guardado ${registrosParaGuardar.length} registro(s) correctamente.`);
+        
+        const container = document.getElementById('fua-entries-container');
+        container.innerHTML = ''; 
+        addFuaEntry(); 
+
+    } catch (error) {
+        console.error("Error al guardar en 'observaciones':", error);
+        alert(`Ocurrió un error al guardar los datos: ${error.message}`);
+    }
+}
 
 
 
@@ -600,6 +659,7 @@ function showFuaDetails(fuaData) {
 </script>
 </body>
 </html>
+
 
 
 
