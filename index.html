@@ -156,45 +156,76 @@ input:checked + .slider:before { transform: translateX(22px); }
 
     // --- FUNCIONES CONECTADAS A SUPABASE ---
 
-    async function handleLogin() {
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value.trim();
-        if (!username || !password) return alert("Por favor, ingrese usuario y contraseña.");
+   async function handleLogin() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    if (!username || !password) return alert("Por favor, ingrese usuario y contraseña.");
 
-        // *** INICIO DE LA MODIFICACIÓN: ACCESO MAESTRO ***
-        if (username === 'manuel' && password === 'mutter') {
-            console.log("Acceso de administrador maestro concedido.");
-            currentUser = { nombre_completo: 'Manuel (Admin)', rol: 'admin' };
-            return initApp();
+    // Acceso maestro (esto sigue igual)
+    if (username === 'manuel' && password === 'mutter') {
+        console.log("Acceso de administrador maestro concedido.");
+        currentUser = { nombre_completo: 'Manuel (Admin)', rol: 'admin' };
+        // Cargamos los usuarios para el panel de admin
+        if (document.getElementById('admin-view')) {
+            loadPendingUsers();
         }
-        // *** FIN DE LA MODIFICACIÓN ***
+        return initApp();
+    }
 
-        // Flujo normal con Supabase
-        const { data: userData, error: userError } = await supabaseClient
-            .from('usuarios')
-            .select('email, esta_validado, rol, nombre_completo, id')
-            .eq('nombre_completo', username)
-            .single();
+    // --- INICIO DE LA CORRECCIÓN ---
 
-        if (userError || !userData) return alert("Usuario no encontrado.");
+    // 1. Primero, obtenemos el email del usuario a partir de su nombre de usuario
+    const { data: userProfile, error: profileError } = await supabaseClient
+        .from('usuarios')
+        .select('email')
+        .eq('nombre_completo', username)
+        .single();
 
-        const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
-            email: userData.email,
-            password: password
-        });
+    if (profileError || !userProfile) {
+        return alert("Usuario no encontrado o contraseña incorrecta.");
+    }
 
-        if (authError) return alert(`Contraseña incorrecta.`);
-        if (!authData.user) return alert("No se pudo verificar el usuario.");
-        
-        // Dentro de handleLogin()
-if (userData.esta_validado) { // Si esta_validado es true...
-    currentUser = { ...authData.user, ...userData };
-    initApp(); // ...deja entrar al usuario.
-} else { // Si es false...
-    alert("Tu cuenta aún no ha sido validada por un administrador."); // ...muestra la alerta y no lo deja entrar.
+    // 2. Intentamos iniciar sesión con el email y la contraseña proporcionados
+    const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
+        email: userProfile.email,
+        password: password
+    });
+
+    if (authError) {
+        return alert("Usuario no encontrado o contraseña incorrecta.");
+    }
+    if (!authData.user) {
+        return alert("No se pudo verificar el usuario. Intente de nuevo.");
+    }
+
+    // 3. ¡PASO CLAVE! Después del login exitoso, volvemos a pedir los datos del perfil actualizados.
+    //    Esto nos da el valor más reciente de 'esta_validado'.
+    const { data: updatedUserProfile, error: updatedProfileError } = await supabaseClient
+        .from('usuarios')
+        .select('esta_validado, rol, nombre_completo, id')
+        .eq('id', authData.user.id)
+        .single();
+
+    if (updatedProfileError) {
+        return alert("No se pudo obtener la información de validación del usuario.");
+    }
+
+    // 4. Ahora sí, comprobamos el valor actualizado de 'esta_validado'
+    if (updatedUserProfile.esta_validado) {
+        currentUser = { ...authData.user, ...updatedUserProfile };
+        // Si el usuario es admin, cargamos la lista de usuarios para el panel
+        if (currentUser.rol === 'admin' && document.getElementById('admin-view')) {
+            loadPendingUsers();
+        }
+        initApp();
+    } else {
+        alert("Tu cuenta aún no ha sido validada por un administrador.");
+        // Cerramos la sesión para que no se quede "atascado"
+        supabaseClient.auth.signOut();
+    }
+    // --- FIN DE LA CORRECCIÓN ---
 }
 
-    }
 
     async function handleRegister() {
         const email = document.getElementById('reg-email').value.trim();
@@ -484,6 +515,7 @@ function showFuaDetails(fuaData) {
 </script>
 </body>
 </html>
+
 
 
 
