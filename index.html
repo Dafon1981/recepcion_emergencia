@@ -186,12 +186,14 @@ input:checked + .slider:before { transform: translateX(22px); }
         if (authError) return alert(`Contraseña incorrecta.`);
         if (!authData.user) return alert("No se pudo verificar el usuario.");
         
-        if (userData.esta_validado) {
-            currentUser = { ...authData.user, ...userData };
-            initApp();
-        } else {
-            alert("Tu cuenta aún no ha sido validada por un administrador.");
-        }
+        // Dentro de handleLogin()
+if (userData.esta_validado) { // Si esta_validado es true...
+    currentUser = { ...authData.user, ...userData };
+    initApp(); // ...deja entrar al usuario.
+} else { // Si es false...
+    alert("Tu cuenta aún no ha sido validada por un administrador."); // ...muestra la alerta y no lo deja entrar.
+}
+
     }
 
     async function handleRegister() {
@@ -482,6 +484,7 @@ function showFuaDetails(fuaData) {
 </script>
 </body>
 </html>
+
 
 
 
