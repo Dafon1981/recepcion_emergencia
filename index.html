@@ -95,7 +95,8 @@ input:checked + .slider:before { transform: translateX(22px); }
              <div class="login-box">
                 <h2>Bienvenido</h2>
                 <div class="input-wrapper"><input type="text" id="username" placeholder="Usuario" required></div>
-                <div class="input-wrapper"><input type="password" id="password" placeholder="Contraseña" required><button type="button" class="toggle-password" onclick="togglePasswordVisibility('password', this)">👁️</button></div>
+                <div class="input-wrapper"><input type="text" id="password" placeholder="Contraseña" required></div>
+
                 <button class="btn-primary" onclick="handleLogin()">Entrar</button>
                 <button class="btn-secondary" onclick="showRegisterView()">Registrarse</button>
              </div>
@@ -104,7 +105,8 @@ input:checked + .slider:before { transform: translateX(22px); }
             <div class="login-box">
                 <h2>Registrarse</h2>
                 <div class="input-wrapper"><input type="text" id="reg-username" placeholder="Nombre Completo" required></div>
-                <div class="input-wrapper"><input type="password" id="reg-password" placeholder="Crear Contraseña" required><button type="button" class="toggle-password" onclick="togglePasswordVisibility('reg-password', this)">👁️</button></div>
+                <div class="input-wrapper"><input type="text" id="reg-password" placeholder="Crear Contraseña" required></div>
+
                 <div class="input-wrapper"><input type="email" id="reg-email" placeholder="Email (para login)" required></div>
                 <div class="input-wrapper"><input type="tel" id="reg-whatsapp" placeholder="WhatsApp" required></div>
                 <button class="btn-primary" onclick="handleRegister()">Registrar</button>
@@ -156,127 +158,72 @@ input:checked + .slider:before { transform: translateX(22px); }
 
     // --- FUNCIONES CONECTADAS A SUPABASE ---
 
-   async function handleLogin() {
+ async function handleLogin() {
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value.trim();
     if (!username || !password) return alert("Por favor, ingrese usuario y contraseña.");
 
-    // Acceso maestro (esto sigue igual)
+    // Acceso maestro (sigue funcionando igual)
     if (username === 'manuel' && password === 'mutter') {
         console.log("Acceso de administrador maestro concedido.");
         currentUser = { nombre_completo: 'Manuel (Admin)', rol: 'admin' };
-        // Cargamos los usuarios para el panel de admin
-        if (document.getElementById('admin-view')) {
-            loadPendingUsers();
-        }
+        loadPendingUsers();
         return initApp();
     }
-
-    // --- INICIO DE LA CORRECCIÓN ---
-
-    // 1. Primero, obtenemos el email del usuario a partir de su nombre de usuario
-    const { data: userProfile, error: profileError } = await supabaseClient
+    
+    // ¡NUEVA LÓGICA DE LOGIN DIRECTO!
+    const { data: user, error } = await supabaseClient
         .from('usuarios')
-        .select('email')
+        .select('*') // Obtenemos todos los datos del usuario
         .eq('nombre_completo', username)
-        .single();
+        .eq('contrasena', password) // Buscamos donde el usuario Y la contraseña coincidan
+        .single(); // Esperamos encontrar solo un resultado
 
-    if (profileError || !userProfile) {
-        return alert("Usuario no encontrado o contraseña incorrecta.");
+    if (error || !user) {
+        return alert("Usuario o contraseña incorrectos.");
     }
 
-    // 2. Intentamos iniciar sesión con el email y la contraseña proporcionados
-    const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
-        email: userProfile.email,
-        password: password
-    });
-
-    if (authError) {
-        return alert("Usuario no encontrado o contraseña incorrecta.");
-    }
-    if (!authData.user) {
-        return alert("No se pudo verificar el usuario. Intente de nuevo.");
-    }
-
-    // 3. ¡PASO CLAVE! Después del login exitoso, volvemos a pedir los datos del perfil actualizados.
-    //    Esto nos da el valor más reciente de 'esta_validado'.
-    const { data: updatedUserProfile, error: updatedProfileError } = await supabaseClient
-        .from('usuarios')
-        .select('esta_validado, rol, nombre_completo, id')
-        .eq('id', authData.user.id)
-        .single();
-
-    if (updatedProfileError) {
-        return alert("No se pudo obtener la información de validación del usuario.");
-    }
-
-    // 4. Ahora sí, comprobamos el valor actualizado de 'esta_validado'
-    if (updatedUserProfile.esta_validado) {
-        currentUser = { ...authData.user, ...updatedUserProfile };
-        // Si el usuario es admin, cargamos la lista de usuarios para el panel
-        if (currentUser.rol === 'admin' && document.getElementById('admin-view')) {
-            loadPendingUsers();
+    // Si encontramos al usuario, comprobamos si está validado
+    if (user.esta_validado) {
+        currentUser = user; // El objeto 'user' ya tiene toda la info que necesitamos
+        if (currentUser.rol === 'admin') {
+            loadPendingUsers(); // Si es admin, cargamos la lista para el panel
         }
         initApp();
     } else {
         alert("Tu cuenta aún no ha sido validada por un administrador.");
-        // Cerramos la sesión para que no se quede "atascado"
-        supabaseClient.auth.signOut();
     }
-    // --- FIN DE LA CORRECCIÓN ---
 }
 
 
- async function handleRegister() {
+async function handleRegister() {
     const email = document.getElementById('reg-email').value.trim();
     const password = document.getElementById('reg-password').value.trim();
     const fullName = document.getElementById('reg-username').value.trim();
     const whatsapp = document.getElementById('reg-whatsapp').value.trim();
-    
+
     if (!email || !password || !fullName) {
         return alert("Por favor, complete todos los campos.");
     }
 
-    // --- INICIO DE LA CORRECCIÓN ---
-
-    // 1. Primero, intentamos crear el usuario en el sistema de Autenticación.
-    const { data: authData, error: authError } = await supabaseClient.auth.signUp({
-        email: email,
-        password: password
-    });
-
-    // 2. ¡PASO CLAVE! Si hay un error aquí, nos detenemos y no hacemos nada más.
-    if (authError) {
-        return alert(`Error en el registro: ${authError.message}`);
-    }
-    if (!authData.user) {
-        // Esto es por si ocurre un error raro donde no hay error pero tampoco usuario.
-        return alert("El registro falló. Por favor, intente de nuevo.");
-    }
-
-    // 3. SOLO SI el paso 1 fue exitoso, procedemos a guardar los datos en nuestra tabla 'usuarios'.
-    const { error: insertError } = await supabaseClient
+    // ¡NUEVA LÓGICA! Insertamos directamente en la tabla 'usuarios'.
+    const { error } = await supabaseClient
         .from('usuarios')
         .insert({
-            id: authData.user.id,
-            email: email,
             nombre_completo: fullName,
+            contrasena: password, // Guardamos la contraseña como texto simple
+            email: email,
             telefono_whatsapp: whatsapp,
-            rol: 'user' // Aseguramos que se asigne el rol 'user'
+            rol: 'user',
+            esta_validado: false // Los nuevos usuarios siempre empiezan como no validados
         });
 
-    // 4. Si el insert falla (lo cual es raro si el paso 1 funcionó), informamos al usuario.
-    if (insertError) {
-        // En un caso real, aquí deberíamos borrar el usuario de auth que se acaba de crear para consistencia.
-        // Por ahora, solo mostramos el error.
-        return alert(`Error al guardar datos adicionales: ${insertError.message}`);
+    if (error) {
+        return alert(`Error en el registro: ${error.message}`);
     }
 
-    // 5. Si todo fue bien, mostramos el mensaje de éxito.
     alert("¡Registro exitoso! Por favor, espera a que un administrador valide tu cuenta.");
-    showLoginView(); // Volvemos a la vista de login.
-    
-    // --- FIN DE LA CORRECIÓN ---
+    showLoginView();
 }
 
 
@@ -421,12 +368,12 @@ async function toggleUserValidation(userId, isValidated) {
         greetingContainer.style.opacity = '1';
         menuToggle.classList.remove('visible');
     }
-    function togglePasswordVisibility(inputId, button) {
-        const input = document.getElementById(inputId);
-        const isPassword = input.type === 'password';
-        input.type = isPassword ? 'text' : 'password';
-        button.textContent = isPassword ? '🙈' : '👁️';
-    }
+   // function togglePasswordVisibility(inputId, button) {
+     //   const input = document.getElementById(inputId);
+       // const isPassword = input.type === 'password';
+       // input.type = isPassword ? 'text' : 'password';
+      //  button.textContent = isPassword ? '🙈' : '👁️';
+    //}
     
     async function handleSend() {
         const textInput = document.getElementById('text-input');
@@ -548,6 +495,7 @@ function showFuaDetails(fuaData) {
 </script>
 </body>
 </html>
+
 
 
 
