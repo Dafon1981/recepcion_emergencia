@@ -145,7 +145,37 @@ input:checked + .slider:before { transform: translateX(22px); }
 </div>
 
             <div id="info-view" class="app-view"><h2>Información</h2></div>
-            <div id="admin-view" class="app-view"><h2>Panel de Administración</h2><div class="admin-tabs"><button class="tab-button active" onclick="switchAdminTab('personal', this )">Personal</button><button class="tab-button" onclick="switchAdminTab('observados', this)">Observados</button></div><div id="tab-personal" class="tab-content active"><h3>Validación de Personal</h3><ul id="user-list-container" style="list-style: none; padding: 0;"></ul></div><div id="tab-observados" class="tab-content"><h3>Ingreso de FUA Observado</h3><div class="fua-entry-form"><div id="fua-entries-container"><div class="fua-entry-row"><input type="text" placeholder="Nº FUA o Episodio"><input type="date"><button class="delete-fua-btn" onclick="deleteFuaEntry(this)">X</button></div></div><div class="fua-actions"><button class="remove-fua-btn" onclick="removeLastFuaEntry()">-</button><button class="add-fua-btn" onclick="addFuaEntry()">+</button></div><button class="save-all-btn" onclick="saveAllFuas()">Guardar Todo</button></div></div></div>
+           <div id="admin-view" class="app-view">
+    <h2>Panel de Administración</h2>
+    <div class="admin-tabs">
+        <button class="tab-button active" onclick="switchAdminTab('personal', this)">Personal</button>
+        <button class="tab-button" onclick="switchAdminTab('observados', this)">Observados</button>
+    </div>
+    <div id="tab-personal" class="tab-content active">
+        <h3>Validación de Personal</h3>
+        <ul id="user-list-container" style="list-style: none; padding: 0;"></ul>
+    </div>
+    <div id="tab-observados" class="tab-content">
+        <h3>Ingreso de FUA Observado</h3>
+        <div class="fua-entry-form">
+            <div id="fua-entries-container">
+                <!-- Fila de ejemplo con el nuevo campo de observación -->
+                <div class="fua-entry-row">
+                    <input type="text" class="fua-episodio-input" placeholder="Nº FUA o Episodio">
+                    <input type="date" class="fua-fecha-input">
+                    <input type="text" class="fua-observacion-input" placeholder="Observación (opcional)">
+                    <button class="delete-fua-btn" onclick="deleteFuaEntry(this)">X</button>
+                </div>
+            </div>
+            <div class="fua-actions">
+                <button class="remove-fua-btn" onclick="removeLastFuaEntry()">-</button>
+                <button class="add-fua-btn" onclick="addFuaEntry()">+</button>
+            </div>
+            <button class="save-all-btn" onclick="saveAllFuas()">Guardar Todo</button>
+        </div>
+    </div>
+</div>
+
             <div id="chat-view"><div class="chat-log" id="chat-log"></div><div class="input-bar"><button class="action-button" onclick="handleAudio()"><img src="https://www.pngmart.com/files/17/Volume-Button-Transparent-PNG.png" alt="Audio"></button><input type="text" id="text-input" placeholder="Haz una consulta..." onkeydown="if(event.key==='Enter' ) handleSend()" onfocus="enterChatMode()"><button class="action-button" onclick="handleSend()"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Enviar"></button></div></div>
         </div>
     </div>
@@ -570,6 +600,7 @@ function showFuaDetails(fuaData) {
 </script>
 </body>
 </html>
+
 
 
 
