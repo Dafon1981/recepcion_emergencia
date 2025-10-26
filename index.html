@@ -239,8 +239,14 @@ input:checked + .slider:before { transform: translateX(22px); }
         if (!authData.user) return alert("El registro falló. Por favor, intente de nuevo.");
 
         const { error: insertError } = await supabaseClient.from('usuarios').insert({
-            id: authData.user.id, email: email, nombre_completo: fullName, telefono_whatsapp: whatsapp, password_hash: 'hash_placeholder'
-        });
+    id: authData.user.id, 
+    email: email, 
+    nombre_completo: fullName, 
+    telefono_whatsapp: whatsapp, 
+    rol: 'user', // <--- ¡AÑADE ESTA LÍNEA!
+    password_hash: 'hash_placeholder' // Esta línea puede variar
+});
+
         if (insertError) return alert(`Error al guardar datos adicionales: ${insertError.message}`);
 
         alert("¡Registro exitoso! Por favor, espera a que un administrador valide tu cuenta.");
@@ -515,6 +521,7 @@ function showFuaDetails(fuaData) {
 </script>
 </body>
 </html>
+
 
 
 
