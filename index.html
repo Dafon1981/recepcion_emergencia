@@ -123,7 +123,8 @@ input:checked + .slider:before { transform: translateX(22px); }
             <button id="btn-admin" class="menu-button" onclick="handleMenuClick('admin')">Administrar</button>
             <button id="btn-info" class="menu-button" onclick="handleMenuClick('info')">Información</button>
             <button id="btn-contacto" class="menu-button" onclick="handleMenuClick('contacto')">Contacto</button>
-            <div id="buscar-view" class="app-view"><h2>Búsqueda de FUAs</h2><div class="search-bar-wrapper"><input type="text" id="search-input" placeholder="Buscar por FUA, episodio, paciente..."><button class="action-button" onclick="handleVoiceSearch()"><img src="https://www.pngmart.com/files/17/Volume-Button-Transparent-PNG.png" alt="Audio"></button><button class="action-button" onclick="performSearch( )"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar"></button></div><div class="search-results-list" id="search-results-list"><p style="text-align: center; color: #777;">Ingrese un término de búsqueda para comenzar.</p></div></div>
+            <div id="buscar-view" class="app-view"><h2>Búsqueda de FUAs</h2><div class="search-bar-wrapper"><input type="text" id="search-input" placeholder="Buscar por FUA, episodio, paciente..." onkeydown="if (event.key === 'Enter' ) performSearch()"><button class="action-button" onclick="handleVoiceSearch()"><img src="https://www.pngmart.com/files/17/Volume-Button-Transparent-PNG.png" alt="Audio"></button><button class="action-button" onclick="performSearch(  )"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar"></button></div><div class="search-results-list" id="search-results-list"><p style="text-align: center; color: #777;">Ingrese un término de búsqueda para comenzar.</p></div></div>
+
             <div id="observados-view" class="app-view"><h2>Pacientes Observados</h2></div>
             <div id="info-view" class="app-view"><h2>Información</h2></div>
             <div id="admin-view" class="app-view"><h2>Panel de Administración</h2><div class="admin-tabs"><button class="tab-button active" onclick="switchAdminTab('personal', this )">Personal</button><button class="tab-button" onclick="switchAdminTab('observados', this)">Observados</button></div><div id="tab-personal" class="tab-content active"><h3>Validación de Personal</h3><ul id="user-list-container" style="list-style: none; padding: 0;"></ul></div><div id="tab-observados" class="tab-content"><h3>Ingreso de FUA Observado</h3><div class="fua-entry-form"><div id="fua-entries-container"><div class="fua-entry-row"><input type="text" placeholder="Nº FUA o Episodio"><input type="date"><button class="delete-fua-btn" onclick="deleteFuaEntry(this)">X</button></div></div><div class="fua-actions"><button class="remove-fua-btn" onclick="removeLastFuaEntry()">-</button><button class="add-fua-btn" onclick="addFuaEntry()">+</button></div><button class="save-all-btn" onclick="saveAllFuas()">Guardar Todo</button></div></div></div>
@@ -481,6 +482,7 @@ function showFuaDetails(fuaData) {
 </script>
 </body>
 </html>
+
 
 
 
