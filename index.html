@@ -202,9 +202,10 @@ async function handleRegister() {
     const fullName = document.getElementById('reg-username').value.trim();
     const whatsapp = document.getElementById('reg-whatsapp').value.trim();
 
-    if (!email || !password || !fullName) {
-        return alert("Por favor, complete todos los campos.");
-    }
+    if (!password || !fullName) {
+    return alert("Por favor, complete los campos de Nombre y Contraseña.");
+}
+
 
     // ¡NUEVA LÓGICA! Insertamos directamente en la tabla 'usuarios'.
     const { error } = await supabaseClient
@@ -495,6 +496,7 @@ function showFuaDetails(fuaData) {
 </script>
 </body>
 </html>
+
 
 
 
