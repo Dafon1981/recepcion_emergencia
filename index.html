@@ -200,60 +200,41 @@ input:checked + .slider:before { transform: translateX(22px); }
         </div>
 
         <!-- APLICACIÓN PRINCIPAL (SIN CAMBIOS) -->
+          <!-- APLICACIÓN PRINCIPAL -->
         <div id="main-app" class="hidden">
             <header id="main-header" class="header"><button id="back-button" class="back-button" onclick="returnToMenu()">←</button><div id="header-title" class="header-title" onclick="enterChatMode()">Recepción Emergencia</div></header>
             <video id="assistant-logo" class="initial-state" autoplay muted loop playsinline><source src="https://github.com/Dafon1981/recepcion/blob/main/cayetanologo.mp4?raw=true" type="video/mp4"></video>
-            <button class="menu-toggle" id="menu-toggle" onclick="exitChatMode( )">≡</button>
             <div id="greeting-container"></div>
-            <button id="btn-buscar" class="menu-button" onclick="handleMenuClick('buscar')">Buscar FUA</button>
+            <button id="btn-buscar" class="menu-button" onclick="handleMenuClick('buscar' )">Buscar FUA</button>
             <button id="btn-observados" class="menu-button" onclick="handleMenuClick('observados')">Ver Observados</button>
             <button id="btn-admin" class="menu-button" onclick="handleMenuClick('admin')">Administrar</button>
             <button id="btn-info" class="menu-button" onclick="handleMenuClick('info')">Información</button>
             <button id="btn-contacto" class="menu-button" onclick="handleMenuClick('contacto')">Contacto</button>
-            <div id="buscar-view" class="app-view"><h2>Búsqueda de FUAs</h2><div class="search-bar-wrapper"><input type="text" id="search-input" placeholder="Buscar por FUA, episodio, paciente..." onkeydown="if (event.key === 'Enter' ) performSearch()"><button class="action-button" onclick="handleVoiceSearch()"><img src="https://www.pngmart.com/files/17/Volume-Button-Transparent-PNG.png" alt="Audio"></button><button class="action-button" onclick="performSearch(  )"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar"></button></div><div class="search-results-list" id="search-results-list"><p style="text-align: center; color: #777;">Ingrese un término de búsqueda para comenzar.</p></div></div>
-
-            <div id="observados-view" class="app-view">
-    <h2>Pacientes Observados</h2>
-    <div id="observados-list-container" class="search-results-list" style="padding-top: 15px;">
-        <p style="text-align: center; color: #777;">Cargando observados...</p>
-    </div>
-</div>
-
+            
+            <!-- VISTAS INTERNAS -->
+            <div id="buscar-view" class="app-view"><h2>Búsqueda de FUAs</h2><div class="search-bar-wrapper"><input type="text" id="search-input" placeholder="Buscar por FUA, episodio, paciente..." onkeydown="if (event.key === 'Enter' ) performSearch()"><button class="action-button" onclick="handleVoiceSearch()"><img src="https://www.pngmart.com/files/17/Volume-Button-Transparent-PNG.png" alt="Audio"></button><button class="action-button" onclick="performSearch( )"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar"></button></div><div class="search-results-list" id="search-results-list"><p style="text-align: center; color: #777;">Ingrese un término de búsqueda para comenzar.</p></div></div>
+            <div id="observados-view" class="app-view"><h2>Pacientes Observados</h2><div id="observados-list-container" class="search-results-list" style="padding-top: 15px;"><p style="text-align: center; color: #777;">Cargando observados...</p></div></div>
             <div id="info-view" class="app-view"><h2>Información</h2></div>
-           <div id="admin-view" class="app-view">
-    <h2>Panel de Administración</h2>
-    <div class="admin-tabs">
-        <button class="tab-button active" onclick="switchAdminTab('personal', this)">Personal</button>
-        <button class="tab-button" onclick="switchAdminTab('observados', this)">Observados</button>
-    </div>
-    <div id="tab-personal" class="tab-content active">
-        <h3>Validación de Personal</h3>
-        <ul id="user-list-container" style="list-style: none; padding: 0;"></ul>
-    </div>
-    <div id="tab-observados" class="tab-content">
-        <h3>Ingreso de FUA Observado</h3>
-        <div class="fua-entry-form">
-            <div id="fua-entries-container">
-                <!-- Fila de ejemplo con el nuevo campo de observación -->
-                <div class="fua-entry-row">
-                    <input type="text" class="fua-episodio-input" placeholder="Nº FUA o Episodio">
-                    <input type="date" class="fua-fecha-input">
-                    <input type="text" class="fua-observacion-input" placeholder="Observación (opcional)">
-                    <button class="delete-fua-btn" onclick="deleteFuaEntry(this)">X</button>
+            <div id="admin-view" class="app-view"><h2>Panel de Administración</h2><div class="admin-tabs"><button class="tab-button active" onclick="switchAdminTab('personal', this )">Personal</button><button class="tab-button" onclick="switchAdminTab('observados', this)">Observados</button></div><div id="tab-personal" class="tab-content active"><h3>Validación de Personal</h3><ul id="user-list-container" style="list-style: none; padding: 0;"></ul></div><div id="tab-observados" class="tab-content"><h3>Ingreso de FUA Observado</h3><div class="fua-entry-form"><div id="fua-entries-container"><div class="fua-entry-row"><input type="text" class="fua-episodio-input" placeholder="Nº FUA o Episodio"><input type="date" class="fua-fecha-input"><input type="text" class="fua-observacion-input" placeholder="Observación (opcional)"><button class="delete-fua-btn" onclick="deleteFuaEntry(this)">X</button></div></div><div class="fua-actions"><button class="remove-fua-btn" onclick="removeLastFuaEntry()">-</button><button class="add-fua-btn" onclick="addFuaEntry()">+</button></div><button class="save-all-btn" onclick="saveAllFuas()">Guardar Todo</button></div></div></div>
+            
+            <!-- VISTA DEL CHAT -->
+            <div id="chat-view"><div class="chat-log" id="chat-log"></div><div class="input-bar"><button class="action-button" onclick="handleAudio()"><img src="https://www.pngmart.com/files/17/Volume-Button-Transparent-PNG.png" alt="Audio"></button><input type="text" id="text-input" placeholder="Haz una consulta..." onkeydown="if(event.key==='Enter'  ) handleSend()" onfocus="enterChatMode()"><button class="action-button" onclick="handleSend()"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Enviar"></button></div></div>
+        </div> <!-- FIN DE #main-app -->
+
+        <!-- VENTANA MODAL DE DETALLES (LUGAR CORRECTO ) -->
+        <div id="details-modal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Detalles de la Atención</h2>
+                    <button id="modal-close-btn" class="modal-close-btn">&times;</button>
+                </div>
+                <div id="modal-body" class="modal-body">
+                    <!-- El contenido se insertará aquí -->
                 </div>
             </div>
-            <div class="fua-actions">
-                <button class="remove-fua-btn" onclick="removeLastFuaEntry()">-</button>
-                <button class="add-fua-btn" onclick="addFuaEntry()">+</button>
-            </div>
-            <button class="save-all-btn" onclick="saveAllFuas()">Guardar Todo</button>
         </div>
-    </div>
-</div>
 
-            <div id="chat-view"><div class="chat-log" id="chat-log"></div><div class="input-bar"><button class="action-button" onclick="handleAudio()"><img src="https://www.pngmart.com/files/17/Volume-Button-Transparent-PNG.png" alt="Audio"></button><input type="text" id="text-input" placeholder="Haz una consulta..." onkeydown="if(event.key==='Enter' ) handleSend()" onfocus="enterChatMode()"><button class="action-button" onclick="handleSend()"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Enviar"></button></div></div>
-        </div>
-    </div>
+    </div> <!-- FIN DE .mobile-container -->
 
 <script>
     // --- JAVASCRIPT ---
@@ -262,7 +243,7 @@ input:checked + .slider:before { transform: translateX(22px); }
     const SUPABASE_URL = 'https://rpncjtakgljxhbvelgdh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwbmNqdGFrZ2xqeGhidmVsZ2RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODUzMzAsImV4cCI6MjA3NjY2MTMzMH0.mEcAP4NSJQGYYgx3nmuSkYWRX2UkmJiiKZq9sv7UUq4';
     const OPENROUTER_API_KEY = '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';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY );
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY  );
 
     // --- Variables y constantes del DOM ---
     let currentUser = null;
@@ -274,153 +255,166 @@ input:checked + .slider:before { transform: translateX(22px); }
     const appViews = document.querySelectorAll('.app-view');
     const chatView = document.getElementById('chat-view');
     const backButton = document.getElementById('back-button');
-    const menuToggle = document.getElementById('menu-toggle');
     const greetingContainer = document.getElementById('greeting-container');
-    const detailsModal = document.getElementById('details-modal');
-const modalCloseBtn = document.getElementById('modal-close-btn');
 
+    // --- FUNCIONES DE LOGIN Y REGISTRO ---
+    async function handleLogin() {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        if (!username || !password) return alert("Por favor, ingrese usuario y contraseña.");
 
-    // --- FUNCIONES CONECTADAS A SUPABASE ---
-
- async function handleLogin() {
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
-    if (!username || !password) return alert("Por favor, ingrese usuario y contraseña.");
-
-    // Acceso maestro (sigue funcionando igual)
-    if (username === 'manuel' && password === 'mutter') {
-        console.log("Acceso de administrador maestro concedido.");
-        currentUser = { nombre_completo: 'Manuel (Admin)', rol: 'admin' };
-        loadPendingUsers();
-        return initApp();
-    }
-    
-    // ¡NUEVA LÓGICA DE LOGIN DIRECTO!
-    const { data: user, error } = await supabaseClient
-        .from('usuarios')
-        .select('*') // Obtenemos todos los datos del usuario
-        .eq('nombre_completo', username)
-        .eq('contrasena', password) // Buscamos donde el usuario Y la contraseña coincidan
-        .single(); // Esperamos encontrar solo un resultado
-
-    if (error || !user) {
-        return alert("Usuario o contraseña incorrectos.");
-    }
-
-    // Si encontramos al usuario, comprobamos si está validado
-    if (user.esta_validado) {
-        currentUser = user; // El objeto 'user' ya tiene toda la info que necesitamos
-        if (currentUser.rol === 'admin') {
-            loadPendingUsers(); // Si es admin, cargamos la lista para el panel
+        if (username === 'manuel' && password === 'mutter') {
+            currentUser = { nombre_completo: 'Manuel (Admin)', rol: 'admin' };
+            if (currentUser.rol === 'admin') await loadPendingUsers();
+            return initApp();
         }
-        initApp();
-    } else {
-        alert("Tu cuenta aún no ha sido validada por un administrador.");
-    }
-}
-
-
-async function handleRegister() {
-    const email = document.getElementById('reg-email').value.trim();
-    const password = document.getElementById('reg-password').value.trim();
-    const fullName = document.getElementById('reg-username').value.trim();
-    const whatsapp = document.getElementById('reg-whatsapp').value.trim();
-
-    if (!password || !fullName) {
-    return alert("Por favor, complete los campos de Nombre y Contraseña.");
-}
-
-
-    // ¡NUEVA LÓGICA! Insertamos directamente en la tabla 'usuarios'.
-    const { error } = await supabaseClient
-        .from('usuarios')
-        .insert({
-            nombre_completo: fullName,
-            contrasena: password, // Guardamos la contraseña como texto simple
-            email: email,
-            telefono_whatsapp: whatsapp,
-            rol: 'user',
-            esta_validado: false // Los nuevos usuarios siempre empiezan como no validados
-        });
-
-    if (error) {
-        return alert(`Error en el registro: ${error.message}`);
-    }
-
-    alert("¡Registro exitoso! Por favor, espera a que un administrador valide tu cuenta.");
-    showLoginView();
-}
-
-
-
-// --- NUEVAS FUNCIONES PARA VALIDACIÓN DE USUARIOS ---
-
-/**
- * Carga los usuarios desde Supabase y los muestra en la lista del panel de admin.
- */
-async function loadPendingUsers() {
-    const userListContainer = document.getElementById('user-list-container');
-    userListContainer.innerHTML = '<li>Cargando usuarios...</li>'; // Mensaje de carga
-
-    try {
-        const { data: users, error } = await supabaseClient
-            .from('usuarios')
-            .select('id, nombre_completo, email, esta_validado')
-          .order('nombre_completo', { ascending: true });
-
-        if (error) throw error;
-
-        if (users && users.length > 0) {
-            userListContainer.innerHTML = users.map(user => `
-                <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
-                    <div>
-                        <strong style="display: block; color: #333;">${user.nombre_completo}</strong>
-                        <span style="font-size: 0.85em; color: #777;">${user.email}</span>
-                    </div>
-                    <label class="switch">
-                        <input type="checkbox" ${user.esta_validado ? 'checked' : ''} onchange="toggleUserValidation('${user.id}', this.checked)">
-                        <span class="slider round"></span>
-                    </label>
-                </li>
-            `).join('');
-        } else {
-            userListContainer.innerHTML = '<li>No hay usuarios registrados.</li>';
-        }
-    } catch (error) {
-        console.error('Error al cargar usuarios:', error);
-        userListContainer.innerHTML = `<li style="color: var(--danger-color);">Error al cargar la lista: ${error.message}</li>`;
-    }
-}
-
-/**
- * Actualiza el estado de validación de un usuario en Supabase.
- * @param {string} userId - El ID del usuario a actualizar.
- * @param {boolean} isValidated - El nuevo estado de validación (true o false).
- */
-async function toggleUserValidation(userId, isValidated) {
-    try {
-        const { error } = await supabaseClient
-            .from('usuarios')
-            .update({ esta_validado: isValidated })
-            .eq('id', userId);
-
-        if (error) {
-            throw error;
-        }
-        console.log(`Usuario ${userId} actualizado a: ${isValidated ? 'VÁLIDO' : 'NO VÁLIDO'}`);
-        // Opcional: mostrar una pequeña notificación de éxito
         
-    } catch (error) {
-        console.error('Error al actualizar el usuario:', error);
-        alert(`No se pudo actualizar el estado del usuario: ${error.message}`);
-        // Si hay un error, revertimos el switch a su estado anterior
-        loadPendingUsers();
+        const { data: user, error } = await supabaseClient.from('usuarios').select('*').eq('nombre_completo', username).eq('contrasena', password).single();
+        if (error || !user) return alert("Usuario o contraseña incorrectos.");
+
+        if (user.esta_validado) {
+            currentUser = user;
+            if (currentUser.rol === 'admin') await loadPendingUsers();
+            initApp();
+        } else {
+            alert("Tu cuenta aún no ha sido validada por un administrador.");
+        }
     }
-}
 
+    async function handleRegister() {
+        const fullName = document.getElementById('reg-username').value.trim();
+        const password = document.getElementById('reg-password').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const whatsapp = document.getElementById('reg-whatsapp').value.trim();
 
-    
-    // --- FUNCIONES DE UI (SIN CAMBIOS) ---
+        if (!password || !fullName) return alert("Por favor, complete los campos de Nombre y Contraseña.");
+
+        const { error } = await supabaseClient.from('usuarios').insert({ nombre_completo: fullName, contrasena: password, email: email, telefono_whatsapp: whatsapp, rol: 'user', esta_validado: false });
+        if (error) return alert(`Error en el registro: ${error.message}`);
+
+        alert("¡Registro exitoso! Por favor, espera a que un administrador valide tu cuenta.");
+        showLoginView();
+    }
+
+    // --- FUNCIONES DEL PANEL DE ADMINISTRACIÓN ---
+    async function loadPendingUsers() {
+        const userListContainer = document.getElementById('user-list-container');
+        userListContainer.innerHTML = '<li>Cargando usuarios...</li>';
+        try {
+            const { data: users, error } = await supabaseClient.from('usuarios').select('id, nombre_completo, email, esta_validado').order('nombre_completo', { ascending: true });
+            if (error) throw error;
+            userListContainer.innerHTML = users && users.length > 0 ? users.map(user => `
+                <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
+                    <div><strong style="display: block; color: #333;">${user.nombre_completo}</strong><span style="font-size: 0.85em; color: #777;">${user.email || 'Sin email'}</span></div>
+                    <label class="switch"><input type="checkbox" ${user.esta_validado ? 'checked' : ''} onchange="toggleUserValidation('${user.id}', this.checked)"><span class="slider round"></span></label>
+                </li>`).join('') : '<li>No hay usuarios registrados.</li>';
+        } catch (error) { console.error('Error al cargar usuarios:', error); userListContainer.innerHTML = `<li style="color: var(--danger-color);">Error al cargar la lista.</li>`; }
+    }
+
+    async function toggleUserValidation(userId, isValidated) {
+        try {
+            const { error } = await supabaseClient.from('usuarios').update({ esta_validado: isValidated }).eq('id', userId);
+            if (error) throw error;
+            console.log(`Usuario ${userId} actualizado a: ${isValidated ? 'VÁLIDO' : 'NO VÁLIDO'}`);
+        } catch (error) { console.error('Error al actualizar el usuario:', error); alert(`No se pudo actualizar el estado del usuario.`); loadPendingUsers(); }
+    }
+
+    // --- FUNCIONES DE LA VISTA DE OBSERVADOS ---
+    async function loadObservados() {
+        const container = document.getElementById('observados-list-container');
+        container.innerHTML = '<p style="text-align: center; color: #777;">Cargando observados...</p>';
+        try {
+            const { data, error } = await supabaseClient.from('observaciones').select('*').order('fecha_observacion', { ascending: false });
+            if (error) throw error;
+            container.innerHTML = data && data.length > 0 ? data.map(item => `
+                <div style="padding: 10px; border-bottom: 1px solid #eee;">
+                    <p style="margin: 0; font-weight: bold; color: #333;">FUA/Episodio: ${item.nro_fua_episodio || 'N/A'}</p>
+                    <p style="margin: 2px 0; font-size: 0.9em; color: #555;">Fecha: ${item.fecha_observacion || 'N/A'}</p>
+                    <p style="margin: 2px 0; font-size: 0.9em; color: #777;">Observación: ${item.observacion || 'Sin detalles'}</p>
+                </div>`).join('') : '<p style="text-align: center; color: #777;">No hay pacientes en observación registrados.</p>';
+        } catch (error) { console.error('Error al cargar observados:', error); container.innerHTML = `<p style="text-align: center; color: var(--danger-color);">Error al cargar la lista.</p>`; }
+    }
+
+    async function saveAllFuas() {
+        const entryRows = document.querySelectorAll('#fua-entries-container .fua-entry-row');
+        if (entryRows.length === 0) return alert("No hay registros para guardar.");
+        const registrosParaGuardar = [];
+        let hayErrores = false;
+        entryRows.forEach(row => {
+            const nroFuaEpisodio = row.querySelector('.fua-episodio-input').value.trim();
+            const fechaObservacion = row.querySelector('.fua-fecha-input').value;
+            const observacion = row.querySelector('.fua-observacion-input').value.trim();
+            if (!nroFuaEpisodio || !fechaObservacion) { hayErrores = true; return; }
+            registrosParaGuardar.push({ nro_fua_episodio: nroFuaEpisodio, fecha_observacion: fechaObservacion, observacion: observacion });
+        });
+        if (hayErrores) return alert("Algunas filas están incompletas. Por favor, complete al menos el Nº FUA/Episodio y la Fecha.");
+        if (registrosParaGuardar.length === 0 || !confirm(`¿Está seguro de que desea guardar ${registrosParaGuardar.length} registro(s)?`)) return;
+        try {
+            const { error } = await supabaseClient.from('observaciones').insert(registrosParaGuardar);
+            if (error) throw error;
+            alert(`¡Éxito! Se han guardado ${registrosParaGuardar.length} registro(s) correctamente.`);
+            document.getElementById('fua-entries-container').innerHTML = ''; addFuaEntry();
+        } catch (error) { console.error("Error al guardar en 'observaciones':", error); alert(`Ocurrió un error: ${error.message}`); }
+    }
+
+    // --- FUNCIONES DE BÚSQUEDA ---
+    async function performSearch() {
+        const searchTerm = document.getElementById('search-input').value.trim();
+        const resultsList = document.getElementById('search-results-list');
+        if (!searchTerm) { resultsList.innerHTML = '<p>Ingrese un término para buscar.</p>'; return; }
+        resultsList.innerHTML = '<p>Buscando...</p>';
+        try {
+            const { data, error } = await supabaseClient.rpc('buscar_atenciones', { termino_busqueda: searchTerm });
+            if (error) throw error;
+            resultsList.innerHTML = data && data.length > 0 ? data.map(item => {
+                const costoTotal = parseFloat(item.CostoTotal) || 0;
+                return `<div style="padding: 10px; border-bottom: 1px solid #eee; cursor: pointer;" onclick='showFuaDetails(${JSON.stringify(item).replace(/'/g, "&apos;")})'>
+                    <p style="margin: 0; font-weight: bold;">Paciente: ${item.PACIENTE || 'N/A'}</p>
+                    <p style="margin: 2px 0; font-size: 0.9em;">FUA: ${item.NFUA || 'N/A'} | Episodio: ${item.Episodio || 'N/A'}</p>
+                    <p style="margin: 2px 0; font-size: 0.9em;">Fecha Atención: ${item.FecAte || 'N/A'}</p>
+                    <p style="margin: 2px 0; font-weight: 500; color: ${costoTotal > 0 ? 'var(--danger-color)' : 'var(--success-color)'};">${costoTotal > 0 ? 'Con Consumo' : 'Sin Consumo'}</p>
+                </div>`;
+            }).join('') : '<p>No se encontraron resultados.</p>';
+        } catch (error) { console.error('Error en búsqueda RPC:', error); resultsList.innerHTML = `<p style="color: var(--danger-color);">Error en la búsqueda.</p>`; }
+    }
+
+    function showFuaDetails(fuaData) {
+        const modal = document.getElementById('details-modal');
+        const modalBody = document.getElementById('modal-body');
+        modalBody.innerHTML = '';
+        const camposMostrados = { "PACIENTE": "Paciente", "NroDocumento": "Documento", "FecNac": "Fecha Nac.", "Episodio": "Episodio", "NFUA": "Nº FUA", "FecAte": "Fecha Atención", "ServicioAtencion": "Servicio", "CostoTotal": "Costo Total", "Observacion": "Observación" };
+        let detailsHtml = '';
+        for (const key in camposMostrados) {
+            if (fuaData.hasOwnProperty(key)) {
+                let valor = fuaData[key] || 'No especificado';
+                if (key === 'CostoTotal') valor = `S/ ${parseFloat(valor).toFixed(2)}`;
+                detailsHtml += `<p><strong>${camposMostrados[key]}:</strong> ${valor}</p>`;
+            }
+        }
+        modalBody.innerHTML = detailsHtml;
+        modal.style.display = 'flex';
+    }
+
+    function closeDetailsModal() {
+        document.getElementById('details-modal').style.display = 'none';
+    }
+
+    function handleVoiceSearch() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) return alert("Navegador no compatible con búsqueda por voz.");
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'es-PE';
+        recognition.interimResults = false;
+        const searchInput = document.getElementById('search-input');
+        const originalPlaceholder = searchInput.placeholder;
+        recognition.onstart = () => { searchInput.placeholder = "Escuchando..."; };
+        recognition.onend = () => { searchInput.placeholder = originalPlaceholder; };
+        recognition.onresult = (event) => { searchInput.value = event.results[0][0].transcript; performSearch(); };
+        recognition.onerror = (event) => { console.error('Error de voz:', event.error); searchInput.placeholder = originalPlaceholder; alert(event.error === 'no-speech' ? "No se detectó voz." : "Permiso de micrófono denegado."); };
+        recognition.start();
+    }
+
+    // --- FUNCIONES DE UI (NAVEGACIÓN Y OTROS) ---
     function initApp() {
         loginView.classList.add('hidden');
         registerView.classList.add('hidden');
@@ -428,53 +422,29 @@ async function toggleUserValidation(userId, isValidated) {
         setTimeout(() => {
             assistantLogo.classList.remove('initial-state');
             assistantLogo.classList.add('side-state');
-            menuButtons.forEach(button => {
-                if (button.id === 'btn-admin' && currentUser.rol !== 'admin') {
-                    button.style.display = 'none';
-                } else {
-                    button.classList.add('visible');
-                }
-            });
+            menuButtons.forEach(button => { if (button.id !== 'btn-admin' || currentUser.rol === 'admin') button.classList.add('visible'); });
             greetingContainer.classList.add('visible');
         }, 1000);
         const hour = new Date().getHours();
-        let greeting = (hour < 12) ? 'Buenos días' : (hour < 18) ? 'Buenas tardes' : 'Buenas noches';
-        greetingContainer.innerHTML = `<div class="chat-message ia-message">${greeting}, ${currentUser.nombre_completo}.</div>`;
+        greetingContainer.innerHTML = `<div class="chat-message ia-message">${hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches'}, ${currentUser.nombre_completo}.</div>`;
     }
 
-    
     async function handleMenuClick(section) {
-    // Si se hace clic en 'admin', primero pedimos la contraseña
-    if (section === 'admin') {
-        const password = prompt("Ingrese la contraseña de administrador:");
-        if (password !== 'mutter') {
-            alert("Contraseña incorrecta. Acceso denegado.");
-            return; // Detenemos la ejecución si la contraseña es incorrecta
+        if (section === 'admin') {
+            const password = prompt("Ingrese la contraseña de administrador:");
+            if (password !== 'mutter') return alert("Contraseña incorrecta.");
+            await loadPendingUsers(); 
         }
-        // Si la contraseña es correcta, cargamos los usuarios pendientes
-        await loadPendingUsers(); 
+        if (section === 'observados') await loadObservados();
+        if (section === 'contacto') { window.open('https://wa.me/51967188120', '_blank'  ); return; }
+        menuButtons.forEach(btn => btn.classList.add('hidden-by-view'));
+        assistantLogo.classList.add('hidden-by-view');
+        greetingContainer.style.opacity = '0';
+        appViews.forEach(view => view.classList.toggle('visible', view.id === `${section}-view`));
+        backButton.classList.add('visible');
+        chatView.classList.add('hidden-by-view');
     }
 
-if (section === 'observados') {
-        loadObservados(); // Llama a la función para cargar la lista
-    }
-        
-    if (section === 'contacto') { 
-        window.open('https://wa.me/51967188120', '_blank' ); 
-        return; 
-    }
-
-    // El resto de la lógica para mostrar la vista correspondiente
-    menuButtons.forEach(btn => btn.classList.add('hidden-by-view'));
-    assistantLogo.classList.add('hidden-by-view');
-    greetingContainer.style.opacity = '0';
-    appViews.forEach(view => view.classList.toggle('visible', view.id === `${section}-view`));
-    backButton.classList.add('visible');
-    chatView.classList.add('hidden-by-view');
-}
-
-
-    
     function returnToMenu() {
         appViews.forEach(view => view.classList.remove('visible'));
         backButton.classList.remove('visible');
@@ -483,81 +453,7 @@ if (section === 'observados') {
         greetingContainer.style.opacity = '1';
         chatView.classList.remove('hidden-by-view');
     }
-    function enterChatMode() {
-        if (assistantLogo.classList.contains('chat-mode-state')) return;
-        returnToMenu();
-        setTimeout(() => {
-            assistantLogo.classList.remove('side-state');
-            assistantLogo.classList.add('chat-mode-state');
-            menuButtons.forEach(btn => btn.classList.add('hidden-by-chat'));
-            greetingContainer.style.opacity = '0';
-            menuToggle.classList.add('visible');
-        }, 10);
-    }
-    function exitChatMode() {
-        assistantLogo.classList.remove('chat-mode-state');
-        assistantLogo.classList.add('side-state');
-        menuButtons.forEach(btn => btn.classList.remove('hidden-by-chat'));
-        greetingContainer.style.opacity = '1';
-        menuToggle.classList.remove('visible');
-    }
-   // function togglePasswordVisibility(inputId, button) {
-     //   const input = document.getElementById(inputId);
-       // const isPassword = input.type === 'password';
-       // input.type = isPassword ? 'text' : 'password';
-      //  button.textContent = isPassword ? '🙈' : '👁️';
-    //}
     
-    async function handleSend() {
-        const textInput = document.getElementById('text-input');
-        const message = textInput.value.trim();
-        if (!message) return;
-        addMessageToChat(message, 'user-message');
-        textInput.value = '';
-        const command = message.toLowerCase();
-        if (command.includes('busqueda') || command.includes('fua')) { return handleMenuClick('buscar'); }
-        if (command.includes('observados')) { return handleMenuClick('observados'); }
-        if (command.includes('administrar') || command.includes('ingresar')) { return handleMenuClick('admin'); }
-        if (command.includes('tutorial') || command.includes('informacion')) { return handleMenuClick('info'); }
-        if (command.includes('contacto')) { return handleMenuClick('contacto'); }
-        addMessageToChat("Pensando...", 'ia-message', 'temp-ia-message');
-        try {
-            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                method: "POST",
-                headers: { "Authorization": `Bearer ${OPENROUTER_API_KEY}`, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    "model": "kimi/kimi-moonshot-v1-8k",
-                    "messages": [
-                        { "role": "system", "content": "Eres un chat útil de información de FUAs de emergencia registradas." },
-                        { "role": "user", "content": message }
-                    ]
-                } )
-            });
-            if (!response.ok) throw new Error(`Error de API: ${response.statusText}`);
-            const data = await response.json();
-            updateLastIAMessage(data.choices[0].message.content);
-        } catch (error) { console.error("Error:", error); updateLastIAMessage("Lo siento, no pude procesar tu solicitud."); }
-
-        
-    }
-    function addMessageToChat(text, type, id = null) {
-        const chatLog = document.getElementById('chat-log');
-        const div = document.createElement('div');
-        div.className = `chat-message ${type}`;
-        div.textContent = text;
-        if (id) div.id = id;
-        chatLog.appendChild(div);
-        chatLog.scrollTop = chatLog.scrollHeight;
-    }
-
-
-    
-    function updateLastIAMessage(text) {
-        const tempMessage = document.getElementById('temp-ia-message');
-        if (tempMessage) { tempMessage.textContent = text; tempMessage.removeAttribute('id'); }
-    }
-    
-    function handleAudio() { alert('Función de audio activada...'); }
     function showRegisterView() { loginView.classList.add('hidden'); registerView.classList.remove('hidden'); }
     function showLoginView() { registerView.classList.add('hidden'); loginView.classList.remove('hidden'); }
     function switchAdminTab(tabName, clickedButton) {
@@ -565,317 +461,25 @@ if (section === 'observados') {
         clickedButton.classList.add('active');
         document.querySelectorAll('#admin-view .tab-content').forEach(content => content.classList.toggle('active', content.id === `tab-${tabName}`));
     }
-    function addFuaEntry() { const container = document.getElementById('fua-entries-container'); const newEntryRow = document.createElement('div'); newEntryRow.className = 'fua-entry-row'; newEntryRow.innerHTML = `<input type="text" placeholder="Nº FUA o Episodio"><input type="date"><button class="delete-fua-btn" onclick="deleteFuaEntry(this)">X</button>`; container.appendChild(newEntryRow); }
+    function addFuaEntry() { const container = document.getElementById('fua-entries-container'); const newEntryRow = document.createElement('div'); newEntryRow.className = 'fua-entry-row'; newEntryRow.innerHTML = `<input type="text" class="fua-episodio-input" placeholder="Nº FUA o Episodio"><input type="date" class="fua-fecha-input"><input type="text" class="fua-observacion-input" placeholder="Observación (opcional)"><button class="delete-fua-btn" onclick="deleteFuaEntry(this)">X</button>`; container.appendChild(newEntryRow); }
     function deleteFuaEntry(button) { button.parentElement.remove(); }
-    function removeLastFuaEntry() { const container = document.getElementById('fua-entries-container'); const rows = container.querySelectorAll('.fua-entry-row'); if (rows.length > 1) { rows[rows.length - 1].remove(); } }
-   async function saveAllFuas() {
-    const entryRows = document.querySelectorAll('#fua-entries-container .fua-entry-row');
-    if (entryRows.length === 0) {
-        return alert("No hay registros para guardar.");
-    }
+    function removeLastFuaEntry() { const container = document.getElementById('fua-entries-container'); const rows = container.querySelectorAll('.fua-entry-row'); if (rows.length > 1) rows[rows.length - 1].remove(); }
 
-    const registrosParaGuardar = [];
-    let hayErrores = false;
+    // --- INICIALIZACIÓN DE EVENTOS ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const detailsModal = document.getElementById('details-modal');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
 
-    entryRows.forEach(row => {
-        const nroFuaEpisodio = row.querySelector('.fua-episodio-input').value.trim();
-        const fechaObservacion = row.querySelector('.fua-fecha-input').value;
-        const observacion = row.querySelector('.fua-observacion-input').value.trim();
+        if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeDetailsModal);
+        window.addEventListener('click', (event) => { if (event.target == detailsModal) closeDetailsModal(); });
 
-        if (!nroFuaEpisodio || !fechaObservacion) {
-            hayErrores = true;
-            return; 
-        }
-
-        registrosParaGuardar.push({
-            nro_fua_episodio: nroFuaEpisodio,
-            fecha_observacion: fechaObservacion,
-            observacion: observacion
-        });
+        const passwordInput = document.getElementById('password');
+        if (passwordInput) passwordInput.addEventListener('keyup', (event) => { if (event.key === 'Enter') handleLogin(); });
     });
-
-    if (hayErrores) {
-        return alert("Algunas filas están incompletas. Por favor, complete al menos el Nº FUA/Episodio y la Fecha.");
-    }
-
-    if (registrosParaGuardar.length === 0) {
-        return alert("No hay registros válidos para guardar.");
-    }
-
-    const confirmacion = confirm(`¿Está seguro de que desea guardar ${registrosParaGuardar.length} registro(s) en la base de datos?`);
-    if (!confirmacion) {
-        return;
-    }
-
-    try {
-        // ¡AQUÍ OCURRE LA MAGIA!
-        const { error } = await supabaseClient
-            .from('observaciones')
-            .insert(registrosParaGuardar);
-
-        if (error) {
-            throw error;
-        }
-
-        alert(`¡Éxito! Se han guardado ${registrosParaGuardar.length} registro(s) correctamente.`);
-        
-        const container = document.getElementById('fua-entries-container');
-        container.innerHTML = ''; 
-        addFuaEntry(); 
-
-    } catch (error) {
-        console.error("Error al guardar en 'observaciones':", error);
-        alert(`Ocurrió un error al guardar los datos: ${error.message}`);
-    }
-}
-
-
-
-    
-    async function performSearch() {
-    const searchTerm = document.getElementById('search-input').value.trim();
-    const resultsList = document.getElementById('search-results-list');
-
-    if (!searchTerm) {
-        resultsList.innerHTML = '<p style="text-align: center; color: #777;">Por favor, ingrese un término para buscar.</p>';
-        return;
-    }
-
-    resultsList.innerHTML = '<p style="text-align: center; color: #777;">Buscando...</p>';
-
-    try {
-        // --- CAMBIO CLAVE: AHORA LLAMAMOS A LA FUNCIÓN RPC ---
-        // Usamos .rpc() para llamar a la función 'buscar_atenciones' que creamos en la base de datos.
-        const { data, error } = await supabaseClient.rpc('buscar_atenciones', {
-            termino_busqueda: searchTerm
-        });
-
-        if (error) throw error;
-
-        if (data && data.length > 0) {
-            // El resto del código para mostrar los resultados es el mismo.
-            resultsList.innerHTML = data.map(item => {
-                const costoTotal = parseFloat(item.CostoTotal) || 0;
-                const estadoConsumo = costoTotal > 0 ? 'Con Consumo' : 'Sin Consumo';
-                
-                return `
-                    <div style="padding: 10px; border-bottom: 1px solid #eee; cursor: pointer;" onclick="showFuaDetails(${JSON.stringify(item).replace(/"/g, '&quot;')})">
-                        <p style="margin: 0; font-weight: bold; color: #333;">Paciente: ${item.PACIENTE || 'N/A'}</p>
-                        <p style="margin: 2px 0; font-size: 0.9em; color: #555;">FUA: ${item.NFUA || 'N/A'} | Episodio: ${item.Episodio || 'N/A'}</p>
-                        <p style="margin: 2px 0; font-size: 0.9em; color: #555;">Fecha Atención: ${item.FecAte || 'N/A'}</p>
-                        <p style="margin: 2px 0; font-size: 0.9em; font-weight: 500; color: ${costoTotal > 0 ? 'var(--danger-color)' : 'var(--success-color)'};">${estadoConsumo}</p>
-                    </div>
-                `;
-            }).join('');
-        } else {
-            resultsList.innerHTML = '<p style="text-align: center; color: #777;">No se encontraron resultados para su búsqueda.</p>';
-        }
-
-    } catch (error) {
-        console.error('Error al llamar a la función de búsqueda RPC:', error);
-        resultsList.innerHTML = `<p style="text-align: center; color: var(--danger-color);">Error al realizar la búsqueda: ${error.message}</p>`;
-    }
-}
-
-
-/**
- * NUEVA FUNCIÓN: Muestra los detalles completos de un FUA en una alerta.
- * @param {object} fuaData - El objeto completo con los datos del FUA.
- */
-/**
- * Carga y muestra la lista de pacientes desde la tabla 'observaciones'.
- */
-async function loadObservados() {
-    const container = document.getElementById('observados-list-container');
-    container.innerHTML = '<p style="text-align: center; color: #777;">Cargando observados...</p>';
-
-    try {
-        // ¡IMPORTANTE! Primero, debemos dar permiso de lectura a la tabla 'observaciones'.
-        // Esto se hace creando una política RLS en Supabase (ver instrucciones abajo).
-
-        const { data, error } = await supabaseClient
-            .from('observaciones')
-            .select('*') // Seleccionamos todas las columnas
-            .order('fecha_observacion', { ascending: false }); // Ordenamos por fecha más reciente
-
-        if (error) {
-            throw error;
-        }
-
-        if (data && data.length > 0) {
-            container.innerHTML = data.map(item => `
-                <div style="padding: 10px; border-bottom: 1px solid #eee;">
-                    <p style="margin: 0; font-weight: bold; color: #333;">FUA/Episodio: ${item.nro_fua_episodio || 'N/A'}</p>
-                    <p style="margin: 2px 0; font-size: 0.9em; color: #555;">Fecha: ${item.fecha_observacion || 'N/A'}</p>
-                    <p style="margin: 2px 0; font-size: 0.9em; color: #777;">Observación: ${item.observacion || 'Sin detalles'}</p>
-                </div>
-            `).join('');
-        } else {
-            container.innerHTML = '<p style="text-align: center; color: #777;">No hay pacientes en observación registrados.</p>';
-        }
-
-    } catch (error) {
-        console.error('Error al cargar observados:', error);
-        container.innerHTML = `<p style="text-align: center; color: var(--danger-color);">Error al cargar la lista: ${error.message}</p>`;
-    }
-}
-
-
-    
-/**
- * Muestra los detalles completos de un FUA en una ventana modal.
- * @param {object} fuaData - El objeto completo con los datos del FUA.
- */
-function showFuaDetails(fuaData) {
-    const modal = document.getElementById('details-modal');
-    const modalBody = document.getElementById('modal-body');
-    
-    // Limpiamos el contenido anterior
-    modalBody.innerHTML = '';
-
-    // Creamos el contenido HTML para los detalles
-    let detailsHtml = '';
-    const camposMostrados = {
-        "PACIENTE": "Paciente",
-        "NroDocumento": "Documento",
-        "FecNac": "Fecha Nac.",
-        "Episodio": "Episodio",
-        "NFUA": "Nº FUA",
-        "FecAte": "Fecha Atención",
-        "ServicioAtencion": "Servicio",
-        "CostoTotal": "Costo Total",
-        "Observacion": "Observación"
-    };
-
-    for (const key in camposMostrados) {
-        if (fuaData.hasOwnProperty(key)) {
-            let valor = fuaData[key] || 'No especificado';
-            
-            // Formato especial para el costo
-            if (key === 'CostoTotal') {
-                valor = `S/ ${parseFloat(valor).toFixed(2)}`;
-            }
-
-            detailsHtml += `<p><strong>${camposMostrados[key]}:</strong> ${valor}</p>`;
-        }
-    }
-
-    modalBody.innerHTML = detailsHtml;
-    modal.style.display = 'flex'; // Mostramos la ventana
-}
-
-/**
- * Cierra la ventana modal de detalles.
- */
-function closeDetailsModal() {
-    const modal = document.getElementById('details-modal');
-    modal.style.display = 'none';
-}
-
-
-
-   /**
- * Inicia el reconocimiento de voz para realizar una búsqueda.
- */
-function handleVoiceSearch() {
-    // Comprobamos si el navegador soporta la API de reconocimiento de voz
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-        alert("Lo siento, tu navegador no soporta la búsqueda por voz.");
-        return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'es-PE'; // Español de Perú para mayor precisión
-    recognition.interimResults = false; // No queremos resultados parciales
-    recognition.maxAlternatives = 1; // Solo queremos la transcripción más probable
-
-    const searchInput = document.getElementById('search-input');
-    const originalPlaceholder = searchInput.placeholder;
-    
-    // Cuando el reconocimiento empieza
-    recognition.onstart = () => {
-        searchInput.placeholder = "Escuchando...";
-        console.log("Reconocimiento de voz iniciado. ¡Habla ahora!");
-    };
-
-    // Cuando el reconocimiento termina
-    recognition.onend = () => {
-        searchInput.placeholder = originalPlaceholder;
-        console.log("Reconocimiento de voz finalizado.");
-    };
-
-    // Cuando se obtiene un resultado
-    recognition.onresult = (event) => {
-        const speechResult = event.results[0][0].transcript;
-        console.log('Resultado de voz:', speechResult);
-        
-        // Ponemos el texto reconocido en la caja de búsqueda
-        searchInput.value = speechResult;
-        
-        // Ejecutamos la búsqueda automáticamente
-        performSearch();
-    };
-
-    // Si hay un error
-    recognition.onerror = (event) => {
-        console.error('Error en el reconocimiento de voz:', event.error);
-        searchInput.placeholder = originalPlaceholder;
-        if (event.error === 'no-speech') {
-            alert("No se detectó ninguna voz. Inténtalo de nuevo.");
-        } else if (event.error === 'not-allowed') {
-            alert("Permiso para usar el micrófono denegado. Por favor, habilítalo en la configuración de tu navegador.");
-        } else {
-            alert(`Ocurrió un error en el reconocimiento de voz: ${event.error}`);
-        }
-    };
-
-    // Iniciamos el proceso
-    recognition.start();
-}
-
-
-<!-- INICIO DE LA VENTANA MODAL DE DETALLES -->
-<div id="details-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Detalles de la Atención</h2>
-            <button id="modal-close-btn" class="modal-close-btn">&times;</button>
-        </div>
-        <div id="modal-body" class="modal-body">
-            <!-- El contenido de los detalles se insertará aquí con JavaScript -->
-        </div>
-    </div>
-</div>
-<!-- FIN DE LA VENTANA MODAL DE DETALLES -->
-
-
- // --- EVENT LISTENERS (ESPERAN A QUE LA PÁGINA CARGUE) ---
-document.addEventListener('DOMContentLoaded', () => {
-    // Definimos las variables del modal DENTRO de este bloque
-    const detailsModal = document.getElementById('details-modal');
-    const modalCloseBtn = document.getElementById('modal-close-btn');
-
-    // Añadimos los listeners
-    if (modalCloseBtn) {
-        modalCloseBtn.addEventListener('click', closeDetailsModal);
-    }
-
-    // Cierra la ventana si se hace clic fuera del contenido
-    window.addEventListener('click', (event) => {
-        if (event.target == detailsModal) {
-            closeDetailsModal();
-        }
-    });
-
-    // ... aquí podríamos añadir otros listeners que necesitemos al inicio ...
-});
-
-
-    
 </script>
 </body>
 </html>
+
 
 
 
