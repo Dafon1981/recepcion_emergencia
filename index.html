@@ -37,7 +37,7 @@ input:checked + .slider:before { transform: translateX(22px); }
     .toggle-password { padding: 0 15px; background: none; border: none; cursor: pointer; opacity: 0.5; }
     #main-app.hidden { display: none; }
     .header { position: absolute; top: 0; left: 0; right: 0; height: 90px; background: var(--primary-color); z-index: 5; display: flex; justify-content: center; align-items: center; }
-    .header-title { color: var(--text-color-light); font-size: 24px; font-weight: bold; cursor: pointer; }
+    .header-title { color: var(--text-color-light); font-size: 20px; font-weight: bold; cursor: pointer; }
     #assistant-logo { position: absolute; bottom: 30px; height: 70%; z-index: 1; transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); object-fit: cover; object-position: center bottom; }
     #assistant-logo.initial-state { right: 50%; transform: translateX(50%); height: 75%; opacity: 1; }
     #assistant-logo.side-state { right: -40px; transform: translateX(0); opacity: 1; height: 85%; }
@@ -69,7 +69,7 @@ input:checked + .slider:before { transform: translateX(22px); }
 
    .action-button img { width: 30px; height: 30px; } /* Aumentamos el tamaño del icono */
 
-    .back-button { display: none; position: absolute; left: 20px; top: 50%; transform: translateY(-50%); background: none; border: none; color: white; font-size: 28px; cursor: pointer; z-index: 6; }
+    .back-button { display: none; position: absolute; left: 20px; top: 50%; transform: translateY(-50%); background: none; border: none; color: white; font-size: 32px;  padding: 0 15px;  cursor: pointer; z-index: 6; }
     .back-button.visible { display: block; }
     .menu-toggle { display: none; position: absolute; right: 20px; top: 100px; background: var(--primary-color); width: 40px; height: 40px; border-radius: 50%; border: none; color: white; font-size: 20px; cursor: pointer; z-index: 12; box-shadow: 0 4px 10px rgba(0,0,0,0.2); justify-content: center; align-items: center; }
     .menu-toggle.visible { display: flex; }
@@ -169,6 +169,22 @@ input:checked + .slider:before { transform: translateX(22px); }
     to {opacity: 1; transform: scale(1);}
 }
 
+  #bottom-ui-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding-bottom: 10px; /* Un pequeño margen inferior */
+    display: flex;
+    flex-direction: column;
+    z-index: 15;
+    transition: opacity 0.5s 1.5s;
+    opacity: 0;
+}
+#bottom-ui-container.visible {
+    opacity: 1;
+}
+  
 
 </style>
 </head>
@@ -204,7 +220,7 @@ input:checked + .slider:before { transform: translateX(22px); }
         <div id="main-app" class="hidden">
             <header id="main-header" class="header"><button id="back-button" class="back-button" onclick="returnToMenu()">←</button><div id="header-title" class="header-title" onclick="enterChatMode()">Recepción Emergencia</div></header>
             <video id="assistant-logo" class="initial-state" autoplay muted loop playsinline><source src="https://github.com/Dafon1981/recepcion/blob/main/cayetanologo.mp4?raw=true" type="video/mp4"></video>
-            <div id="greeting-container"></div>
+            
             <button id="btn-buscar" class="menu-button" onclick="handleMenuClick('buscar' )">Buscar FUA</button>
             <button id="btn-observados" class="menu-button" onclick="handleMenuClick('observados')">Ver Observados</button>
             <button id="btn-admin" class="menu-button" onclick="handleMenuClick('admin')">Administrar</button>
@@ -212,13 +228,38 @@ input:checked + .slider:before { transform: translateX(22px); }
             <button id="btn-contacto" class="menu-button" onclick="handleMenuClick('contacto')">Contacto</button>
             
             <!-- VISTAS INTERNAS -->
+           
             <div id="buscar-view" class="app-view"><h2>Búsqueda de FUAs</h2><div class="search-bar-wrapper"><input type="text" id="search-input" placeholder="Buscar por FUA, episodio, paciente..." onkeydown="if (event.key === 'Enter' ) performSearch()"><button class="action-button" onclick="handleVoiceSearch()"><img src="https://www.pngmart.com/files/17/Volume-Button-Transparent-PNG.png" alt="Audio"></button><button class="action-button" onclick="performSearch( )"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar"></button></div><div class="search-results-list" id="search-results-list"><p style="text-align: center; color: #777;">Ingrese un término de búsqueda para comenzar.</p></div></div>
-            <div id="observados-view" class="app-view"><h2>Pacientes Observados</h2><div id="observados-list-container" class="search-results-list" style="padding-top: 15px;"><p style="text-align: center; color: #777;">Cargando observados...</p></div></div>
+            
+            <div id="observados-view" class="app-view"><h2>Pacientes Observados</h2>   
+                <div class="search-bar-wrapper">
+        <input type="text" id="observados-search-input" placeholder="Buscar en observados..." onkeyup="filterObservados()">
+    </div>
+    <div id="observados-list-container" class="search-results-list" style="padding-top: 15px;">
+        <!-- ... la lista se cargará aquí ... -->
+    </div>
+            </div>
+
+            
             <div id="info-view" class="app-view"><h2>Información</h2></div>
-            <div id="admin-view" class="app-view"><h2>Panel de Administración</h2><div class="admin-tabs"><button class="tab-button active" onclick="switchAdminTab('personal', this )">Personal</button><button class="tab-button" onclick="switchAdminTab('observados', this)">Observados</button></div><div id="tab-personal" class="tab-content active"><h3>Validación de Personal</h3><ul id="user-list-container" style="list-style: none; padding: 0;"></ul></div><div id="tab-observados" class="tab-content"><h3>Ingreso de FUA Observado</h3><div class="fua-entry-form"><div id="fua-entries-container"><div class="fua-entry-row"><input type="text" class="fua-episodio-input" placeholder="Nº FUA o Episodio"><input type="date" class="fua-fecha-input"><input type="text" class="fua-observacion-input" placeholder="Observación (opcional)"><button class="delete-fua-btn" onclick="deleteFuaEntry(this)">X</button></div></div><div class="fua-actions"><button class="remove-fua-btn" onclick="removeLastFuaEntry()">-</button><button class="add-fua-btn" onclick="addFuaEntry()">+</button></div><button class="save-all-btn" onclick="saveAllFuas()">Guardar Todo</button></div></div></div>
+            <div id="admin-view" class="app-view"><h2>Panel de Administración</h2>
+                <div class="admin-tabs">
+    <button class="tab-button active" onclick="switchAdminTab('observados', this)">Observados</button>
+    <button class="tab-button" onclick="switchAdminTab('personal', this)">Personal</button>
+</div>
+                <div id="tab-personal" class="tab-content active"><h3>Validación de Personal</h3><ul id="user-list-container" style="list-style: none; padding: 0;"></ul></div><div id="tab-observados" class="tab-content"><h3>Ingreso de FUA Observado</h3><div class="fua-entry-form"><div id="fua-entries-container"><div class="fua-entry-row"><input type="text" class="fua-episodio-input" placeholder="Nº FUA o Episodio"><input type="date" class="fua-fecha-input"><input type="text" class="fua-observacion-input" placeholder="Observación (opcional)"><button class="delete-fua-btn" onclick="deleteFuaEntry(this)">X</button></div></div><div class="fua-actions"><button class="remove-fua-btn" onclick="removeLastFuaEntry()">-</button><button class="add-fua-btn" onclick="addFuaEntry()">+</button></div><button class="save-all-btn" onclick="saveAllFuas()">Guardar Todo</button></div></div></div>
             
             <!-- VISTA DEL CHAT -->
-            <div id="chat-view"><div class="chat-log" id="chat-log"></div><div class="input-bar"><button class="action-button" onclick="handleAudio()"><img src="https://www.pngmart.com/files/17/Volume-Button-Transparent-PNG.png" alt="Audio"></button><input type="text" id="text-input" placeholder="Haz una consulta..." onkeydown="if(event.key==='Enter'  ) handleSend()" onfocus="enterChatMode()"><button class="action-button" onclick="handleSend()"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Enviar"></button></div></div>
+        <div id="bottom-ui-container">
+            <div id="greeting-container"></div>
+            <div id="chat-view">
+                <div class="chat-log" id="chat-log"></div>
+                <div class="input-bar">
+                    <!-- ... botones e input del chat ... -->
+                </div>
+            </div>
+        </div>
+
         </div> <!-- FIN DE #main-app -->
 
         <!-- VENTANA MODAL DE DETALLES (LUGAR CORRECTO ) -->
@@ -257,6 +298,8 @@ input:checked + .slider:before { transform: translateX(22px); }
     const backButton = document.getElementById('back-button');
     const greetingContainer = document.getElementById('greeting-container');
 
+
+    
     // --- FUNCIONES DE LOGIN Y REGISTRO ---
     async function handleLogin() {
         const username = document.getElementById('username').value.trim();
@@ -269,7 +312,12 @@ input:checked + .slider:before { transform: translateX(22px); }
             return initApp();
         }
         
-        const { data: user, error } = await supabaseClient.from('usuarios').select('*').eq('nombre_completo', username).eq('contrasena', password).single();
+      const { data: user, error } = await supabaseClient
+    .rpc('login_usuario', {
+        p_username: username,
+        p_password: password
+    })
+    .single();
         if (error || !user) return alert("Usuario o contraseña incorrectos.");
 
         if (user.esta_validado) {
@@ -281,6 +329,8 @@ input:checked + .slider:before { transform: translateX(22px); }
         }
     }
 
+
+    
     async function handleRegister() {
         const fullName = document.getElementById('reg-username').value.trim();
         const password = document.getElementById('reg-password').value.trim();
@@ -326,8 +376,9 @@ input:checked + .slider:before { transform: translateX(22px); }
         try {
             const { data, error } = await supabaseClient.from('observaciones').select('*').order('fecha_observacion', { ascending: false });
             if (error) throw error;
-            container.innerHTML = data && data.length > 0 ? data.map(item => `
-                <div style="padding: 10px; border-bottom: 1px solid #eee;">
+            // Por esto (añadiendo la clase):
+container.innerHTML = data.map(item => `
+    <div class="observado-item" style="padding: 10px; border-bottom: 1px solid #eee;">
                     <p style="margin: 0; font-weight: bold; color: #333;">FUA/Episodio: ${item.nro_fua_episodio || 'N/A'}</p>
                     <p style="margin: 2px 0; font-size: 0.9em; color: #555;">Fecha: ${item.fecha_observacion || 'N/A'}</p>
                     <p style="margin: 2px 0; font-size: 0.9em; color: #777;">Observación: ${item.observacion || 'Sin detalles'}</p>
@@ -423,7 +474,8 @@ input:checked + .slider:before { transform: translateX(22px); }
             assistantLogo.classList.remove('initial-state');
             assistantLogo.classList.add('side-state');
             menuButtons.forEach(button => { if (button.id !== 'btn-admin' || currentUser.rol === 'admin') button.classList.add('visible'); });
-            greetingContainer.classList.add('visible');
+            document.getElementById('bottom-ui-container').classList.add('visible');
+
         }, 1000);
         const hour = new Date().getHours();
         greetingContainer.innerHTML = `<div class="chat-message ia-message">${hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches'}, ${currentUser.nombre_completo}.</div>`;
@@ -445,6 +497,26 @@ input:checked + .slider:before { transform: translateX(22px); }
         chatView.classList.add('hidden-by-view');
     }
 
+
+/**
+ * Filtra la lista de observados en tiempo real según el texto de búsqueda.
+ */
+function filterObservados() {
+    const searchTerm = document.getElementById('observados-search-input').value.toLowerCase();
+    const items = document.querySelectorAll('#observados-list-container .observado-item');
+    
+    items.forEach(item => {
+        const itemText = item.textContent.toLowerCase();
+        if (itemText.includes(searchTerm)) {
+            item.style.display = 'block'; // Muestra el item si coincide
+        } else {
+            item.style.display = 'none'; // Oculta el item si no coincide
+        }
+    });
+}
+
+
+    
     function returnToMenu() {
         appViews.forEach(view => view.classList.remove('visible'));
         backButton.classList.remove('visible');
@@ -479,6 +551,7 @@ input:checked + .slider:before { transform: translateX(22px); }
 </script>
 </body>
 </html>
+
 
 
 
