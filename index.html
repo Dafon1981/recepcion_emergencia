@@ -243,11 +243,17 @@ input:checked + .slider:before { transform: translateX(22px); }
             
             <div id="info-view" class="app-view"><h2>Información</h2></div>
             <div id="admin-view" class="app-view"><h2>Panel de Administración</h2>
+               
                 <div class="admin-tabs">
     <button class="tab-button active" onclick="switchAdminTab('observados', this)">Observados</button>
     <button class="tab-button" onclick="switchAdminTab('personal', this)">Personal</button>
 </div>
-                <div id="tab-personal" class="tab-content active"><h3>Validación de Personal</h3><ul id="user-list-container" style="list-style: none; padding: 0;"></ul></div><div id="tab-observados" class="tab-content"><h3>Ingreso de FUA Observado</h3><div class="fua-entry-form"><div id="fua-entries-container"><div class="fua-entry-row"><input type="text" class="fua-episodio-input" placeholder="Nº FUA o Episodio"><input type="date" class="fua-fecha-input"><input type="text" class="fua-observacion-input" placeholder="Observación (opcional)"><button class="delete-fua-btn" onclick="deleteFuaEntry(this)">X</button></div></div><div class="fua-actions"><button class="remove-fua-btn" onclick="removeLastFuaEntry()">-</button><button class="add-fua-btn" onclick="addFuaEntry()">+</button></div><button class="save-all-btn" onclick="saveAllFuas()">Guardar Todo</button></div></div></div>
+
+                
+<div id="tab-observados" class="tab-content active">...</div>
+<div id="tab-personal" class="tab-content">...</div>
+                <h3>Ingreso de FUA Observado</h3>
+                <div class="fua-entry-form"><div id="fua-entries-container"><div class="fua-entry-row"><input type="text" class="fua-episodio-input" placeholder="Nº FUA o Episodio"><input type="date" class="fua-fecha-input"><input type="text" class="fua-observacion-input" placeholder="Observación (opcional)"><button class="delete-fua-btn" onclick="deleteFuaEntry(this)">X</button></div></div><div class="fua-actions"><button class="remove-fua-btn" onclick="removeLastFuaEntry()">-</button><button class="add-fua-btn" onclick="addFuaEntry()">+</button></div><button class="save-all-btn" onclick="saveAllFuas()">Guardar Todo</button></div></div></div>
             
             <!-- VISTA DEL CHAT -->
         <div id="bottom-ui-container">
@@ -551,6 +557,7 @@ function filterObservados() {
 </script>
 </body>
 </html>
+
 
 
 
