@@ -7,96 +7,90 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-    /* --- ESTILOS CSS --- */
-    :root {
-        --primary-color: #0A2A43; --accent-color: #D4AF37; --text-color-light: #FFFFFF;
-        --background-color: #f0f2f5; --success-color: #28a745; --danger-color: #dc3545;
-    }
-    body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background-color ); display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
-    .mobile-container { width: 390px; height: 700px; position: relative; overflow: hidden; border-radius: 45px; box-shadow: 0 15px 40px rgba(0,0,0,0.25); background: #ffffff; border: 12px solid #fff; }
-    
-    .fullscreen-view { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--background-color); z-index: 20; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; transition: opacity 0.3s, transform 0.3s; }
-    .fullscreen-view.hidden { opacity: 0; pointer-events: none; transform: scale(0.95); }
-    .login-box { width: 100%; max-width: 320px; padding: 30px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
-    .login-box h2 { color: var(--primary-color); margin-top: 0; }
-    .login-box button { width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 18px; font-weight: 600; cursor: pointer; }
-    .btn-primary { background: var(--primary-color); color: white; }
-    .btn-secondary { background: none; color: var(--primary-color); margin-top: 10px; }
-
-    .input-wrapper { width: 100%; margin-bottom: 15px; display: flex; align-items: center; border: 1px solid #ccc; border-radius: 10px; background: white; }
-    .input-wrapper input { flex-grow: 1; padding: 15px; border: none; background: none; outline: none; font-size: 16px; }
-    .toggle-password { padding: 0 15px; background: none; border: none; cursor: pointer; opacity: 0.5; }
-    
-    #main-app.hidden { display: none; }
-    .header { position: absolute; top: 0; left: 0; right: 0; height: 90px; background: var(--primary-color); z-index: 5; display: flex; justify-content: center; align-items: center; }
-    .header-title { color: var(--text-color-light); font-size: 24px; font-weight: bold; cursor: pointer; }
-    
-    #assistant-logo { position: absolute; bottom: 30px; height: 85%; z-index: 1; transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); object-fit: cover; object-position: center bottom; }
-    #assistant-logo.initial-state { right: 50%; transform: translateX(50%); height: 90%; opacity: 1; }
-    #assistant-logo.side-state { right: -40px; transform: translateX(0); opacity: 1; height: 85%; }
-    #assistant-logo.hidden-by-view { opacity: 0; }
-    #assistant-logo.chat-mode-state { right: 50%; transform: translateX(50%); height: 95%; }
-
-    .menu-button { position: absolute; left: 25px; z-index: 10; background: var(--primary-color); border: 2px solid var(--accent-color); border-radius: 30px; padding: 15px 25px; font-size: 16px; font-weight: 600; color: var(--text-color-light); cursor: pointer; min-width: 180px; opacity: 0; transform: translateX(-30px); pointer-events: none; transition: all 0.4s; }
-    .menu-button.visible { opacity: 1; transform: translateX(0); pointer-events: auto; }
-    .menu-button.hidden-by-view, .menu-button.hidden-by-chat { opacity: 0 !important; transform: translateX(-30px) !important; pointer-events: none !important; }
-    #btn-buscar { top: 120px; transition-delay: 0.2s; } #btn-observados { top: 190px; transition-delay: 0.3s; } #btn-admin { top: 260px; transition-delay: 0.4s; } #btn-info { top: 330px; transition-delay: 0.5s; } #btn-contacto { top: 400px; transition-delay: 0.6s; }
-
-    #greeting-container { position: absolute; top: 480px; left: 25px; right: 25px; z-index: 10; opacity: 0; transition: opacity 0.5s 1.5s; }
-    #greeting-container.visible { opacity: 1; }
-
-    #chat-view { position: absolute; bottom: 10px; left: 10px; right: 10px; z-index: 15; transition: all 0.4s; opacity: 1; pointer-events: auto; }
-    #chat-view.hidden-by-view { opacity: 0 !important; pointer-events: none !important; }
-    
-    .chat-log { max-height: 150px; overflow-y: auto; margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.7); border-radius: 15px; backdrop-filter: blur(5px); }
-    .chat-message { margin-bottom: 10px; padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 14px; line-height: 1.4; }
-    
-    .user-message { background: white; color: var(--primary-color); align-self: flex-end; margin-left: auto; border: 1px solid var(--primary-color); }
-    .ia-message { background: #e9e9eb; color: #333; align-self: flex-start; }
-    
-    .input-bar { display: flex; align-items: center; background: white; border-radius: 30px; padding: 5px 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-    #text-input { flex-grow: 1; border: none; background: none; outline: none; padding: 10px; font-size: 16px; }
-    .action-button { background: none; border: none; cursor: pointer; padding: 8px; }
-    .action-button img { width: 24px; height: 24px; }
-    
-    .back-button { display: none; position: absolute; left: 20px; top: 50%; transform: translateY(-50%); background: none; border: none; color: white; font-size: 28px; cursor: pointer; z-index: 6; }
-    .back-button.visible { display: block; }
-    .menu-toggle { display: none; position: absolute; right: 20px; top: 100px; background: var(--primary-color); width: 40px; height: 40px; border-radius: 50%; border: none; color: white; font-size: 20px; cursor: pointer; z-index: 12; box-shadow: 0 4px 10px rgba(0,0,0,0.2); justify-content: center; align-items: center; }
-    .menu-toggle.visible { display: flex; }
-    
-    .app-view { position: absolute; top: 90px; left: 0; right: 0; bottom: 0; padding: 20px; box-sizing: border-box; background: var(--background-color); z-index: 4; opacity: 0; pointer-events: none; transition: opacity 0.3s; display: flex; flex-direction: column; }
-    .app-view.visible { opacity: 1; pointer-events: auto; }
-    
-    .search-bar-wrapper { display: flex; gap: 10px; margin-bottom: 20px; }
-    #search-input { flex-grow: 1; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
-    .search-results-list { flex-grow: 1; overflow-y: auto; background: white; border-radius: 8px; padding: 10px; }
-    
-    .admin-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-    .tab-button { flex: 1; padding: 10px; border: 1px solid var(--primary-color); background: none; color: var(--primary-color); border-radius: 8px; cursor: pointer; }
-    .tab-button.active { background: var(--primary-color); color: white; }
-    .tab-content { display: none; flex-grow: 1; flex-direction: column; }
-    .tab-content.active { display: flex; }
-
-    .fua-entry-form { flex-grow: 1; display: flex; flex-direction: column; }
-    #fua-entries-container { flex-grow: 1; overflow-y: auto; padding-right: 10px; }
-    .fua-entry-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
-    .fua-entry-row input { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
-    .fua-entry-row input[type="text"] { flex-grow: 1; }
-    .fua-entry-row input[type="date"] { width: 130px; }
-    .delete-fua-btn { background: var(--danger-color); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    
-    .fua-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding: 0 10px; }
-    .add-fua-btn, .remove-fua-btn { border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 24px; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; }
-    .add-fua-btn { background: var(--success-color); }
-    .remove-fua-btn { background: var(--danger-color); }
-    
-    .save-all-btn { background: var(--primary-color); color: white; padding: 15px; border-radius: 10px; border: none; font-size: 18px; cursor: pointer; margin-top: auto; }
-</style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* --- ESTILOS CSS (sin cambios) --- */
+        :root {
+            --primary-color: #0A2A43; --accent-color: #D4AF37; --text-color-light: #FFFFFF;
+            --background-color: #f0f2f5; --success-color: #28a745; --danger-color: #dc3545;
+        }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background-color ); display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
+        .mobile-container { width: 390px; height: 700px; position: relative; overflow: hidden; border-radius: 45px; box-shadow: 0 15px 40px rgba(0,0,0,0.25); background: #ffffff; border: 12px solid #fff; }
+       
+        .fullscreen-view { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--background-color); z-index: 20; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; transition: opacity 0.3s, transform 0.3s; }
+        .fullscreen-view.hidden { opacity: 0; pointer-events: none; transform: scale(0.95); }
+        .login-box { width: 100%; max-width: 320px; padding: 30px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
+        .login-box h2 { color: var(--primary-color); margin-top: 0; }
+        .login-box button { width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 18px; font-weight: 600; cursor: pointer; }
+        .btn-primary { background: var(--primary-color); color: white; }
+        .btn-secondary { background: none; color: var(--primary-color); margin-top: 10px; }
+        .input-wrapper { width: 100%; margin-bottom: 15px; display: flex; align-items: center; border: 1px solid #ccc; border-radius: 10px; background: white; }
+        .input-wrapper input { flex-grow: 1; padding: 15px; border: none; background: none; outline: none; font-size: 16px; }
+        .toggle-password { padding: 0 15px; background: none; border: none; cursor: pointer; opacity: 0.5; }
+       
+        #main-app.hidden { display: none; }
+        .header { position: absolute; top: 0; left: 0; right: 0; height: 90px; background: var(--primary-color); z-index: 5; display: flex; justify-content: center; align-items: center; }
+        .header-title { color: var(--text-color-light); font-size: 24px; font-weight: bold; cursor: pointer; }
+       
+        #assistant-logo { position: absolute; bottom: 30px; height: 85%; z-index: 1; transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); object-fit: cover; object-position: center bottom; }
+        #assistant-logo.initial-state { right: 50%; transform: translateX(50%); height: 90%; opacity: 1; }
+        #assistant-logo.side-state { right: -40px; transform: translateX(0); opacity: 1; height: 85%; }
+        #assistant-logo.hidden-by-view { opacity: 0; }
+        #assistant-logo.chat-mode-state { right: 50%; transform: translateX(50%); height: 95%; }
+        .menu-button { position: absolute; left: 25px; z-index: 10; background: var(--primary-color); border: 2px solid var(--accent-color); border-radius: 30px; padding: 15px 25px; font-size: 16px; font-weight: 600; color: var(--text-color-light); cursor: pointer; min-width: 180px; opacity: 0; transform: translateX(-30px); pointer-events: none; transition: all 0.4s; }
+        .menu-button.visible { opacity: 1; transform: translateX(0); pointer-events: auto; }
+        .menu-button.hidden-by-view, .menu-button.hidden-by-chat { opacity: 0 !important; transform: translateX(-30px) !important; pointer-events: none !important; }
+        #btn-buscar { top: 120px; transition-delay: 0.2s; } #btn-observados { top: 190px; transition-delay: 0.3s; } #btn-admin { top: 260px; transition-delay: 0.4s; } #btn-info { top: 330px; transition-delay: 0.5s; } #btn-contacto { top: 400px; transition-delay: 0.6s; }
+        #greeting-container { position: absolute; top: 480px; left: 25px; right: 25px; z-index: 10; opacity: 0; transition: opacity 0.5s 1.5s; }
+        #greeting-container.visible { opacity: 1; }
+        #chat-view { position: absolute; bottom: 10px; left: 10px; right: 10px; z-index: 15; transition: all 0.4s; opacity: 1; pointer-events: auto; }
+        #chat-view.hidden-by-view { opacity: 0 !important; pointer-events: none !important; }
+       
+        .chat-log { max-height: 150px; overflow-y: auto; margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.7); border-radius: 15px; backdrop-filter: blur(5px); }
+        .chat-message { margin-bottom: 10px; padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 14px; line-height: 1.4; }
+       
+        .user-message { background: white; color: var(--primary-color); align-self: flex-end; margin-left: auto; border: 1px solid var(--primary-color); }
+        .ia-message { background: #e9e9eb; color: #333; align-self: flex-start; }
+       
+        .input-bar { display: flex; align-items: center; background: white; border-radius: 30px; padding: 5px 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        #text-input { flex-grow: 1; border: none; background: none; outline: none; padding: 10px; font-size: 16px; }
+        .action-button { background: none; border: none; cursor: pointer; padding: 8px; }
+        .action-button img { width: 24px; height: 24px; }
+       
+        .back-button { display: none; position: absolute; left: 20px; top: 50%; transform: translateY(-50%); background: none; border: none; color: white; font-size: 28px; cursor: pointer; z-index: 6; }
+        .back-button.visible { display: block; }
+        .menu-toggle { display: none; position: absolute; right: 20px; top: 100px; background: var(--primary-color); width: 40px; height: 40px; border-radius: 50%; border: none; color: white; font-size: 20px; cursor: pointer; z-index: 12; box-shadow: 0 4px 10px rgba(0,0,0,0.2); justify-content: center; align-items: center; }
+        .menu-toggle.visible { display: flex; }
+       
+        .app-view { position: absolute; top: 90px; left: 0; right: 0; bottom: 0; padding: 20px; box-sizing: border-box; background: var(--background-color); z-index: 4; opacity: 0; pointer-events: none; transition: opacity 0.3s; display: flex; flex-direction: column; }
+        .app-view.visible { opacity: 1; pointer-events: auto; }
+       
+        .search-bar-wrapper { display: flex; gap: 10px; margin-bottom: 20px; }
+        #search-input { flex-grow: 1; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
+        .search-results-list { flex-grow: 1; overflow-y: auto; background: white; border-radius: 8px; padding: 10px; }
+       
+        .admin-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-button { flex: 1; padding: 10px; border: 1px solid var(--primary-color); background: none; color: var(--primary-color); border-radius: 8px; cursor: pointer; }
+        .tab-button.active { background: var(--primary-color); color: white; }
+        .tab-content { display: none; flex-grow: 1; flex-direction: column; }
+        .tab-content.active { display: flex; }
+        .fua-entry-form { flex-grow: 1; display: flex; flex-direction: column; }
+        #fua-entries-container { flex-grow: 1; overflow-y: auto; padding-right: 10px; }
+        .fua-entry-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+        .fua-entry-row input { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
+        .fua-entry-row input[type="text"] { flex-grow: 1; }
+        .fua-entry-row input[type="date"] { width: 130px; }
+        .delete-fua-btn { background: var(--danger-color); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+       
+        .fua-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding: 0 10px; }
+        .add-fua-btn, .remove-fua-btn { border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 24px; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; }
+        .add-fua-btn { background: var(--success-color); }
+        .remove-fua-btn { background: var(--danger-color); }
+       
+        .save-all-btn { background: var(--primary-color); color: white; padding: 15px; border-radius: 10px; border: none; font-size: 18px; cursor: pointer; margin-top: auto; }
+    </style>
 </head>
-
 <body>
-
     <div class="mobile-container">
         <!-- VISTAS DE LOGIN Y REGISTRO -->
         <div id="login-view" class="fullscreen-view">
@@ -105,37 +99,33 @@
         <div id="register-view" class="fullscreen-view hidden">
             <div class="login-box"><h2>Registrarse</h2><div class="input-wrapper"><input type="text" id="reg-username" placeholder="Nombre Completo"></div><div class="input-wrapper"><input type="password" id="reg-password" placeholder="Crear Contraseña"><button class="toggle-password" onclick="togglePasswordVisibility('reg-password', this)">👁️</button></div><div class="input-wrapper"><input type="email" id="reg-email" placeholder="Email"></div><div class="input-wrapper"><input type="tel" id="reg-whatsapp" placeholder="WhatsApp"></div><button class="btn-primary" onclick="handleRegister()">Registrar</button><button class="btn-secondary" onclick="showLoginView()">Volver al Inicio</button></div>
         </div>
-
         <!-- APLICACIÓN PRINCIPAL -->
         <div id="main-app" class="hidden">
             <header id="main-header" class="header">
                 <button id="back-button" class="back-button" onclick="returnToMenu()">←</button>
                 <div id="header-title" class="header-title" onclick="enterChatMode()">Recepción Emergencia</div>
             </header>
-            
+           
             <video id="assistant-logo" class="initial-state" autoplay muted loop playsinline>
                 <source src="https://github.com/Dafon1981/recepcion/blob/main/cayetanologo.mp4?raw=true" type="video/mp4">
                 Tu navegador no soporta el vídeo.
             </video>
-            <button class="menu-toggle" id="menu-toggle" onclick="exitChatMode( )">≡</button>
-
+            <button class="menu-toggle" id="menu-toggle" onclick="exitChatMode()">≡</button>
             <!-- Contenedor del Saludo -->
             <div id="greeting-container"></div>
-
             <!-- Menú de Navegación -->
             <button id="btn-buscar" class="menu-button" onclick="handleMenuClick('buscar')">Buscar FUA</button>
             <button id="btn-observados" class="menu-button" onclick="handleMenuClick('observados')">Ver Observados</button>
             <button id="btn-admin" class="menu-button" onclick="handleMenuClick('admin')">Administrar</button>
             <button id="btn-info" class="menu-button" onclick="handleMenuClick('info')">Información</button>
             <button id="btn-contacto" class="menu-button" onclick="handleMenuClick('contacto')">Contacto</button>
-
             <!-- Vistas de la Aplicación -->
             <div id="buscar-view" class="app-view">
                 <h2>Búsqueda de FUAs</h2>
                 <div class="search-bar-wrapper">
                     <input type="text" id="search-input" placeholder="Buscar por FUA, episodio, paciente...">
                     <button class="action-button" onclick="handleVoiceSearch()"><img src="https://www.pngmart.com/files/17/Volume-Button-Transparent-PNG.png" alt="Audio"></button>
-                    <button class="action-button" onclick="performSearch( )"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar"></button>
+                    <button class="action-button" onclick="performSearch()"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar"></button>
                 </div>
                 <div class="search-results-list" id="search-results-list">
                     <p style="text-align: center; color: #777;">Ingrese un término de búsqueda para comenzar.</p>
@@ -146,7 +136,7 @@
             <div id="admin-view" class="app-view">
                 <h2>Panel de Administración</h2>
                 <div class="admin-tabs">
-                    <button class="tab-button active" onclick="switchAdminTab('personal', this )">Personal</button>
+                    <button class="tab-button active" onclick="switchAdminTab('personal', this)">Personal</button>
                     <button class="tab-button" onclick="switchAdminTab('observados', this)">Observados</button>
                 </div>
                 <div id="tab-personal" class="tab-content active"><h3>Validación de Personal</h3><ul id="user-list-container" style="list-style: none; padding: 0;"></ul></div>
@@ -164,13 +154,12 @@
                     </div>
                 </div>
             </div>
-
             <!-- MODO CHAT -->
             <div id="chat-view">
                 <div class="chat-log" id="chat-log"></div>
                 <div class="input-bar">
                     <button class="action-button" onclick="handleAudio()"><img src="https://www.pngmart.com/files/17/Volume-Button-Transparent-PNG.png" alt="Audio"></button>
-                    <input type="text" id="text-input" placeholder="Haz una consulta..." onkeydown="if(event.key==='Enter' ) handleSend()" onfocus="enterChatMode()">
+                    <input type="text" id="text-input" placeholder="Haz una consulta..." onkeydown="if(event.key==='Enter') handleSend()" onfocus="enterChatMode()">
                     <button class="action-button" onclick="handleSend()"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Enviar"></button>
                 </div>
             </div>
@@ -178,280 +167,212 @@
         <div id="password-prompt" class="fullscreen-view hidden"></div>
     </div>
 
-<script>
-    // --- 1. CONFIGURACIÓN E INICIALIZACIÓN ---
+    <script>
+        // --- INICIALIZACIÓN ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const SUPABASE_URL = 'https://zfowxdhyspabjavybbig.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpmb3d4ZGh5c3BhYmphdnliYmlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjMyNzE3ODUsImV4cCI6MjAzODg0Nzc4NX0.k32bX3a-G_E923v1S21rOlhXXfV5S2_1i4Irm-iP4qI';
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Configuración de Supabase
-    const SUPABASE_URL = 'https://zfowxdhyspabjavybbig.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpmb3d4ZGh5c3BhYmphdnliYmlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjMyNzE3ODUsImV4cCI6MjAzODg0Nzc4NX0.k32bX3a-G_E923v1S21rOlhXXfV5S2_1i4Irm-iP4qI';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    // Variable para guardar el usuario actual
-    let currentUser = null;
+            let currentUser = null;
 
-    // Selección de elementos del DOM (una sola vez)
-    const loginView = document.getElementById('login-view');
-    const registerView = document.getElementById('register-view');
-    const mainApp = document.getElementById('main-app');
-    const assistantLogo = document.getElementById('assistant-logo');
-    const menuButtons = document.querySelectorAll('.menu-button');
-    const appViews = document.querySelectorAll('.app-view');
-    const chatView = document.getElementById('chat-view');
-    const backButton = document.getElementById('back-button');
-    const menuToggle = document.getElementById('menu-toggle');
-    const greetingContainer = document.getElementById('greeting-container');
+            const loginView = document.getElementById('login-view');
+            const registerView = document.getElementById('register-view');
+            const mainApp = document.getElementById('main-app');
+            const assistantLogo = document.getElementById('assistant-logo');
+            const menuButtons = document.querySelectorAll('.menu-button');
+            const appViews = document.querySelectorAll('.app-view');
+            const chatView = document.getElementById('chat-view');
+            const backButton = document.getElementById('back-button');
+            const menuToggle = document.getElementById('menu-toggle');
+            const greetingContainer = document.getElementById('greeting-container');
 
-    // --- 2. LÓGICA DE AUTENTICACIÓN Y NAVEGACIÓN ---
-
-    // LOGIN CON SUPABASE (Función actualizada)
-    async function handleLogin() {
-        const email = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value.trim();
-
-        if (!email || !password) {
-            alert("Por favor, ingrese su email y contraseña.");
-            return;
-        }
-
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: password,
-        });
-
-        if (error) {
-            alert("Error: " + error.message);
-            return;
-        }
-
-        if (data.user) {
-            const { data: userProfile, error: profileError } = await supabase
-                .from('profiles')
-                .select('is_validated, role, full_name')
-                .eq('id', data.user.id)
-                .single();
-
-            if (profileError) {
-                alert("Error al obtener el perfil del usuario: " + profileError.message);
-                await supabase.auth.signOut();
-                return;
-            }
-
-            if (userProfile && userProfile.is_validated) {
-                currentUser = { ...data.user, ...userProfile };
-                initApp();
-            } else {
-                alert("Tu cuenta aún no ha sido validada por un administrador.");
-                await supabase.auth.signOut();
-            }
-        }
-    }
-
-    // REGISTRO (Función simulada por ahora)
-    function handleRegister() {
-        alert("Se ha registrado. Espere a que su cuenta sea confirmada.");
-        showLoginView();
-    }
-    
-    // Inicializa la aplicación después del login
-    function initApp() {
-        loginView.classList.add('hidden');
-        registerView.classList.add('hidden');
-        mainApp.classList.remove('hidden');
-        
-        setTimeout(() => {
-            assistantLogo.classList.remove('initial-state');
-            assistantLogo.classList.add('side-state');
-            menuButtons.forEach(button => {
-                // Oculta el botón de admin si el usuario no tiene el rol 'admin'
-                if (button.id === 'btn-admin' && currentUser.role !== 'admin') {
-                    button.style.display = 'none';
-                } else {
-                    button.classList.add('visible');
+            // --- LOGIN ---
+            window.handleLogin = async function() {
+                const email = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value.trim();
+                if (!email || !password) {
+                    alert("Por favor, ingrese su email y contraseña.");
+                    return;
                 }
-            });
-            greetingContainer.classList.add('visible');
-        }, 1000);
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) {
+                    alert("Error: " + error.message);
+                    return;
+                }
+                const { data: profile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('is_validated, role, full_name')
+                    .eq('id', data.user.id)
+                    .single();
+                if (profileError || !profile || !profile.is_validated) {
+                    alert("Cuenta no validada o error de perfil.");
+                    await supabase.auth.signOut();
+                    return;
+                }
+                currentUser = { ...data.user, ...profile };
+                initApp();
+            };
 
-        const hour = new Date().getHours();
-        let greeting = (hour < 12) ? 'Buenos días' : (hour < 18) ? 'Buenas tardes' : 'Buenas noches';
-        greetingContainer.innerHTML = `<div class="chat-message ia-message">${greeting}, ${currentUser.full_name || 'usuario'}.</div>`;
-    }
+            window.handleRegister = function() {
+                alert("Registro simulado. Espera validación.");
+                showLoginView();
+            };
 
-    // --- 3. FUNCIONES DE LA INTERFAZ (UI) ---
+            function initApp() {
+                loginView.classList.add('hidden');
+                registerView.classList.add('hidden');
+                mainApp.classList.remove('hidden');
 
-    // Click en los botones del menú principal
-    function handleMenuClick(section) {
-        if (section === 'contacto') {
-            window.open('https://wa.me/51967188120', '_blank' );
-            return;
-        }
-        menuButtons.forEach(btn => btn.classList.add('hidden-by-view'));
-        assistantLogo.classList.add('hidden-by-view');
-        greetingContainer.style.opacity = '0';
-        appViews.forEach(view => view.classList.toggle('visible', view.id === `${section}-view`));
-        backButton.classList.add('visible');
-        chatView.classList.add('hidden-by-view');
-    }
+                setTimeout(() => {
+                    assistantLogo.classList.remove('initial-state');
+                    assistantLogo.classList.add('side-state');
 
-    // Volver al menú principal desde una vista
-    function returnToMenu() {
-        appViews.forEach(view => view.classList.remove('visible'));
-        backButton.classList.remove('visible');
-        menuButtons.forEach(btn => btn.classList.remove('hidden-by-view'));
-        assistantLogo.classList.remove('hidden-by-view');
-        greetingContainer.style.opacity = '1';
-        chatView.classList.remove('hidden-by-view');
-    }
-    
-    // Vistas de Login y Registro
-    function showRegisterView() {
-        loginView.classList.add('hidden');
-        registerView.classList.remove('hidden');
-    }
+                    menuButtons.forEach(button => {
+                        if (button.id === 'btn-admin' && currentUser.role !== 'admin') {
+                            button.remove(); // Elimina completamente
+                        } else {
+                            button.classList.add('visible');
+                        }
+                    });
 
-    function showLoginView() {
-        registerView.classList.add('hidden');
-        loginView.classList.remove('hidden');
-    }
+                    greetingContainer.classList.add('visible');
+                    const hour = new Date().getHours();
+                    const greeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches';
+                    greetingContainer.innerHTML = `<div class="chat-message ia-message">${greeting}, ${currentUser.full_name}.</div>`;
+                }, 1000);
+            }
 
-    // Mostrar/Ocultar contraseña
-    function togglePasswordVisibility(inputId, button) {
-        const input = document.getElementById(inputId);
-        const isPassword = input.type === 'password';
-        input.type = isPassword ? 'text' : 'password';
-        button.textContent = isPassword ? '🙈' : '👁️';
-    }
+            // --- NAVEGACIÓN ---
+            window.handleMenuClick = function(section) {
+                if (section === 'contacto') {
+                    window.open('https://wa.me/51967188120', '_blank');
+                    return;
+                }
+                menuButtons.forEach(btn => btn.classList.add('hidden-by-view'));
+                assistantLogo.classList.add('hidden-by-view');
+                greetingContainer.style.opacity = '0';
+                appViews.forEach(view => view.classList.toggle('visible', view.id === `${section}-view`));
+                backButton.classList.add('visible');
+                chatView.classList.add('hidden-by-view');
+            };
 
-    // --- 4. FUNCIONALIDAD DE BÚSQUEDA ---
+            window.returnToMenu = function() {
+                appViews.forEach(view => view.classList.remove('visible'));
+                backButton.classList.remove('visible');
+                menuButtons.forEach(btn => btn.classList.remove('hidden-by-view'));
+                assistantLogo.classList.remove('hidden-by-view');
+                greetingContainer.style.opacity = '1';
+                chatView.classList.remove('hidden-by-view');
+            };
 
-    // BÚSQUEDA REAL CON SUPABASE
-    async function performSearch() {
-        const query = document.getElementById('search-input').value.trim();
-        const resultsList = document.getElementById('search-results-list');
-        
-        if (!query) {
-            resultsList.innerHTML = '<p style="text-align: center; color: #777;">Ingrese un término de búsqueda para comenzar.</p>';
-            return;
-        }
+            window.showRegisterView = () => { loginView.classList.add('hidden'); registerView.classList.remove('hidden'); };
+            window.showLoginView = () => { registerView.classList.add('hidden'); loginView.classList.remove('hidden'); };
 
-        resultsList.innerHTML = '<p style="text-align: center; color: #777;">Buscando...</p>';
+            window.togglePasswordVisibility = (id, btn) => {
+                const input = document.getElementById(id);
+                input.type = input.type === 'password' ? 'text' : 'password';
+                btn.textContent = input.type === 'password' ? '👁️' : '🙈';
+            };
 
-        const { data, error } = await supabase
-            .from('fuas')
-            .select('*')
-            .or(`numero_fua.ilike.%${query}%, episodio.ilike.%${query}%, nombre_paciente.ilike.%${query}%`);
+            // --- BÚSQUEDA ---
+            window.performSearch = async function() {
+                const query = document.getElementById('search-input').value.trim();
+                const resultsList = document.getElementById('search-results-list');
+                if (!query) {
+                    resultsList.innerHTML = '<p style="text-align: center; color: #777;">Ingrese un término de búsqueda.</p>';
+                    return;
+                }
+                resultsList.innerHTML = '<p style="text-align: center; color: #777;">Buscando...</p>';
+                const { data, error } = await supabase
+                    .from('fuas')
+                    .select('*')
+                    .or(`numero_fua.ilike.%${query}%, episodio.ilike.%${query}%, nombre_paciente.ilike.%${query}%`);
+                if (error || !data || data.length === 0) {
+                    resultsList.innerHTML = '<p style="text-align: center; color: #777;">No se encontraron resultados.</p>';
+                    return;
+                }
+                resultsList.innerHTML = '';
+                data.forEach(fua => {
+                    const div = document.createElement('div');
+                    div.style.padding = '10px';
+                    div.style.borderBottom = '1px solid #eee';
+                    div.innerHTML = `<strong>FUA:</strong> ${fua.numero_fua}<br><strong>Paciente:</strong> ${fua.nombre_paciente}<br><strong>Episodio:</strong> ${fua.episodio}`;
+                    resultsList.appendChild(div);
+                });
+            };
 
-        if (error) {
-            console.error('Error en la búsqueda:', error);
-            resultsList.innerHTML = `<p style="text-align: center; color: var(--danger-color);">Error al buscar: ${error.message}</p>`;
-            return;
-        }
+            window.handleVoiceSearch = () => alert('Búsqueda por voz simulada');
 
-        if (data && data.length > 0) {
-            resultsList.innerHTML = '';
-            data.forEach(fua => {
-                const resultItem = document.createElement('div');
-                resultItem.style.padding = '10px';
-                resultItem.style.borderBottom = '1px solid #eee';
-                resultItem.innerHTML = `
-                    <strong>FUA:</strong> ${fua.numero_fua || 'N/A'}  
+            // --- CHAT ---
+            window.enterChatMode = function() {
+                if (assistantLogo.classList.contains('chat-mode-state')) return;
+                returnToMenu();
+                setTimeout(() => {
+                    assistantLogo.classList.remove('side-state');
+                    assistantLogo.classList.add('chat-mode-state');
+                    menuButtons.forEach(btn => btn.classList.add('hidden-by-chat'));
+                    greetingContainer.style.opacity = '0';
+                    menuToggle.classList.add('visible');
+                }, 10);
+            };
 
-                    <strong>Paciente:</strong> ${fua.nombre_paciente || 'N/A'}  
+            window.exitChatMode = function() {
+                assistantLogo.classList.remove('chat-mode-state');
+                assistantLogo.classList.add('side-state');
+                menuButtons.forEach(btn => btn.classList.remove('hidden-by-chat'));
+                greetingContainer.style.opacity = '1';
+                menuToggle.classList.remove('visible');
+            };
 
-                    <strong>Episodio:</strong> ${fua.episodio || 'N/A'}  
+            window.handleSend = function() {
+                const input = document.getElementById('text-input');
+                const msg = input.value.trim().toLowerCase();
+                if (!msg) return;
+                const log = document.getElementById('chat-log');
+                const userMsg = document.createElement('div');
+                userMsg.className = 'chat-message user-message';
+                userMsg.textContent = input.value;
+                log.appendChild(userMsg);
+                log.scrollTop = log.scrollHeight;
+                input.value = '';
 
-                    <strong>Fecha:</strong> ${new Date(fua.created_at).toLocaleDateString()}
-                `;
-                resultsList.appendChild(resultItem);
-            });
-        } else {
-            resultsList.innerHTML = '<p style="text-align: center; color: #777;">No se encontraron resultados.</p>';
-        }
-    }
+                if (msg.includes('buscar') || msg.includes('fua')) handleMenuClick('buscar');
+                else if (msg.includes('observados')) handleMenuClick('observados');
+                else if (msg.includes('admin') || msg.includes('ingresar')) handleMenuClick('admin');
+                else if (msg.includes('info') || msg.includes('tutorial')) handleMenuClick('info');
+                else if (msg.includes('contacto')) handleMenuClick('contacto');
+            };
 
-    function handleVoiceSearch() {
-        alert('Simulando búsqueda por voz...');
-    }
+            window.handleAudio = () => alert('Audio activado');
 
-    // --- 5. OTRAS FUNCIONES (CHAT, ADMIN, ETC.) ---
-    
-    function enterChatMode() {
-        if (assistantLogo.classList.contains('chat-mode-state')) return;
-        returnToMenu();
-        setTimeout(() => {
-            assistantLogo.classList.remove('side-state');
-            assistantLogo.classList.add('chat-mode-state');
-            menuButtons.forEach(btn => btn.classList.add('hidden-by-chat'));
-            greetingContainer.style.opacity = '0';
-            menuToggle.classList.add('visible');
-        }, 10);
-    }
+            // --- ADMIN ---
+            window.switchAdminTab = (tab, btn) => {
+                document.querySelectorAll('#admin-view .tab-button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('#admin-view .tab-content').forEach(c => c.classList.toggle('active', c.id === `tab-${tab}`));
+            };
 
-    function exitChatMode() {
-        assistantLogo.classList.remove('chat-mode-state');
-        assistantLogo.classList.add('side-state');
-        menuButtons.forEach(btn => btn.classList.remove('hidden-by-chat'));
-        greetingContainer.style.opacity = '1';
-        menuToggle.classList.remove('visible');
-    }
-    
-    function handleSend() {
-        const textInput = document.getElementById('text-input');
-        const message = textInput.value.trim();
-        if (!message) return;
+            window.addFuaEntry = () => {
+                const container = document.getElementById('fua-entries-container');
+                const row = document.createElement('div');
+                row.className = 'fua-entry-row';
+                row.innerHTML = `<input type="text" placeholder="Nº FUA o Episodio"><input type="date"><button class="delete-fua-btn" onclick="deleteFuaEntry(this)">X</button>`;
+                container.appendChild(row);
+            };
 
-        const chatLog = document.getElementById('chat-log');
-        const userDiv = document.createElement('div');
-        userDiv.className = 'chat-message user-message';
-        userDiv.textContent = message;
-        chatLog.appendChild(userDiv);
-        chatLog.scrollTop = chatLog.scrollHeight;
-        textInput.value = '';
+            window.deleteFuaEntry = (btn) => btn.parentElement.remove();
 
-        const command = message.toLowerCase();
-        if (command.includes('busqueda') || command.includes('fua')) { handleMenuClick('buscar'); } 
-        else if (command.includes('observados')) { handleMenuClick('observados'); } 
-        else if (command.includes('administrar') || command.includes('ingresar')) { handleMenuClick('admin'); } 
-        else if (command.includes('tutorial') || command.includes('informacion')) { handleMenuClick('info'); } 
-        else if (command.includes('contacto')) { handleMenuClick('contacto'); }
-    }
+            window.removeLastFuaEntry = () => {
+                const rows = document.querySelectorAll('#fua-entries-container .fua-entry-row');
+                if (rows.length > 1) rows[rows.length - 1].remove();
+            };
 
-    function handleAudio() { alert('Función de audio activada...'); }
-
-    function switchAdminTab(tabName, clickedButton) {
-        document.querySelectorAll('#admin-view .tab-button').forEach(btn => btn.classList.remove('active'));
-        clickedButton.classList.add('active');
-        document.querySelectorAll('#admin-view .tab-content').forEach(content => {
-            content.classList.toggle('active', content.id === `tab-${tabName}`);
+            window.saveAllFuas = () => {
+                const count = document.querySelectorAll('.fua-entry-row').length;
+                alert(`Guardando ${count} FUAs...`);
+            };
         });
-    }
-
-    function addFuaEntry() {
-        const container = document.getElementById('fua-entries-container');
-        const newEntryRow = document.createElement('div');
-        newEntryRow.className = 'fua-entry-row';
-        newEntryRow.innerHTML = `<input type="text" placeholder="Nº FUA o Episodio"><input type="date"><button class="delete-fua-btn" onclick="deleteFuaEntry(this)">X</button>`;
-        container.appendChild(newEntryRow);
-    }
-
-    function deleteFuaEntry(button) { button.parentElement.remove(); }
-
-    function removeLastFuaEntry() {
-        const container = document.getElementById('fua-entries-container');
-        const rows = container.querySelectorAll('.fua-entry-row');
-        if (rows.length > 1) { rows[rows.length - 1].remove(); }
-    }
-
-    function saveAllFuas() {
-        const entries = document.querySelectorAll('.fua-entry-row');
-        alert(`Simulando guardado de ${entries.length} registros.`);
-    }
-
-</script>
-
+    </script>
 </body>
 </html>
-
-
-
-
-
