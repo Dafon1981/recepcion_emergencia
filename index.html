@@ -175,8 +175,8 @@
     const SUPABASE_URL = 'https://rpnctakgljxhbvelgdh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwbmNqdGFrZ2xqeGhidmVsZ2RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODUzMzAsImV4cCI6MjA3NjY2MTMzMH0.mEcAP4NSJQGYYgx3nmuSkYWRX2UkmJiiKZq9sv7UUq4';
     
-    // LÍNEA CORREGIDA: Usamos el objeto global 'supabase' para crear la instancia del cliente.
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY );
+    // LÍNEA CORREGIDA Y SIMPLIFICADA
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY );
 
     let currentUser = null;
 
@@ -209,8 +209,8 @@
         console.log(`Validando '${userInput}' contra la tabla 'usuarios' en Supabase.`);
 
         try {
-            // Usamos la variable correcta: supabaseClient
-            const { data, error } = await supabaseClient
+            // Ahora 'supabase' es el cliente correctamente inicializado
+            const { data, error } = await supabase
                 .from('usuarios')
                 .select('*')
                 .eq('usuario', userInput)
@@ -367,7 +367,7 @@
         }
 
         try {
-            const { data, error } = await supabaseClient
+            const { data, error } = await supabase
                 .from('atenciones_emergencia')
                 .select('*')
                 .or(`fua.ilike.%${query}%, episodio.ilike.%${query}%, nombre_paciente.ilike.%${query}%`);
@@ -437,8 +437,10 @@
 
 
 
+
 </body>
 </html>
+
 
 
 
