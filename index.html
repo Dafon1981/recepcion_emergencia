@@ -170,9 +170,16 @@
     <script>
         // --- INICIALIZACIÓN ---
         document.addEventListener('DOMContentLoaded', () => {
-            const SUPABASE_URL = 'https://zfowxdhyspabjavybbig.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpmb3d4ZGh5c3BhYmphdnliYmlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjMyNzE3ODUsImV4cCI6MjAzODg0Nzc4NX0.k32bX3a-G_E923v1S21rOlhXXfV5S2_1i4Irm-iP4qI';
-            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+             // --- 1. CONFIGURACIÓN E INICIALIZACIÓN (CORREGIDAS) ---
+
+    // Configuración de Supabase con las credenciales correctas del proyecto 'recepcion-emergencia'
+    const SUPABASE_URL = 'https://rpnctakgljxhbvelgdh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwbmNqdGFrZ2xqeGhidmVsZ2RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODUzMzAsImV4cCI6MjA3NjY2MTMzMH0.mEcAP4NSJQGYYgx3nmuSkYWRX2UkmJiiKZq9sv7UUq4';
+    
+    // El resto del código no necesita cambios...
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY );
+
+    let currentUser = null;
 
             let currentUser = null;
 
@@ -376,3 +383,4 @@
     </script>
 </body>
 </html>
+
