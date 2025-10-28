@@ -169,14 +169,15 @@
 
 <script>
     // =================================================================================
-    //  1. CONFIGURACIÓN DE SUPABASE Y VARIABLES GLOBALES
+    //  1. CONFIGURACIÓN DE SUPABASE Y VARIABLES GLOBALES (CON LAS CLAVES NUEVAS)
     // =================================================================================
 
     const SUPABASE_URL = 'https://rpnctakgljxhbvelgdh.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwbmNqdGFrZ2xqeGhidmVsZ2RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODUzMzAsImV4cCI6MjA3NjY2MTMzMH0.mEcAP4NSJQGYYgx3nmuSkYWRX2UkmJiiKZq9sv7UUq4';
+    // ¡CLAVE CORREGIDA! Usamos la nueva "Publishable Key"
+    const SUPABASE_KEY = 'sb_publishable_UBfSBWKinHkSspoeBRGnPQ_douWbkM5';
     
-    // LÍNEA CORREGIDA Y SIMPLIFICADA
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY );
+    // Inicialización correcta y definitiva del cliente de Supabase
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY );
 
     let currentUser = null;
 
@@ -209,7 +210,6 @@
         console.log(`Validando '${userInput}' contra la tabla 'usuarios' en Supabase.`);
 
         try {
-            // Ahora 'supabase' es el cliente correctamente inicializado
             const { data, error } = await supabase
                 .from('usuarios')
                 .select('*')
@@ -244,7 +244,9 @@
         }
     }
     
-    // (El resto del script es idéntico y no necesita cambios)
+    // =================================================================================
+    //  3. RESTO DE FUNCIONES DE LA APLICACIÓN (SIN CAMBIOS)
+    // =================================================================================
     
     function handleRegister() {
         alert("Se ha registrado. Espere a que su cuenta sea confirmada.");
@@ -438,8 +440,10 @@
 
 
 
+
 </body>
 </html>
+
 
 
 
