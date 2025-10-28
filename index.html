@@ -10,11 +10,11 @@
 <style>
     /* --- Estilos Generales --- */
     :root {
-        --primary-color-start: #667eea;
-        --primary-color-end: #764ba2;
-        --secondary-color-start: #4facfe;
-        --secondary-color-end: #00f2fe;
-        --background-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100% );
+        --header-primary-start: #667eea;
+        --header-primary-end: #764ba2;
+        --hch-blue: #1A4A8A;
+        --hch-yellow: #F2C744;
+        --background-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%  );
     }
 
     body {
@@ -28,7 +28,6 @@
         overflow: hidden;
     }
 
-    /* --- Contenedor Principal --- */
     .mobile-container {
         width: 390px;
         height: 700px;
@@ -52,22 +51,10 @@
         filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1));
     }
     
-    #assistant-video.initial-state {
-        right: 50%;
-        transform: translateX(50%);
-        height: 90%;
-    }
-
-    #assistant-video.side-state {
-        right: -40px;
-        transform: translateX(0);
-    }
-    
-    #assistant-video.chat-mode-state {
-        right: 50%;
-        transform: translateX(50%);
-        height: 95%;
-    }
+    #assistant-video.initial-state { right: 50%; transform: translateX(50%); height: 90%; }
+    #assistant-video.side-state { right: -40px; transform: translateX(0); }
+    #assistant-video.chat-mode-state { right: 50%; transform: translateX(50%); height: 95%; }
+    #assistant-video.hidden { opacity: 0; pointer-events: none; }
 
 
     /* --- Cabecera --- */
@@ -75,13 +62,12 @@
         position: absolute;
         top: 0; left: 0; right: 0;
         height: 90px;
-        background: linear-gradient(135deg, var(--primary-color-start) 0%, var(--primary-color-end) 100%);
+        background: linear-gradient(135deg, var(--header-primary-start) 0%, var(--header-primary-end) 100%);
         z-index: 5;
         display: flex;
         justify-content: center;
         align-items: center;
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        /* NUEVA ANIMACIÓN */
         transform: translateY(-100%);
         animation: slide-down 0.8s ease-out 0.5s forwards;
     }
@@ -92,103 +78,151 @@
         text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         opacity: 0;
         animation: fade-in 1s ease-out 1.3s forwards;
-        cursor: pointer; /* NUEVO: Cursor para indicar que es clickeable */
+        cursor: pointer;
     }
 
-    @keyframes slide-down {
-        to { transform: translateY(0); }
-    }
-    @keyframes fade-in {
-        to { opacity: 1; }
-    }
+    @keyframes slide-down { to { transform: translateY(0); } }
+    @keyframes fade-in { to { opacity: 1; } }
 
     /* --- Botones del Menú --- */
     .menu-button {
-        position: absolute;
-        left: 25px;
-        z-index: 10;
-        background: linear-gradient(to right, var(--secondary-color-start) 0%, var(--secondary-color-end) 100%);
-        border: none;
-        border-radius: 30px;
-        padding: 15px 25px;
-        font-size: 16px;
-        font-weight: 600;
-        color: white;
-        cursor: pointer;
-        box-shadow: 0 6px 15px rgba(0, 178, 255, 0.3);
+        position: absolute; left: 25px; z-index: 10;
+        background: var(--hch-blue);
+        border: 2px solid var(--hch-blue);
+        border-radius: 30px; padding: 15px 25px; font-size: 16px;
+        font-weight: 600; color: white; cursor: pointer;
+        box-shadow: 0 6px 15px rgba(26, 74, 138, 0.4);
         transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
-        min-width: 180px;
-        opacity: 0;
-        transform: translateX(-30px);
+        min-width: 180px; opacity: 0; transform: translateX(-30px);
         pointer-events: none;
     }
     
-    .menu-button.visible {
-        opacity: 1;
-        transform: translateX(0);
-        pointer-events: auto;
-    }
-    
-    .menu-button.hidden-by-chat {
-        opacity: 0;
-        transform: translateX(-30px);
-        pointer-events: none;
-    }
+    .menu-button.visible { opacity: 1; transform: translateX(0); pointer-events: auto; }
+    .menu-button.hidden-by-chat, .menu-button.hidden-by-view { opacity: 0; transform: translateX(-30px); pointer-events: none; }
 
     #btn-servicios { top: 120px; transition-delay: 0.2s; }
     #btn-portafolio { top: 190px; transition-delay: 0.3s; }
     #btn-nosotros { top: 260px; transition-delay: 0.4s; }
     #btn-contacto { top: 330px; transition-delay: 0.5s; }
+    #btn-administrar { top: 400px; transition-delay: 0.6s; }
 
     .menu-button.active { 
-        background: linear-gradient(135deg, var(--primary-color-start) 0%, var(--primary-color-end) 100%);
+        background: var(--hch-yellow); color: var(--hch-blue);
+        border-color: var(--hch-yellow); font-weight: bold;
     }
 
     /* --- Caja de Diálogo --- */
     .dialog-box {
-        position: absolute; bottom: 25px; left: 25px; right: 25px; z-index: 3; display: flex; flex-direction: column; max-height: 45%;
+        position: absolute; bottom: 25px; left: 25px; right: 25px; z-index: 3;
+        display: flex; flex-direction: column; max-height: 45%;
+        transition: opacity 0.4s ease;
     }
+    .dialog-box.hidden { opacity: 0; pointer-events: none; }
     .chat-log {
-        flex-grow: 1; overflow-y: auto; margin-bottom: 20px; padding: 15px; background-color: rgba(255, 255, 255, 0.6);
-        border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); backdrop-filter: blur(5px); max-height: 150px;
+        flex-grow: 1; overflow-y: auto; margin-bottom: 20px; padding: 15px;
+        background-color: rgba(255, 255, 255, 0.6); border-radius: 20px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08); backdrop-filter: blur(5px); max-height: 150px;
     }
     .chat-message { margin-bottom: 12px; padding: 12px 16px; border-radius: 18px; max-width: 80%; font-size: 16px; line-height: 1.5; }
-    .user-message { background: linear-gradient(135deg, var(--primary-color-start) 0%, var(--primary-color-end) 100%); color: white; align-self: flex-end; }
+    .user-message { background: var(--hch-blue); color: white; align-self: flex-end; }
     .ia-message { background: #fff; color: #2d3748; align-self: flex-start; }
     .input-bar { display: flex; align-items: center; background: white; border-radius: 30px; padding: 8px 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
     #text-input { flex-grow: 1; border: none; background: none; outline: none; padding: 0 15px; font-size: 16px; color: #4a5568; }
-    .action-button { background: none; border: none; cursor: pointer; padding: 8px; display: flex; }
-    .action-button img { width: 24px; height: 24px; }
     
+    .action-button { background: none; border: none; cursor: pointer; padding: 8px; display: flex; }
+    .action-button img { width: 28px; height: 28px; }
+    
+    /* --- Botón de Menú Hamburguesa (Volver) --- */
     .menu-toggle {
-        display: none; position: absolute; left: 25px; top: 120px; background: linear-gradient(to right, var(--secondary-color-start) 0%, var(--secondary-color-end) 100%);
+        display: none; position: absolute; 
+        right: 25px; bottom: 35px;
+        background: var(--hch-blue);
         width: 50px; height: 50px; border-radius: 50%; border: none; color: white; font-size: 24px;
         cursor: pointer; z-index: 12; box-shadow: 0 4px 10px rgba(0,0,0,0.2); justify-content: center; align-items: center;
     }
     .menu-toggle.visible { display: flex; }
-
-    /* --- Vista de Contacto --- */
-    #contact-view {
-        position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; padding: 25px; box-sizing: border-box; flex-direction: column;
-        opacity: 0; pointer-events: none; transition: opacity 0.4s ease-in-out; z-index: 15; background: var(--background-gradient);
+    
+    /* --- Estilos para las Vistas de Contenido --- */
+    .content-view {
+        position: absolute; top: 100px;
+        left: 15px; right: 15px; bottom: 25px;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(8px);
+        border-radius: 30px; z-index: 11;
+        opacity: 0; transform: translateY(30px);
+        pointer-events: none; transition: all 0.5s ease-out;
+        padding: 20px; box-sizing: border-box;
+        display: flex; flex-direction: column;
     }
-    #contact-view.visible { opacity: 1; pointer-events: auto; }
-    #contact-view h3 { text-align: center; margin-top: 60px; color: #2d3748; font-size: 24px; }
-    .map-wrapper { width: 100%; height: 40%; border-radius: 25px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.1); margin: 15px 0; }
-    .map-wrapper iframe { width: 100%; height: 100%; border: none; }
-    .form-contact { display: flex; flex-direction: column; gap: 15px; }
-    .form-contact input, .form-contact textarea { padding: 15px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 16px; }
-    .form-contact button { background: linear-gradient(135deg, var(--primary-color-start) 0%, var(--primary-color-end) 100%); color: white; padding: 16px; border: none; border-radius: 12px; font-size: 18px; cursor: pointer; }
-    #btn-back-from-contact { position: absolute; top: 45px; left: 25px; background: none; border: none; font-size: 28px; color: #2d3748; cursor: pointer; }
+    .content-view.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .content-view h2 { color: var(--hch-blue); text-align: center; margin-top: 10px; margin-bottom: 15px; }
+    .content-view h3 { color: var(--hch-blue); margin-top: 0; }
+    .content-view p { color: #333; line-height: 1.6; text-align: center; margin-bottom: 20px; }
+
+    /* --- Estilos para el formulario de búsqueda --- */
+    .search-form { display: flex; gap: 10px; align-items: center; }
+    .search-input {
+        flex-grow: 1; padding: 15px; border: 1px solid #ccc;
+        border-radius: 25px; font-size: 16px; outline-color: var(--hch-blue);
+    }
+    .search-button {
+        background: var(--hch-blue); border: none; border-radius: 50%;
+        width: 50px; height: 50px; display: flex; justify-content: center;
+        align-items: center; cursor: pointer; transition: background 0.3s;
+    }
+    .search-button:hover { background: var(--hch-yellow); }
+    .search-button img { width: 28px; height: 28px; filter: invert(1); }
+
+    /* --- Estilos para las Pestañas (Tabs) --- */
+    .tab-container { display: flex; border-bottom: 2px solid #ccc; margin-bottom: 20px; }
+    .tab-button {
+        flex: 1; padding: 12px; border: none; background: none;
+        cursor: pointer; font-size: 16px; font-weight: 600; color: #777;
+        transition: all 0.3s ease; border-bottom: 3px solid transparent;
+    }
+    .tab-button.active { color: var(--hch-blue); border-bottom-color: var(--hch-blue); }
+    .tab-content { display: none; flex-direction: column; gap: 15px; }
+    .tab-content.active { display: flex; }
+    #add-obs { overflow-y: auto; } /* Permite scroll si hay muchos ingresos */
+
+    /* === CAMBIO: Estilos para el formulario de "Añadir Obs." === */
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group label { font-weight: 600; color: #555; font-size: 14px; }
+    .form-group input, .form-group textarea {
+        width: 100%; padding: 10px; font-size: 16px;
+        border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box;
+    }
+    /* Contenedor para cada bloque de ingreso */
+    .ingreso-entry {
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .observation-controls { display: flex; gap: 10px; margin-top: 10px; }
+    .control-button {
+        width: 35px; height: 35px; border-radius: 50%; border: none;
+        font-size: 20px; font-weight: bold; color: white; cursor: pointer;
+        display: flex; justify-content: center; align-items: center;
+    }
+    .add-btn { background-color: #28a745; }
+    .remove-btn { background-color: #dc3545; }
+    .save-button {
+        background: var(--hch-blue); color: white; padding: 15px;
+        border: none; border-radius: 12px; font-size: 18px;
+        cursor: pointer; margin-top: auto; /* Empuja el botón al final */
+    }
 
 </style>
 </head>
 <body>
 
     <div class="mobile-container">
-        <header id="main-header" class="header">
-            <!-- NUEVO: Añadido el onclick para entrar a modo chat -->
-            <div class="header-title" onclick="enterChatMode()">Recepcion Emergenciao</div>
+        <header id="main-header" class="header" onclick="returnToMainMenu()">
+            <div class="header-title">Recepcion Emergencia</div>
         </header>
         
         <video id="assistant-video" class="initial-state" autoplay muted loop playsinline>
@@ -196,16 +230,17 @@
             Tu navegador no soporta el vídeo.
         </video>
 
-        <button id="btn-servicios" class="menu-button" onclick="handleMenuClick('Servicios', this )">Busqueda</button>
-        <button id="btn-portafolio" class="menu-button" onclick="handleMenuClick('Portafolio', this)">Observados</button>
+        <button id="btn-servicios" class="menu-button" onclick="handleMenuClick('Busqueda', this )">Busqueda</button>
+        <button id="btn-portafolio" class="menu-button" onclick="handleMenuClick('Observados', this)">Observados</button>
         <button id="btn-nosotros" class="menu-button" onclick="handleMenuClick('Nosotros', this)">Acerca de nosotros</button>
         <button id="btn-contacto" class="menu-button" onclick="handleMenuClick('Contacto', this)">Contacto</button>
+        <button id="btn-administrar" class="menu-button" onclick="handleMenuClick('Administrar', this)">Administrar</button>
         
-        <button id="menu-toggle" class="menu-toggle" onclick="exitChatMode()">≡</button>
+        <button id="menu-toggle" class="menu-toggle" onclick="returnToMainMenu()">≡</button>
 
         <div id="chat-view" class="dialog-box">
             <div class="chat-log" id="chat-log">
-                <div class="chat-message ia-message">¡Hola! Soy tu asistente digital. ¿En qué puedo ayudarte a impulsar tu negocio hoy?</div>
+                <div class="chat-message ia-message">¡Hola! Soy tu asistente digital. ¿En qué puedo ayudarte hoy?</div>
             </div>
             <div class="input-bar">
                 <input type="text" id="text-input" placeholder="Pregúntame algo..." 
@@ -217,30 +252,87 @@
             </div>
         </div>
         
-        <div id="contact-view">
-            <button id="btn-back-from-contact" onclick="handleMenuClick('Inicio', null )">&times;</button>
-            <h3>Nuestra Ubicación y Contacto</h3>
-            <div class="map-wrapper">
-                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.939393928124!2d-77.03013968518738!3d-12.04565199146927!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c8b5d37f136f%3A0x93130538a84a2a62!2sPlaza%20de%20Armas%20de%20Lima!5e0!3m2!1ses!2spe!4v1668023073045!5m2!1ses!2spe" allowfullscreen="" loading="lazy"></iframe>
-            </div>
-            <form class="form-contact" onsubmit="event.preventDefault( ); alert('Formulario enviado. ¡Gracias!');">
-                <input type="text" placeholder="Tu Nombre" required>
-                <input type="email" placeholder="Tu Correo Electrónico" required>
-                <textarea rows="2" placeholder="Tu Mensaje" required></textarea>
-                <button type="submit">Enviar Mensaje</button>
+        <div id="view-busqueda" class="content-view">
+            <h2>Búsqueda de Pacientes</h2>
+            <p>Ingrese Paciente, NFUA o Episodio para buscar.</p>
+            <form class="search-form" onsubmit="event.preventDefault( ); alert('Buscando...');">
+                <input type="text" class="search-input" placeholder="Buscar...">
+                <button type="submit" class="search-button">
+                    <img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar">
+                </button>
             </form>
+        </div>
+
+        <div id="view-observados" class="content-view">
+            <h2>Pacientes en Observación</h2>
+            <p>Busque por Nombre, NFUA o Episodio.</p>
+            <form class="search-form" onsubmit="event.preventDefault( ); alert('Buscando en observados...');">
+                <input type="text" class="search-input" placeholder="Buscar en observados...">
+                <button type="submit" class="search-button">
+                    <img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar">
+                </button>
+            </form>
+        </div>
+
+        <div id="view-nosotros" class="content-view">
+            <h2>Acerca de Nosotros</h2>
+            <p>Somos el equipo de admisión de emergencia del <strong>Hospital Cayetano Heredia</strong>.</p>
+            <p>Nuestra misión es proporcionar un registro rápido, eficiente y humano para todos los pacientes que llegan a nuestra unidad de emergencia, asegurando que reciban la atención que necesitan sin demoras.</p>
+        </div>
+        
+        <div id="view-administrar" class="content-view">
+            <h2>Administrar</h2>
+            <div class="tab-container">
+                <button class="tab-button active" onclick="openTab(event, 'add-obs' )">Añadir Obs.</button>
+                <button class="tab-button" onclick="openTab(event, 'user-list')">Lista de Usuarios</button>
+            </div>
+
+            <!-- === CAMBIO: Formulario para "Añadir Obs." con bloques duplicables === -->
+            <form id="add-obs" class="tab-content active" onsubmit="event.preventDefault(); alert('Guardando observación...');">
+                <h3>Añadir Paciente a Observación</h3>
+                
+                <div id="ingresos-container">
+                    <!-- El primer bloque de ingreso -->
+                    <div class="ingreso-entry">
+                        <div class="form-group">
+                            <label>NFUA o Episodio</label>
+                            <input type="text" name="nfua[]" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha</label>
+                            <input type="date" name="date[]" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Observación</label>
+                            <textarea name="observation[]" rows="2" required></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="observation-controls">
+                    <button type="button" class="control-button add-btn" onclick="addIngreso()">+</button>
+                    <button type="button" class="control-button remove-btn" onclick="removeIngreso()">-</button>
+                </div>
+                
+                <button type="submit" class="save-button">Guardar</button>
+            </form>
+
+            <div id="user-list" class="tab-content">
+                <h3>Lista de Usuarios del Sistema</h3>
+                <p>Aquí se mostrará la lista de usuarios con permisos de administrador.</p>
+            </div>
         </div>
     </div>
 
     <script>
         const assistantVideo = document.getElementById('assistant-video');
         const chatView = document.getElementById('chat-view');
-        const contactView = document.getElementById('contact-view');
         const menuButtons = document.querySelectorAll('.menu-button');
         const chatLog = document.getElementById('chat-log');
         const textInput = document.getElementById('text-input');
         const menuToggle = document.getElementById('menu-toggle');
         const mainHeader = document.getElementById('main-header');
+        const contentViews = document.querySelectorAll('.content-view');
 
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
@@ -251,38 +343,58 @@
         });
 
         function handleMenuClick(section, clickedButton) {
-            // CORREGIDO: Asegurarse de que siempre salimos del modo chat al usar el menú
-            exitChatMode(); 
-
             menuButtons.forEach(button => button.classList.remove('active'));
             if(clickedButton) clickedButton.classList.add('active');
 
             if (section === 'Contacto') {
-                assistantVideo.style.opacity = '0';
-                chatView.style.opacity = '0';
-                mainHeader.style.opacity = '0';
-                menuButtons.forEach(btn => btn.classList.remove('visible'));
-                contactView.classList.add('visible');
-            } else {
-                assistantVideo.style.opacity = '1';
-                chatView.style.opacity = '1';
-                mainHeader.style.opacity = '1';
-                contactView.classList.remove('visible');
-                
-                // Hacemos visibles los botones del menú principal
-                menuButtons.forEach(btn => btn.classList.add('visible'));
-                
-                if (section !== 'Inicio') {
-                    addMessage(`Quisiera saber más sobre: ${section}`, 'user-message');
-                    let iaResponse = '';
-                    switch(section) {
-                        case 'Servicios': iaResponse = 'Ofrecemos desde QR dinámicos hasta tiendas online con IA. ¿Qué te interesa más?'; break;
-                        case 'Portafolio': iaResponse = 'En nuestro portafolio verás demos de nuestro poder. ¿Quieres probar el generador de diseños?'; break;
-                        case 'Nosotros': iaResponse = 'Somos una agencia digital que usa IA para potenciar a emprendedores peruanos. ¡Pregúntame más!'; break;
-                    }
-                    setTimeout(() => addMessage(iaResponse, 'ia-message'), 800);
-                }
+                window.open('https://wa.me/51967188120', '_blank' );
+                setTimeout(() => { if(clickedButton) clickedButton.classList.remove('active'); }, 500);
+                return;
             }
+            
+            menuButtons.forEach(button => button.classList.add('hidden-by-view'));
+            menuToggle.classList.add('visible');
+            
+            assistantVideo.classList.add('hidden');
+            chatView.classList.add('hidden');
+            
+            contentViews.forEach(v => v.classList.remove('visible'));
+            
+            let viewId = `view-${section.toLowerCase().replace(' ', '-')}`;
+            const viewToShow = document.getElementById(viewId);
+            if (viewToShow) {
+                viewToShow.classList.add('visible');
+            }
+        }
+        
+        function returnToMainMenu() {
+            if (menuToggle.classList.contains('visible')) {
+                menuToggle.classList.remove('visible');
+                menuButtons.forEach(button => {
+                    button.classList.remove('hidden-by-view', 'hidden-by-chat');
+                    button.classList.add('visible');
+                    button.classList.remove('active');
+                });
+
+                assistantVideo.classList.remove('hidden');
+                chatView.classList.remove('hidden');
+                
+                assistantVideo.classList.remove('chat-mode-state');
+                assistantVideo.classList.add('side-state');
+                
+                contentViews.forEach(v => v.classList.remove('visible'));
+                
+                textInput.blur();
+            }
+        }
+
+        function enterChatMode() {
+            if (document.querySelector('.content-view.visible')) return;
+            
+            menuButtons.forEach(button => button.classList.add('hidden-by-chat'));
+            menuToggle.classList.add('visible');
+            assistantVideo.classList.remove('side-state');
+            assistantVideo.classList.add('chat-mode-state');
         }
 
         function handleSend() {
@@ -290,7 +402,7 @@
             if (!message) return;
             addMessage(message, 'user-message');
             textInput.value = '';
-            setTimeout(() => addMessage("Estoy analizando tu consulta...", 'ia-message'), 800);
+            setTimeout(() => addMessage("Estoy procesando tu solicitud...", 'ia-message'), 800);
         }
 
         function addMessage(text, type) {
@@ -301,23 +413,45 @@
             chatLog.scrollTop = chatLog.scrollHeight;
         }
 
-        function enterChatMode() {
-            menuButtons.forEach(button => {
-                button.classList.remove('visible'); // Usamos la clase de visibilidad
-            });
-            menuToggle.classList.add('visible');
-            assistantVideo.classList.remove('side-state');
-            assistantVideo.classList.add('chat-mode-state');
+        function openTab(evt, tabName) {
+            const tabContents = document.querySelectorAll('#view-administrar .tab-content');
+            tabContents.forEach(tc => tc.classList.remove('active'));
+
+            const tabButtons = document.querySelectorAll('#view-administrar .tab-button');
+            tabButtons.forEach(tb => tb.classList.remove('active'));
+
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.classList.add('active');
         }
 
-        function exitChatMode() {
-            menuButtons.forEach(button => {
-                button.classList.add('visible'); // Hacemos visibles los botones principales
-            });
-            menuToggle.classList.remove('visible');
-            assistantVideo.classList.remove('chat-mode-state');
-            assistantVideo.classList.add('side-state');
-            textInput.blur();
+        // === CAMBIO: Funciones para añadir/quitar bloques de ingreso ===
+        function addIngreso() {
+            const container = document.getElementById('ingresos-container');
+            const newIngreso = document.createElement('div');
+            newIngreso.className = 'ingreso-entry';
+            newIngreso.innerHTML = `
+                <div class="form-group">
+                    <label>NFUA o Episodio</label>
+                    <input type="text" name="nfua[]" required>
+                </div>
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" name="date[]" required>
+                </div>
+                <div class="form-group">
+                    <label>Observación</label>
+                    <textarea name="observation[]" rows="2" required></textarea>
+                </div>
+            `;
+            container.appendChild(newIngreso);
+        }
+
+        function removeIngreso() {
+            const container = document.getElementById('ingresos-container');
+            // Solo elimina si hay más de un bloque de ingreso
+            if (container.children.length > 1) {
+                container.removeChild(container.lastChild);
+            }
         }
     </script>
 
