@@ -167,17 +167,18 @@
         <div id="password-prompt" class="fullscreen-view hidden"></div>
     </div>
 
-   <script>
-    // --- 1. CONFIGURACIÓN DE SUPABASE Y VARIABLES GLOBALES ---
+<script>
+    // =================================================================================
+    //  1. CONFIGURACIÓN DE SUPABASE Y VARIABLES GLOBALES
+    // =================================================================================
 
-    // Usamos las credenciales correctas de tu proyecto 'recepcion-emergencia'
     const SUPABASE_URL = 'https://rpnctakgljxhbvelgdh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwbmNqdGFrZ2xqeGhidmVsZ2RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODUzMzAsImV4cCI6MjA3NjY2MTMzMH0.mEcAP4NSJQGYYgx3nmuSkYWRX2UkmJiiKZq9sv7UUq4';
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY );
 
     let currentUser = null;
 
-    // Selección de elementos del DOM
+    // Selección de elementos del DOM para no repetir llamadas
     const loginView = document.getElementById('login-view');
     const registerView = document.getElementById('register-view');
     const mainApp = document.getElementById('main-app');
@@ -189,8 +190,10 @@
     const menuToggle = document.getElementById('menu-toggle');
     const greetingContainer = document.getElementById('greeting-container');
 
-    
-    // --- 2. LÓGICA DE LOGIN (CONECTADA A LA TABLA 'usuarios') ---
+
+    // =================================================================================
+    //  2. LÓGICA DE AUTENTICACIÓN (CONECTADA A LA TABLA 'usuarios')
+    // =================================================================================
 
     async function handleLogin() {
         const userInput = document.getElementById('username').value.trim();
@@ -203,50 +206,59 @@
 
         console.log(`Validando '${userInput}' contra la tabla 'usuarios' en Supabase.`);
 
-        // Consulta a tu tabla 'usuarios' en Supabase
-        const { data, error } = await supabase
-            .from('usuarios') // El nombre exacto de tu tabla
-            .select('*')      // Traemos todos los datos del usuario
-            .eq('usuario', userInput)         // Filtro: la columna 'usuario' debe coincidir
-            .eq('contrasena', passwordInput)  // Filtro: la columna 'contrasena' debe coincidir
-            .single(); // Esperamos un único resultado (o ninguno)
+        try {
+            // Consulta a tu tabla 'usuarios' en Supabase
+            const { data, error } = await supabase
+                .from('usuarios') // El nombre exacto de tu tabla
+                .select('*')      // Traemos todos los datos del usuario
+                .eq('usuario', userInput)         // Filtro: la columna 'usuario' debe coincidir
+                .eq('contrasena', passwordInput)  // Filtro: la columna 'contrasena' debe coincidir
+                .single(); // Esperamos un único resultado (o ninguno)
 
-        // Manejo de errores de la consulta (ej. problemas de red)
-        // El código 'PGRST116' significa "No se encontró la fila", lo cual es normal si las credenciales son incorrectas.
-        if (error && error.code !== 'PGRST116') {
-            console.error("Error en la consulta a Supabase:", error);
-            alert("Error de conexión: " + error.message);
-            return;
-        }
-
-        // Si 'data' existe, encontramos un usuario con esas credenciales
-        if (data) {
-            // Ahora verificamos si el usuario está validado
-            if (data.esta_validado) {
-                console.log("Acceso concedido para:", data.usuario);
-                
-                // Guardamos los datos del usuario para usarlos en la app
-                currentUser = {
-                    id: data.id,
-                    usuario: data.usuario,
-                    full_name: data.usuario, // Para el saludo
-                    role: data.role || 'user', // Asume un rol 'user' si no hay columna 'role'
-                    is_validated: data.esta_validado
-                };
-
-                initApp(); // Inicia la aplicación principal
-
-            } else {
-                // El usuario existe pero no está validado
-                alert("Tu cuenta ha sido registrada pero aún no ha sido validada por un administrador.");
+            // Manejo de errores de la consulta (ej. problemas de red)
+            // El código 'PGRST116' significa "No se encontró la fila", lo cual es normal si las credenciales son incorrectas.
+            if (error && error.code !== 'PGRST116') {
+                throw error; // Lanza el error para ser atrapado por el bloque catch
             }
-        } else {
-            // Si 'data' es null, no se encontró ninguna fila que coincida
-            alert("Usuario o contraseña incorrectos.");
+
+            // Si 'data' existe, encontramos un usuario con esas credenciales
+            if (data) {
+                // Ahora verificamos si el usuario está validado
+                if (data.esta_validado) {
+                    console.log("Acceso concedido para:", data.usuario);
+                    
+                    currentUser = {
+                        id: data.id,
+                        usuario: data.usuario,
+                        full_name: data.usuario, // Para el saludo
+                        role: data.role || 'user', // Asume un rol 'user' si no hay columna 'role'
+                        is_validated: data.esta_validado
+                    };
+
+                    initApp(); // Inicia la aplicación principal
+
+                } else {
+                    alert("Tu cuenta ha sido registrada pero aún no ha sido validada por un administrador.");
+                }
+            } else {
+                alert("Usuario o contraseña incorrectos.");
+            }
+        } catch (err) {
+            console.error("Error en la operación de login:", err);
+            alert("Error de conexión: " + err.message);
         }
     }
 
-    // --- 3. RESTO DE FUNCIONES DE LA APLICACIÓN ---
+    // Función de registro (actualmente simulada)
+    function handleRegister() {
+        alert("Se ha registrado. Espere a que su cuenta sea confirmada.");
+        showLoginView();
+    }
+
+
+    // =================================================================================
+    //  3. FUNCIONES DE NAVEGACIÓN Y UI (INTERFAZ DE USUARIO)
+    // =================================================================================
 
     function initApp() {
         loginView.classList.add('hidden');
@@ -268,12 +280,9 @@
 
         const hour = new Date().getHours();
         let greeting = (hour < 12) ? 'Buenos días' : (hour < 18) ? 'Buenas tardes' : 'Buenas noches';
-        // Usamos la propiedad 'full_name' que creamos en currentUser
         greetingContainer.innerHTML = `<div class="chat-message ia-message">${greeting}, ${currentUser.full_name}.</div>`;
     }
 
-    // ... (Aquí van el resto de tus funciones: handleMenuClick, returnToMenu, etc. No necesitan cambios)
-    
     function handleMenuClick(section) {
         if (section === 'contacto') {
             window.open('https://wa.me/51967188120', '_blank'  );
@@ -296,9 +305,158 @@
         chatView.classList.remove('hidden-by-view');
     }
 
-    // ... (Pega aquí todas las demás funciones que ya tenías)
+    function enterChatMode() {
+        if (assistantLogo.classList.contains('chat-mode-state')) return;
+        returnToMenu();
+        setTimeout(() => {
+            assistantLogo.classList.remove('side-state');
+            assistantLogo.classList.add('chat-mode-state');
+            menuButtons.forEach(btn => btn.classList.add('hidden-by-chat'));
+            greetingContainer.style.opacity = '0';
+            menuToggle.classList.add('visible');
+        }, 10);
+    }
+
+    function exitChatMode() {
+        assistantLogo.classList.remove('chat-mode-state');
+        assistantLogo.classList.add('side-state');
+        menuButtons.forEach(btn => btn.classList.remove('hidden-by-chat'));
+        greetingContainer.style.opacity = '1';
+        menuToggle.classList.remove('visible');
+    }
+
+    function togglePasswordVisibility(inputId, button) {
+        const input = document.getElementById(inputId);
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        button.textContent = isPassword ? '🙈' : '👁️';
+    }
+
+    function showRegisterView() {
+        loginView.classList.add('hidden');
+        registerView.classList.remove('hidden');
+    }
+
+    function showLoginView() {
+        registerView.classList.add('hidden');
+        loginView.classList.remove('hidden');
+    }
+
+
+    // =================================================================================
+    //  4. FUNCIONES DE LAS VISTAS (BÚSQUEDA, ADMIN, CHAT)
+    // =================================================================================
+
+    // --- Chat ---
+    function handleSend() {
+        const textInput = document.getElementById('text-input');
+        const message = textInput.value.trim();
+        if (!message) return;
+
+        const chatLog = document.getElementById('chat-log');
+        const userDiv = document.createElement('div');
+        userDiv.className = 'chat-message user-message';
+        userDiv.textContent = message;
+        chatLog.appendChild(userDiv);
+        chatLog.scrollTop = chatLog.scrollHeight;
+        textInput.value = '';
+
+        // Lógica de atajos desde el chat
+        const command = message.toLowerCase();
+        if (command.includes('busqueda') || command.includes('fua')) { handleMenuClick('buscar'); }
+        else if (command.includes('observados')) { handleMenuClick('observados'); }
+        else if (command.includes('administrar') || command.includes('ingresar')) { handleMenuClick('admin'); }
+        else if (command.includes('tutorial') || command.includes('informacion')) { handleMenuClick('info'); }
+        else if (command.includes('contacto')) { handleMenuClick('contacto'); }
+    }
+
+    function handleAudio() { alert('Función de audio no implementada.'); }
+
+    // --- Búsqueda ---
+    async function performSearch() {
+        const query = document.getElementById('search-input').value.trim();
+        const resultsList = document.getElementById('search-results-list');
+        resultsList.innerHTML = '<p>Buscando...</p>';
+
+        if (!query) {
+            resultsList.innerHTML = '<p>Ingrese un término de búsqueda para comenzar.</p>';
+            return;
+        }
+
+        try {
+            // Asumiendo que tienes una tabla 'atenciones_emergencia' con estas columnas
+            const { data, error } = await supabase
+                .from('atenciones_emergencia')
+                .select('*')
+                .or(`fua.ilike.%${query}%, episodio.ilike.%${query}%, nombre_paciente.ilike.%${query}%`);
+            
+            if (error) throw error;
+
+            if (data && data.length > 0) {
+                resultsList.innerHTML = '';
+                data.forEach(atencion => {
+                    const item = document.createElement('div');
+                    item.className = 'search-result-item'; // Puedes estilizar esta clase
+                    item.style.padding = '10px';
+                    item.style.borderBottom = '1px solid #eee';
+                    item.innerHTML = `
+                        <strong>FUA:</strong> ${atencion.fua || 'N/A'}  
+
+                        <strong>Paciente:</strong> ${atencion.nombre_paciente || 'N/A'}  
+
+                        <strong>Episodio:</strong> ${atencion.episodio || 'N/A'}
+                    `;
+                    resultsList.appendChild(item);
+                });
+            } else {
+                resultsList.innerHTML = '<p>No se encontraron resultados.</p>';
+            }
+        } catch (err) {
+            console.error("Error en la búsqueda:", err);
+            resultsList.innerHTML = `<p style="color: red;">Error al realizar la búsqueda.</p>`;
+        }
+    }
+
+    function handleVoiceSearch() { alert('Búsqueda por voz no implementada.'); }
+
+    // --- Administración ---
+    function switchAdminTab(tabName, clickedButton) {
+        document.querySelectorAll('#admin-view .tab-button').forEach(btn => btn.classList.remove('active'));
+        clickedButton.classList.add('active');
+        document.querySelectorAll('#admin-view .tab-content').forEach(content => {
+            content.classList.toggle('active', content.id === `tab-${tabName}`);
+        });
+    }
+
+    function addFuaEntry() {
+        const container = document.getElementById('fua-entries-container');
+        const newEntryRow = document.createElement('div');
+        newEntryRow.className = 'fua-entry-row';
+        newEntryRow.innerHTML = `<input type="text" placeholder="Nº FUA o Episodio"><input type="date"><button class="delete-fua-btn" onclick="deleteFuaEntry(this)">X</button>`;
+        container.appendChild(newEntryRow);
+    }
+
+    function deleteFuaEntry(button) {
+        button.parentElement.remove();
+    }
+
+
+
+    function removeLastFuaEntry() {
+        const container = document.getElementById('fua-entries-container');
+        const rows = container.querySelectorAll('.fua-entry-row');
+        if (rows.length > 1) {
+            rows[rows.length - 1].remove();
+        }
+    }
+
+    function saveAllFuas() {
+        const entries = document.querySelectorAll('.fua-entry-row');
+        alert(`Simulando guardado de ${entries.length} registros. (Función no implementada)`);
+    }
 
 </script>
+
 
 </body>
 </html>
