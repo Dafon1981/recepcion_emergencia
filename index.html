@@ -3,47 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recepción de Emergencia - Consulta FUA v2.1</title>
+    <title>Recepción de Emergencia - Consulta FUA v2.2</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
     :root {
-        --primary-color: #0A2A43; --accent-color: #D4AF37; --text-color-light: #FFFFFF;
-        --background-color: #f0f2f5; --success-color: #28a745;
+        --primary-color: #0A2A43; 
+        --accent-color: #D4AF37;  
+        --text-color-light: #FFFFFF;
+        --background-color: #f0f2f5; 
+        --success-color: #28a745;
     }
-    body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background-color ); display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
-    .mobile-container { width: 390px; height: 700px; position: relative; overflow: hidden; border-radius: 45px; box-shadow: 0 15px 40px rgba(0,0,0,0.25); background: #ffffff; border: 12px solid #fff; }
+    body { 
+        margin: 0; 
+        font-family: 'Inter', sans-serif; 
+        background: var(--background-color ); 
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        min-height: 100vh; 
+        overflow: hidden; 
+    }
+    .mobile-container { 
+        width: 390px; 
+        height: 700px; 
+        position: relative; 
+        overflow: hidden; 
+        border-radius: 45px; 
+        box-shadow: 0 15px 40px rgba(0,0,0,0.25); 
+        background: #ffffff; 
+        border: 12px solid #fff; 
+    }
     
-    .fullscreen-view { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--background-color); z-index: 20; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; transition: opacity 0.3s, transform 0.3s; }
-    .fullscreen-view.hidden { opacity: 0; pointer-events: none; transform: scale(0.95); }
-    .login-box { width: 100%; max-width: 320px; padding: 30px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
-    .login-box h2 { color: var(--primary-color); margin-top: 0; }
-    .login-box input { width: 100%; padding: 15px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
-    .password-wrapper { position: relative; display: flex; align-items: center; }
-    .password-wrapper input { padding-right: 45px; }
-    .toggle-password { position: absolute; right: 15px; background: none; border: none; cursor: pointer; opacity: 0.5; }
-    .login-box button { width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 18px; font-weight: 600; cursor: pointer; }
-    .btn-primary { background: var(--primary-color); color: white; }
-    .btn-secondary { background: none; color: var(--primary-color); margin-top: 10px; }
+    /* --- Vistas de Pantalla Completa (Login, Admin, etc.) --- */
+    .fullscreen-view { 
+        position: absolute; 
+        top: 0; left: 0; right: 0; bottom: 0; 
+        background: var(--background-color); 
+        z-index: 20; 
+        display: flex; 
+        flex-direction: column; 
+        justify-content: center; 
+        align-items: center; 
+        padding: 20px; 
+        box-sizing: border-box; 
+        transition: opacity 0.3s, transform 0.3s; 
+    }
+    .fullscreen-view.hidden { 
+        opacity: 0; 
+        pointer-events: none; 
+        transform: scale(0.95); 
+    }
+    .login-box { 
+        width: 100%; 
+        max-width: 320px; 
+        padding: 30px; 
+        background: white; 
+        border-radius: 20px; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+        text-align: center; 
+    }
+    .login-box h2 { 
+        color: var(--primary-color); 
+        margin-top: 0; 
+    }
+    .login-box button { 
+        width: 100%; 
+        padding: 15px; 
+        border: none; 
+        border-radius: 10px; 
+        font-size: 18px; 
+        font-weight: 600; 
+        cursor: pointer; 
+    }
+    .btn-primary { 
+        background: var(--primary-color); 
+        color: white; 
+    }
+    .btn-secondary { 
+        background: none; 
+        color: var(--primary-color); 
+        margin-top: 10px; 
+    }
+
+    /* --- CORRECCIÓN: Contenedor y Estilos para el Ojo de Contraseña --- */
+    .password-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    .password-wrapper input {
+        width: 100%;
+        padding: 15px;
+        padding-right: 50px; /* Espacio para el ícono */
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        box-sizing: border-box;
+        font-size: 16px;
+    }
+    .toggle-password {
+        position: absolute;
+        right: 15px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        opacity: 0.5;
+        z-index: 2;
+    }
     
+    /* --- Estructura Principal de la App --- */
     #main-app.hidden { display: none; }
-    .header { position: absolute; top: 0; left: 0; right: 0; height: 90px; background: var(--primary-color); z-index: 5; display: flex; justify-content: center; align-items: center; }
+    .header { 
+        position: absolute; top: 0; left: 0; right: 0; height: 90px; 
+        background: var(--primary-color); z-index: 5; display: flex; 
+        justify-content: center; align-items: center; 
+    }
     .header-title { color: var(--text-color-light); font-size: 24px; font-weight: bold; }
     
-    #assistant-video { position: absolute; bottom: 30px; height: 85%; z-index: 1; transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); object-fit: cover; object-position: center top; }
+    #assistant-video { 
+        position: absolute; bottom: 30px; height: 85%; z-index: 1; 
+        transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); 
+        object-fit: cover; object-position: center top; 
+    }
     #assistant-video.initial-state { right: 50%; transform: translateX(50%); height: 90%; }
     #assistant-video.side-state { right: -40px; transform: translateX(0); }
     #assistant-video.chat-mode-state { right: 50%; transform: translateX(50%); height: 95%; }
     
-    .menu-button { position: absolute; left: 25px; z-index: 10; background: var(--primary-color); border: 2px solid var(--accent-color); border-radius: 30px; padding: 15px 25px; font-size: 16px; font-weight: 600; color: var(--text-color-light); cursor: pointer; min-width: 180px; opacity: 0; transform: translateX(-30px); pointer-events: none; transition: all 0.4s; }
+    .menu-button { 
+        position: absolute; left: 25px; z-index: 10; background: var(--primary-color); 
+        border: 2px solid var(--accent-color); border-radius: 30px; padding: 15px 25px; 
+        font-size: 16px; font-weight: 600; color: var(--text-color-light); cursor: pointer; 
+        min-width: 180px; opacity: 0; transform: translateX(-30px); pointer-events: none; transition: all 0.4s; 
+    }
     .menu-button.visible { opacity: 1; transform: translateX(0); pointer-events: auto; }
     #btn-buscar { top: 120px; transition-delay: 0.2s; }
     #btn-observados { top: 190px; transition-delay: 0.3s; }
-    #btn-admin { top: 260px; transition-delay: 0.4s; } /* Cambiado de Ingreso a Admin */
+    #btn-admin { top: 260px; transition-delay: 0.4s; }
     #btn-info { top: 330px; transition-delay: 0.5s; }
     #btn-contacto { top: 400px; transition-delay: 0.6s; }
 
+    /* --- Modo Chat --- */
     #chat-view { position: absolute; bottom: 10px; left: 10px; right: 10px; z-index: 15; }
     .chat-log { max-height: 150px; overflow-y: auto; margin-bottom: 10px; }
     .chat-message { margin-bottom: 10px; padding: 10px 15px; border-radius: 15px; max-width: 80%; }
@@ -52,7 +154,7 @@
     .input-bar { display: flex; align-items: center; background: white; border-radius: 30px; padding: 5px 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
     #text-input { flex-grow: 1; border: none; background: none; outline: none; padding: 10px; font-size: 16px; }
     
-    /* Estilos para el panel de admin y otras vistas */
+    /* --- Estilos Panel Admin --- */
     #admin-view .btn-primary { margin-top: 20px; }
     .user-list { width: 100%; list-style: none; padding: 0; max-height: 300px; overflow-y: auto; }
     .user-list li { background: #f8f9fa; padding: 10px 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
@@ -71,7 +173,7 @@
         <div id="login-view" class="fullscreen-view">
             <div class="login-box">
                 <h2>Bienvenido</h2>
-                <input type="text" id="username" placeholder="Usuario">
+                <input type="text" id="username" placeholder="Usuario" style="margin-bottom: 15px;">
                 <div class="password-wrapper">
                     <input type="password" id="password" placeholder="Contraseña">
                     <button class="toggle-password" onclick="togglePasswordVisibility('password', this)">👁️</button>
@@ -83,13 +185,13 @@
         <div id="register-view" class="fullscreen-view hidden">
             <div class="login-box">
                 <h2>Crear Cuenta</h2>
-                <input type="text" id="reg-name" placeholder="Nombre Completo">
+                <input type="text" id="reg-name" placeholder="Nombre Completo" style="margin-bottom: 15px;">
                 <div class="password-wrapper">
                     <input type="password" id="reg-password" placeholder="Contraseña">
                     <button class="toggle-password" onclick="togglePasswordVisibility('reg-password', this)">👁️</button>
                 </div>
-                <input type="email" id="reg-email" placeholder="Correo Electrónico">
-                <input type="tel" id="reg-phone" placeholder="Teléfono (WhatsApp)">
+                <input type="email" id="reg-email" placeholder="Correo Electrónico" style="margin-bottom: 15px;">
+                <input type="tel" id="reg-phone" placeholder="Teléfono (WhatsApp)" style="margin-bottom: 15px;">
                 <button class="btn-primary" onclick="handleRegister()">Registrar</button>
                 <button class="btn-secondary" onclick="showLoginView()">Volver al Inicio</button>
             </div>
@@ -130,7 +232,7 @@
             </div>
         </div>
         <div id="password-prompt" class="fullscreen-view hidden">
-            <!-- Contenido del prompt de contraseña -->
+             <!-- Este div se llenará dinámicamente con JS -->
         </div>
     </div>
 
@@ -148,6 +250,7 @@
     const registerView = document.getElementById('register-view');
     const mainApp = document.getElementById('main-app');
     const adminView = document.getElementById('admin-view');
+    const passwordPrompt = document.getElementById('password-prompt');
     const assistantVideo = document.getElementById('assistant-video');
     const menuButtons = document.querySelectorAll('.menu-button');
 
@@ -191,21 +294,18 @@
         loginView.classList.add('hidden');
         mainApp.classList.remove('hidden');
         
-        // Iniciar animación de video y botones
         setTimeout(() => {
             assistantVideo.classList.remove('initial-state');
             assistantVideo.classList.add('side-state');
             menuButtons.forEach(button => {
-                // Ocultar el botón de admin si el usuario no es admin
                 if (button.id === 'btn-admin' && currentUser.role !== 'admin') {
                     button.style.display = 'none';
                 } else {
                     button.classList.add('visible');
                 }
             });
-        }, 1500); // Acortado para una entrada más rápida
+        }, 1500);
 
-        // Saludo personalizado
         const chatLog = document.getElementById('chat-log');
         const hour = new Date().getHours();
         let greeting = (hour < 12) ? 'Buenos días' : (hour < 18) ? 'Buenas tardes' : 'Buenas noches';
@@ -246,11 +346,36 @@
         user.is_validated = !user.is_validated;
         alert(`El usuario ${user.name} ahora está ${user.is_validated ? 'ACTIVADO' : 'DESACTIVADO'}.`);
     }
-    
-    // ... (Aquí irían las funciones de showPasswordPrompt, búsqueda por voz, etc.)
+
+    function showPasswordPrompt(action) {
+        passwordPrompt.innerHTML = `
+            <div class="login-box">
+                <h3>Acceso a ${action === 'ingreso' ? 'Ingresos' : 'Acción'}</h3>
+                <div class="password-wrapper">
+                    <input type="password" id="prompt-password" placeholder="Contraseña de acceso">
+                    <button class="toggle-password" onclick="togglePasswordVisibility('prompt-password', this)">👁️</button>
+                </div>
+                <button class="btn-primary" onclick="checkPassword('${action}')">Acceder</button>
+                <button class="btn-secondary" onclick="closePasswordPrompt()">Cancelar</button>
+            </div>
+        `;
+        passwordPrompt.classList.remove('hidden');
+    }
+
+    function closePasswordPrompt() {
+        passwordPrompt.classList.add('hidden');
+    }
+
+    function checkPassword(action) {
+        const pass = document.getElementById('prompt-password').value;
+        if (action === 'ingreso' && pass === '123456789') {
+            closePasswordPrompt();
+            alert("Acceso concedido. Mostrando formulario de ingreso de FUAs... (Funcionalidad por implementar)");
+        } else {
+            alert("Contraseña incorrecta.");
+        }
+    }
 
 </script>
 </body>
 </html>
-
-
