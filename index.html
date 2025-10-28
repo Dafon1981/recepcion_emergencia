@@ -376,10 +376,53 @@
         alert(`Simulando guardado de ${entries.length} registros.`);
     }
     
-    function performSearch() {
-        const query = document.getElementById('search-input').value;
-        alert(`Buscando: ${query}`);
+    // REEMPLAZA TU FUNCIÓN performSearch CON ESTA
+async function performSearch() {
+    const query = document.getElementById('search-input').value.trim();
+    const resultsList = document.getElementById('search-results-list');
+    
+    if (!query) {
+        resultsList.innerHTML = '<p style="text-align: center; color: #777;">Ingrese un término de búsqueda para comenzar.</p>';
+        return;
     }
+
+    resultsList.innerHTML = '<p style="text-align: center; color: #777;">Buscando...</p>';
+
+    // Consulta a Supabase. Busca en las columnas 'numero_fua', 'episodio' y 'nombre_paciente'
+    // 'ilike' es para búsqueda case-insensitive que contenga el texto.
+    const { data, error } = await supabase
+        .from('fuas') // Asume que tu tabla se llama 'fuas'
+        .select('*')
+        .or(`numero_fua.ilike.%${query}%, episodio.ilike.%${query}%, nombre_paciente.ilike.%${query}%`);
+
+    if (error) {
+        console.error('Error en la búsqueda:', error);
+        resultsList.innerHTML = `<p style="text-align: center; color: var(--danger-color);">Error al buscar: ${error.message}</p>`;
+        return;
+    }
+
+    if (data && data.length > 0) {
+        resultsList.innerHTML = ''; // Limpia el mensaje "Buscando..."
+        data.forEach(fua => {
+            const resultItem = document.createElement('div');
+            resultItem.style.padding = '10px';
+            resultItem.style.borderBottom = '1px solid #eee';
+            resultItem.innerHTML = `
+                <strong>FUA:</strong> ${fua.numero_fua || 'N/A'}  
+
+                <strong>Paciente:</strong> ${fua.nombre_paciente || 'N/A'}  
+
+                <strong>Episodio:</strong> ${fua.episodio || 'N/A'}  
+
+                <strong>Fecha:</strong> ${new Date(fua.created_at).toLocaleDateString()}
+            `;
+            resultsList.appendChild(resultItem);
+        });
+    } else {
+        resultsList.innerHTML = '<p style="text-align: center; color: #777;">No se encontraron resultados.</p>';
+    }
+}
+
 
     function handleVoiceSearch() {
         alert('Simulando búsqueda por voz...');
@@ -387,4 +430,5 @@
 </script>
 </body>
 </html>
+
 
