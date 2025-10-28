@@ -3,379 +3,324 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recepción de Emergencia - Consulta FUA v2.2</title>
+    <title>Recepcion y registor Emergencia Seguros</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+    /* --- Estilos Generales --- */
     :root {
-        --primary-color: #0A2A43; 
-        --accent-color: #D4AF37;  
-        --text-color-light: #FFFFFF;
-        --background-color: #f0f2f5; 
-        --success-color: #28a745;
-    }
-    body { 
-        margin: 0; 
-        font-family: 'Inter', sans-serif; 
-        background: var(--background-color ); 
-        display: flex; 
-        justify-content: center; 
-        align-items: center; 
-        min-height: 100vh; 
-        overflow: hidden; 
-    }
-    .mobile-container { 
-        width: 390px; 
-        height: 700px; 
-        position: relative; 
-        overflow: hidden; 
-        border-radius: 45px; 
-        box-shadow: 0 15px 40px rgba(0,0,0,0.25); 
-        background: #ffffff; 
-        border: 12px solid #fff; 
-    }
-    
-    /* --- Vistas de Pantalla Completa (Login, Admin, etc.) --- */
-    .fullscreen-view { 
-        position: absolute; 
-        top: 0; left: 0; right: 0; bottom: 0; 
-        background: var(--background-color); 
-        z-index: 20; 
-        display: flex; 
-        flex-direction: column; 
-        justify-content: center; 
-        align-items: center; 
-        padding: 20px; 
-        box-sizing: border-box; 
-        transition: opacity 0.3s, transform 0.3s; 
-    }
-    .fullscreen-view.hidden { 
-        opacity: 0; 
-        pointer-events: none; 
-        transform: scale(0.95); 
-    }
-    .login-box { 
-        width: 100%; 
-        max-width: 320px; 
-        padding: 30px; 
-        background: white; 
-        border-radius: 20px; 
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
-        text-align: center; 
-    }
-    .login-box h2 { 
-        color: var(--primary-color); 
-        margin-top: 0; 
-    }
-    .login-box button { 
-        width: 100%; 
-        padding: 15px; 
-        border: none; 
-        border-radius: 10px; 
-        font-size: 18px; 
-        font-weight: 600; 
-        cursor: pointer; 
-    }
-    .btn-primary { 
-        background: var(--primary-color); 
-        color: white; 
-    }
-    .btn-secondary { 
-        background: none; 
-        color: var(--primary-color); 
-        margin-top: 10px; 
+        --primary-color-start: #667eea;
+        --primary-color-end: #764ba2;
+        --secondary-color-start: #4facfe;
+        --secondary-color-end: #00f2fe;
+        --background-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100% );
     }
 
-    /* --- CORRECCIÓN: Contenedor y Estilos para el Ojo de Contraseña --- */
-    .password-wrapper {
-        position: relative;
+    body {
+        margin: 0;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background: var(--background-gradient);
         display: flex;
+        justify-content: center;
         align-items: center;
-        width: 100%;
-        margin-bottom: 15px;
+        min-height: 100vh;
+        overflow: hidden;
     }
-    .password-wrapper input {
-        width: 100%;
-        padding: 15px;
-        padding-right: 50px; /* Espacio para el ícono */
-        border: 1px solid #ccc;
-        border-radius: 10px;
-        box-sizing: border-box;
-        font-size: 16px;
-    }
-    .toggle-password {
-        position: absolute;
-        right: 15px;
-        background: none;
-        border: none;
-        cursor: pointer;
-        opacity: 0.5;
-        z-index: 2;
-    }
-    
-    /* --- Estructura Principal de la App --- */
-    #main-app.hidden { display: none; }
-    .header { 
-        position: absolute; top: 0; left: 0; right: 0; height: 90px; 
-        background: var(--primary-color); z-index: 5; display: flex; 
-        justify-content: center; align-items: center; 
-    }
-    .header-title { color: var(--text-color-light); font-size: 24px; font-weight: bold; }
-    
-    #assistant-video { 
-        position: absolute; bottom: 30px; height: 85%; z-index: 1; 
-        transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); 
-        object-fit: cover; object-position: center top; 
-    }
-    #assistant-video.initial-state { right: 50%; transform: translateX(50%); height: 90%; }
-    #assistant-video.side-state { right: -40px; transform: translateX(0); }
-    #assistant-video.chat-mode-state { right: 50%; transform: translateX(50%); height: 95%; }
-    
-    .menu-button { 
-        position: absolute; left: 25px; z-index: 10; background: var(--primary-color); 
-        border: 2px solid var(--accent-color); border-radius: 30px; padding: 15px 25px; 
-        font-size: 16px; font-weight: 600; color: var(--text-color-light); cursor: pointer; 
-        min-width: 180px; opacity: 0; transform: translateX(-30px); pointer-events: none; transition: all 0.4s; 
-    }
-    .menu-button.visible { opacity: 1; transform: translateX(0); pointer-events: auto; }
-    #btn-buscar { top: 120px; transition-delay: 0.2s; }
-    #btn-observados { top: 190px; transition-delay: 0.3s; }
-    #btn-admin { top: 260px; transition-delay: 0.4s; }
-    #btn-info { top: 330px; transition-delay: 0.5s; }
-    #btn-contacto { top: 400px; transition-delay: 0.6s; }
 
-    /* --- Modo Chat --- */
-    #chat-view { position: absolute; bottom: 10px; left: 10px; right: 10px; z-index: 15; }
-    .chat-log { max-height: 150px; overflow-y: auto; margin-bottom: 10px; }
-    .chat-message { margin-bottom: 10px; padding: 10px 15px; border-radius: 15px; max-width: 80%; }
-    .user-message { background: var(--primary-color); color: white; align-self: flex-end; margin-left: auto; }
-    .ia-message { background: #e9e9eb; color: #333; align-self: flex-start; }
-    .input-bar { display: flex; align-items: center; background: white; border-radius: 30px; padding: 5px 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-    #text-input { flex-grow: 1; border: none; background: none; outline: none; padding: 10px; font-size: 16px; }
+    /* --- Contenedor Principal --- */
+    .mobile-container {
+        width: 390px;
+        height: 700px;
+        position: relative;
+        overflow: hidden;
+        border-radius: 45px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+        background: #ffffff;
+        border: 12px solid #fff;
+    }
     
-    /* --- Estilos Panel Admin --- */
-    #admin-view .btn-primary { margin-top: 20px; }
-    .user-list { width: 100%; list-style: none; padding: 0; max-height: 300px; overflow-y: auto; }
-    .user-list li { background: #f8f9fa; padding: 10px 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-    .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-    input:checked + .slider { background-color: var(--success-color); }
-    input:checked + .slider:before { transform: translateX(26px); }
+    /* --- VIDEO del Asistente --- */
+    #assistant-video {
+        position: absolute;
+        bottom: 30px;
+        height: 85%;
+        z-index: 1;
+        transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        object-fit: cover;
+        object-position: center top;
+        filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1));
+    }
+    
+    #assistant-video.initial-state {
+        right: 50%;
+        transform: translateX(50%);
+        height: 90%;
+    }
+
+    #assistant-video.side-state {
+        right: -40px;
+        transform: translateX(0);
+    }
+    
+    #assistant-video.chat-mode-state {
+        right: 50%;
+        transform: translateX(50%);
+        height: 95%;
+    }
+
+
+    /* --- Cabecera --- */
+    .header {
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 90px;
+        background: linear-gradient(135deg, var(--primary-color-start) 0%, var(--primary-color-end) 100%);
+        z-index: 5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        /* NUEVA ANIMACIÓN */
+        transform: translateY(-100%);
+        animation: slide-down 0.8s ease-out 0.5s forwards;
+    }
+    .header-title {
+        color: white;
+        font-size: 28px;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        opacity: 0;
+        animation: fade-in 1s ease-out 1.3s forwards;
+        cursor: pointer; /* NUEVO: Cursor para indicar que es clickeable */
+    }
+
+    @keyframes slide-down {
+        to { transform: translateY(0); }
+    }
+    @keyframes fade-in {
+        to { opacity: 1; }
+    }
+
+    /* --- Botones del Menú --- */
+    .menu-button {
+        position: absolute;
+        left: 25px;
+        z-index: 10;
+        background: linear-gradient(to right, var(--secondary-color-start) 0%, var(--secondary-color-end) 100%);
+        border: none;
+        border-radius: 30px;
+        padding: 15px 25px;
+        font-size: 16px;
+        font-weight: 600;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 6px 15px rgba(0, 178, 255, 0.3);
+        transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+        min-width: 180px;
+        opacity: 0;
+        transform: translateX(-30px);
+        pointer-events: none;
+    }
+    
+    .menu-button.visible {
+        opacity: 1;
+        transform: translateX(0);
+        pointer-events: auto;
+    }
+    
+    .menu-button.hidden-by-chat {
+        opacity: 0;
+        transform: translateX(-30px);
+        pointer-events: none;
+    }
+
+    #btn-servicios { top: 120px; transition-delay: 0.2s; }
+    #btn-portafolio { top: 190px; transition-delay: 0.3s; }
+    #btn-nosotros { top: 260px; transition-delay: 0.4s; }
+    #btn-contacto { top: 330px; transition-delay: 0.5s; }
+
+    .menu-button.active { 
+        background: linear-gradient(135deg, var(--primary-color-start) 0%, var(--primary-color-end) 100%);
+    }
+
+    /* --- Caja de Diálogo --- */
+    .dialog-box {
+        position: absolute; bottom: 25px; left: 25px; right: 25px; z-index: 3; display: flex; flex-direction: column; max-height: 45%;
+    }
+    .chat-log {
+        flex-grow: 1; overflow-y: auto; margin-bottom: 20px; padding: 15px; background-color: rgba(255, 255, 255, 0.6);
+        border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); backdrop-filter: blur(5px); max-height: 150px;
+    }
+    .chat-message { margin-bottom: 12px; padding: 12px 16px; border-radius: 18px; max-width: 80%; font-size: 16px; line-height: 1.5; }
+    .user-message { background: linear-gradient(135deg, var(--primary-color-start) 0%, var(--primary-color-end) 100%); color: white; align-self: flex-end; }
+    .ia-message { background: #fff; color: #2d3748; align-self: flex-start; }
+    .input-bar { display: flex; align-items: center; background: white; border-radius: 30px; padding: 8px 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+    #text-input { flex-grow: 1; border: none; background: none; outline: none; padding: 0 15px; font-size: 16px; color: #4a5568; }
+    .action-button { background: none; border: none; cursor: pointer; padding: 8px; display: flex; }
+    .action-button img { width: 24px; height: 24px; }
+    
+    .menu-toggle {
+        display: none; position: absolute; left: 25px; top: 120px; background: linear-gradient(to right, var(--secondary-color-start) 0%, var(--secondary-color-end) 100%);
+        width: 50px; height: 50px; border-radius: 50%; border: none; color: white; font-size: 24px;
+        cursor: pointer; z-index: 12; box-shadow: 0 4px 10px rgba(0,0,0,0.2); justify-content: center; align-items: center;
+    }
+    .menu-toggle.visible { display: flex; }
+
+    /* --- Vista de Contacto --- */
+    #contact-view {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; padding: 25px; box-sizing: border-box; flex-direction: column;
+        opacity: 0; pointer-events: none; transition: opacity 0.4s ease-in-out; z-index: 15; background: var(--background-gradient);
+    }
+    #contact-view.visible { opacity: 1; pointer-events: auto; }
+    #contact-view h3 { text-align: center; margin-top: 60px; color: #2d3748; font-size: 24px; }
+    .map-wrapper { width: 100%; height: 40%; border-radius: 25px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.1); margin: 15px 0; }
+    .map-wrapper iframe { width: 100%; height: 100%; border: none; }
+    .form-contact { display: flex; flex-direction: column; gap: 15px; }
+    .form-contact input, .form-contact textarea { padding: 15px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 16px; }
+    .form-contact button { background: linear-gradient(135deg, var(--primary-color-start) 0%, var(--primary-color-end) 100%); color: white; padding: 16px; border: none; border-radius: 12px; font-size: 18px; cursor: pointer; }
+    #btn-back-from-contact { position: absolute; top: 45px; left: 25px; background: none; border: none; font-size: 28px; color: #2d3748; cursor: pointer; }
+
 </style>
 </head>
 <body>
 
     <div class="mobile-container">
-        <!-- VISTA DE LOGIN/REGISTRO -->
-        <div id="login-view" class="fullscreen-view">
-            <div class="login-box">
-                <h2>Bienvenido</h2>
-                <input type="text" id="username" placeholder="Usuario" style="margin-bottom: 15px;">
-                <div class="password-wrapper">
-                    <input type="password" id="password" placeholder="Contraseña">
-                    <button class="toggle-password" onclick="togglePasswordVisibility('password', this)">👁️</button>
-                </div>
-                <button class="btn-primary" onclick="handleLogin()">Entrar</button>
-                <button class="btn-secondary" onclick="showRegisterView()">Registrarse</button>
+        <header id="main-header" class="header">
+            <!-- NUEVO: Añadido el onclick para entrar a modo chat -->
+            <div class="header-title" onclick="enterChatMode()">Recepcion Emergenciao</div>
+        </header>
+        
+        <video id="assistant-video" class="initial-state" autoplay muted loop playsinline>
+            <source src="https://github.com/Dafon1981/recepcion/blob/main/eee.mp4?raw=true" type="video/mp4">
+            Tu navegador no soporta el vídeo.
+        </video>
+
+        <button id="btn-servicios" class="menu-button" onclick="handleMenuClick('Servicios', this )">Busqueda</button>
+        <button id="btn-portafolio" class="menu-button" onclick="handleMenuClick('Portafolio', this)">Observados</button>
+        <button id="btn-nosotros" class="menu-button" onclick="handleMenuClick('Nosotros', this)">Acerca de nosotros</button>
+        <button id="btn-contacto" class="menu-button" onclick="handleMenuClick('Contacto', this)">Contacto</button>
+        
+        <button id="menu-toggle" class="menu-toggle" onclick="exitChatMode()">≡</button>
+
+        <div id="chat-view" class="dialog-box">
+            <div class="chat-log" id="chat-log">
+                <div class="chat-message ia-message">¡Hola! Soy tu asistente digital. ¿En qué puedo ayudarte a impulsar tu negocio hoy?</div>
+            </div>
+            <div class="input-bar">
+                <input type="text" id="text-input" placeholder="Pregúntame algo..." 
+                    onkeydown="if(event.key==='Enter') handleSend()"
+                    onfocus="enterChatMode()">
+                <button class="action-button" onclick="handleSend()">
+                    <img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Enviar">
+                </button>
             </div>
         </div>
-        <div id="register-view" class="fullscreen-view hidden">
-            <div class="login-box">
-                <h2>Crear Cuenta</h2>
-                <input type="text" id="reg-name" placeholder="Nombre Completo" style="margin-bottom: 15px;">
-                <div class="password-wrapper">
-                    <input type="password" id="reg-password" placeholder="Contraseña">
-                    <button class="toggle-password" onclick="togglePasswordVisibility('reg-password', this)">👁️</button>
-                </div>
-                <input type="email" id="reg-email" placeholder="Correo Electrónico" style="margin-bottom: 15px;">
-                <input type="tel" id="reg-phone" placeholder="Teléfono (WhatsApp)" style="margin-bottom: 15px;">
-                <button class="btn-primary" onclick="handleRegister()">Registrar</button>
-                <button class="btn-secondary" onclick="showLoginView()">Volver al Inicio</button>
+        
+        <div id="contact-view">
+            <button id="btn-back-from-contact" onclick="handleMenuClick('Inicio', null )">&times;</button>
+            <h3>Nuestra Ubicación y Contacto</h3>
+            <div class="map-wrapper">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.939393928124!2d-77.03013968518738!3d-12.04565199146927!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c8b5d37f136f%3A0x93130538a84a2a62!2sPlaza%20de%20Armas%20de%20Lima!5e0!3m2!1ses!2spe!4v1668023073045!5m2!1ses!2spe" allowfullscreen="" loading="lazy"></iframe>
             </div>
-        </div>
-
-        <!-- APLICACIÓN PRINCIPAL -->
-        <div id="main-app" class="hidden">
-            <header id="main-header" class="header">
-                <div id="header-title" class="header-title">Recepción Emergencia</div>
-            </header>
-            
-            <video id="assistant-video" class="initial-state" autoplay muted loop playsinline>
-                <source src="https://github.com/Dafon1981/recepcion/blob/main/eee.mp4?raw=true" type="video/mp4">
-            </video>
-
-            <button id="btn-buscar" class="menu-button" onclick="handleMenuClick('Buscar' )">Buscar FUA</button>
-            <button id="btn-observados" class="menu-button" onclick="handleMenuClick('Observados')">Ver Observados</button>
-            <button id="btn-admin" class="menu-button" onclick="handleMenuClick('Admin')">Administrar</button>
-            <button id="btn-info" class="menu-button" onclick="handleMenuClick('Info')">Información</button>
-            <button id="btn-contacto" class="menu-button" onclick="handleMenuClick('Contacto')">Contacto</button>
-
-            <div id="chat-view">
-                <div class="chat-log" id="chat-log"></div>
-                <div class="input-bar">
-                     <input type="text" id="text-input" placeholder="Haz una consulta..." onkeydown="if(event.key==='Enter') handleSend()">
-                </div>
-            </div>
-        </div>
-
-        <!-- VISTAS DE OVERLAY (ADMIN, INGRESO, ETC.) -->
-        <div id="admin-view" class="fullscreen-view hidden">
-            <div class="login-box">
-                <h2>Panel de Administración</h2>
-                <p>Gestiona los usuarios pendientes de activación.</p>
-                <ul class="user-list" id="user-list-container"></ul>
-                <button class="btn-primary" onclick="showPasswordPrompt('ingreso')">Ingresar Nuevos FUAs</button>
-                <button class="btn-secondary" onclick="closeAdminView()">Cerrar Panel</button>
-            </div>
-        </div>
-        <div id="password-prompt" class="fullscreen-view hidden">
-             <!-- Este div se llenará dinámicamente con JS -->
+            <form class="form-contact" onsubmit="event.preventDefault( ); alert('Formulario enviado. ¡Gracias!');">
+                <input type="text" placeholder="Tu Nombre" required>
+                <input type="email" placeholder="Tu Correo Electrónico" required>
+                <textarea rows="2" placeholder="Tu Mensaje" required></textarea>
+                <button type="submit">Enviar Mensaje</button>
+            </form>
         </div>
     </div>
 
-<script>
-    // --- ESTADO Y SIMULACIÓN DE BD ---
-    let currentUser = null;
-    const OPENROUTER_API_KEY = "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";
-    let db_users = [
-        { id: 1, name: 'manuel', email: 'admin@example.com', password: 'mutter', phone: '999888777', is_validated: true, role: 'admin' },
-        { id: 2, name: 'Ana Lopez', email: 'ana@example.com', password: '123', phone: '987654321', is_validated: false, role: 'user' }
-    ];
-
-    // --- REFERENCIAS AL DOM ---
-    const loginView = document.getElementById('login-view');
-    const registerView = document.getElementById('register-view');
-    const mainApp = document.getElementById('main-app');
-    const adminView = document.getElementById('admin-view');
-    const passwordPrompt = document.getElementById('password-prompt');
-    const assistantVideo = document.getElementById('assistant-video');
-    const menuButtons = document.querySelectorAll('.menu-button');
-
-    // --- LÓGICA DE VISIBILIDAD ---
-    function showLoginView() { registerView.classList.add('hidden'); loginView.classList.remove('hidden'); }
-    function showRegisterView() { loginView.classList.add('hidden'); registerView.classList.remove('hidden'); }
-    function showAdminView() { adminView.classList.remove('hidden'); loadUsersToAdminPanel(); }
-    function closeAdminView() { adminView.classList.add('hidden'); }
-    
-    function togglePasswordVisibility(inputId, button) {
-        const input = document.getElementById(inputId);
-        const isPassword = input.type === 'password';
-        input.type = isPassword ? 'text' : 'password';
-        button.textContent = isPassword ? '🙈' : '👁️';
-    }
-
-    // --- LÓGICA DE LOGIN Y APP ---
-    function handleLogin() {
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value.trim();
-        
-        const user = db_users.find(u => u.name === username && u.password === password);
-        if (user) {
-            if (user.is_validated) {
-                currentUser = user;
-                initApp();
-            } else {
-                alert("Tu cuenta aún no ha sido validada por un administrador.");
-            }
-        } else {
-            alert("Usuario o contraseña incorrectos.");
-        }
-    }
-
-    function handleRegister() {
-        alert(`Registro simulado. Se ha enviado una notificación al administrador.`);
-        showLoginView();
-    }
-
-    function initApp() {
-        loginView.classList.add('hidden');
-        mainApp.classList.remove('hidden');
-        
-        setTimeout(() => {
-            assistantVideo.classList.remove('initial-state');
-            assistantVideo.classList.add('side-state');
-            menuButtons.forEach(button => {
-                if (button.id === 'btn-admin' && currentUser.role !== 'admin') {
-                    button.style.display = 'none';
-                } else {
-                    button.classList.add('visible');
-                }
-            });
-        }, 1500);
-
+    <script>
+        const assistantVideo = document.getElementById('assistant-video');
+        const chatView = document.getElementById('chat-view');
+        const contactView = document.getElementById('contact-view');
+        const menuButtons = document.querySelectorAll('.menu-button');
         const chatLog = document.getElementById('chat-log');
-        const hour = new Date().getHours();
-        let greeting = (hour < 12) ? 'Buenos días' : (hour < 18) ? 'Buenas tardes' : 'Buenas noches';
-        chatLog.innerHTML = `<div class="ia-message">${greeting}, ${currentUser.name}. ¿En qué puedo ayudarte?</div>`;
-    }
+        const textInput = document.getElementById('text-input');
+        const menuToggle = document.getElementById('menu-toggle');
+        const mainHeader = document.getElementById('main-header');
 
-    function handleMenuClick(section) {
-        if (section === 'Admin') {
-            showAdminView();
-        } else {
-            alert(`Navegando a la sección: ${section}. (Funcionalidad por implementar)`);
-        }
-    }
-    
-    // --- LÓGICA DEL PANEL DE ADMIN ---
-    function loadUsersToAdminPanel() {
-        const container = document.getElementById('user-list-container');
-        container.innerHTML = '';
-        db_users.filter(u => u.role !== 'admin').forEach(user => {
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <div>
-                    <strong>${user.name}</strong>  
-
-                    <small><a href="https://wa.me/51${user.phone}" target="_blank" style="color: var(--primary-color );">Contactar por WhatsApp</a></small>
-                </div>
-                <label class="switch">
-                    <input type="checkbox" ${user.is_validated ? 'checked' : ''} onchange="toggleUserValidation(${user.id})">
-                    <span class="slider"></span>
-                </label>
-            `;
-            container.appendChild(li);
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                assistantVideo.classList.remove('initial-state');
+                assistantVideo.classList.add('side-state');
+                menuButtons.forEach(button => button.classList.add('visible'));
+            }, 3000);
         });
-    }
 
-    function toggleUserValidation(userId) {
-        const user = db_users.find(u => u.id === userId);
-        user.is_validated = !user.is_validated;
-        alert(`El usuario ${user.name} ahora está ${user.is_validated ? 'ACTIVADO' : 'DESACTIVADO'}.`);
-    }
+        function handleMenuClick(section, clickedButton) {
+            // CORREGIDO: Asegurarse de que siempre salimos del modo chat al usar el menú
+            exitChatMode(); 
 
-    function showPasswordPrompt(action) {
-        passwordPrompt.innerHTML = `
-            <div class="login-box">
-                <h3>Acceso a ${action === 'ingreso' ? 'Ingresos' : 'Acción'}</h3>
-                <div class="password-wrapper">
-                    <input type="password" id="prompt-password" placeholder="Contraseña de acceso">
-                    <button class="toggle-password" onclick="togglePasswordVisibility('prompt-password', this)">👁️</button>
-                </div>
-                <button class="btn-primary" onclick="checkPassword('${action}')">Acceder</button>
-                <button class="btn-secondary" onclick="closePasswordPrompt()">Cancelar</button>
-            </div>
-        `;
-        passwordPrompt.classList.remove('hidden');
-    }
+            menuButtons.forEach(button => button.classList.remove('active'));
+            if(clickedButton) clickedButton.classList.add('active');
 
-    function closePasswordPrompt() {
-        passwordPrompt.classList.add('hidden');
-    }
-
-    function checkPassword(action) {
-        const pass = document.getElementById('prompt-password').value;
-        if (action === 'ingreso' && pass === '123456789') {
-            closePasswordPrompt();
-            alert("Acceso concedido. Mostrando formulario de ingreso de FUAs... (Funcionalidad por implementar)");
-        } else {
-            alert("Contraseña incorrecta.");
+            if (section === 'Contacto') {
+                assistantVideo.style.opacity = '0';
+                chatView.style.opacity = '0';
+                mainHeader.style.opacity = '0';
+                menuButtons.forEach(btn => btn.classList.remove('visible'));
+                contactView.classList.add('visible');
+            } else {
+                assistantVideo.style.opacity = '1';
+                chatView.style.opacity = '1';
+                mainHeader.style.opacity = '1';
+                contactView.classList.remove('visible');
+                
+                // Hacemos visibles los botones del menú principal
+                menuButtons.forEach(btn => btn.classList.add('visible'));
+                
+                if (section !== 'Inicio') {
+                    addMessage(`Quisiera saber más sobre: ${section}`, 'user-message');
+                    let iaResponse = '';
+                    switch(section) {
+                        case 'Servicios': iaResponse = 'Ofrecemos desde QR dinámicos hasta tiendas online con IA. ¿Qué te interesa más?'; break;
+                        case 'Portafolio': iaResponse = 'En nuestro portafolio verás demos de nuestro poder. ¿Quieres probar el generador de diseños?'; break;
+                        case 'Nosotros': iaResponse = 'Somos una agencia digital que usa IA para potenciar a emprendedores peruanos. ¡Pregúntame más!'; break;
+                    }
+                    setTimeout(() => addMessage(iaResponse, 'ia-message'), 800);
+                }
+            }
         }
-    }
 
-</script>
+        function handleSend() {
+            const message = textInput.value.trim();
+            if (!message) return;
+            addMessage(message, 'user-message');
+            textInput.value = '';
+            setTimeout(() => addMessage("Estoy analizando tu consulta...", 'ia-message'), 800);
+        }
+
+        function addMessage(text, type) {
+            const div = document.createElement('div');
+            div.className = `chat-message ${type}`;
+            div.textContent = text;
+            chatLog.appendChild(div);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        function enterChatMode() {
+            menuButtons.forEach(button => {
+                button.classList.remove('visible'); // Usamos la clase de visibilidad
+            });
+            menuToggle.classList.add('visible');
+            assistantVideo.classList.remove('side-state');
+            assistantVideo.classList.add('chat-mode-state');
+        }
+
+        function exitChatMode() {
+            menuButtons.forEach(button => {
+                button.classList.add('visible'); // Hacemos visibles los botones principales
+            });
+            menuToggle.classList.remove('visible');
+            assistantVideo.classList.remove('chat-mode-state');
+            assistantVideo.classList.add('side-state');
+            textInput.blur();
+        }
+    </script>
+
 </body>
 </html>
+
