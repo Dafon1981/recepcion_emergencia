@@ -6,7 +6,6 @@
     <title>Recepción de Emergencia</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* --- VARIABLES DE TEMA OSCURO --- */
         :root {
             --bg-color: #121212;
             --surface-color: #1e1e1e;
@@ -19,355 +18,106 @@
             --input-bg-color: #2c2c2c;
             --button-bg-color: #333;
             --danger-color: #ff4d4d;
+            --success-color: #28a745;
         }
-
-        /* --- ESTILOS GENERALES --- */
         html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #333; /* Fondo exterior */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
+            height: 100%; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #333; display: flex; justify-content: center; align-items: center; overflow: hidden;
         }
-
         #phone-container {
-            width: 390px;
-            height: 700px;
-            background-color: var(--bg-color );
-            color: var(--text-color);
-            border-radius: 20px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            flex-direction: column;
+            width: 390px; height: 700px; background-color: var(--bg-color ); color: var(--text-color); border-radius: 20px; box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); overflow: hidden; position: relative; display: flex; flex-direction: column;
         }
-
         #main-app {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
+            flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column;
         }
-
-        h1, h2, h3 {
-            color: var(--primary-color);
-            text-align: center;
-        }
-        
-        /* --- ESTILOS DE NAVEGACIÓN Y CABECERA (MEJORA 3) --- */
+        h1, h2, h3 { color: var(--primary-color); text-align: center; }
         #header {
-            display: flex;
-            align-items: center;
-            padding: 10px 20px;
-            background-color: var(--surface-color);
-            position: sticky;
-            top: 0;
-            z-index: 10;
+            display: none; align-items: center; padding: 10px 20px; background-color: var(--surface-color); position: sticky; top: 0; z-index: 10;
         }
-
         #back-button {
-            background: none;
-            border: none;
-            color: var(--primary-color);
-            font-size: 28px; /* Más grande */
-            font-weight: bold; /* Más visible */
-            cursor: pointer;
-            padding: 0 10px 0 0;
-            text-shadow: 0 0 5px var(--primary-color); /* Efecto neón */
+            background: none; border: none; color: var(--primary-color); font-size: 28px; font-weight: bold; cursor: pointer; padding: 0 10px 0 0; text-shadow: 0 0 5px var(--primary-color);
         }
-
         #view-title {
-            flex-grow: 1;
-            text-align: center;
-            font-size: 1.1em; /* Título más comprimido */
-            color: var(--text-color);
-            margin: 0;
-            padding-right: 30px; /* Espacio para compensar el botón de regreso */
+            flex-grow: 1; text-align: center; font-size: 1.1em; color: var(--text-color); margin: 0; padding-right: 30px;
         }
-
-        /* --- VISTAS DE LA APP --- */
-        .app-view {
-            display: none;
-            flex-direction: column;
-            flex-grow: 1;
+        .app-view { display: none; flex-direction: column; flex-grow: 1; }
+        .app-view.active { display: flex; }
+        .form-container { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 300px; margin: auto; }
+        input[type="text"], input[type="password"], input[type="email"], input[type="tel"], input[type="date"] {
+            padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--input-bg-color); color: var(--text-color); font-size: 1em;
         }
-        .app-view.active {
-            display: flex;
-        }
-
-        /* --- FORMULARIOS (LOGIN, REGISTRO) --- */
-        .form-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            width: 100%;
-            max-width: 300px;
-            margin: auto;
-        }
-
-        input[type="text"], input[type="password"], input[type="email"], input[type="tel"] {
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background-color: var(--input-bg-color);
-            color: var(--text-color);
-            font-size: 1em;
-        }
-
         button {
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            background-color: var(--primary-color);
-            color: #000;
-            font-size: 1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s;
+            padding: 12px; border: none; border-radius: 8px; background-color: var(--primary-color); color: #000; font-size: 1em; font-weight: bold; cursor: pointer; transition: background-color 0.3s;
         }
-        button:hover {
-            opacity: 0.9;
-        }
-        .secondary-action {
-            background: none;
-            color: var(--secondary-color);
-            text-align: center;
-            font-size: 0.9em;
-            margin-top: 10px;
-        }
-
-        /* --- MENÚ PRINCIPAL --- */
-        #main-menu-view .menu-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 30px;
-        }
-
-        /* --- VISTA DE BÚSQUEDA --- */
-        #search-input {
-            width: calc(100% - 24px); /* Ajuste por padding */
-        }
-        #search-results {
-            list-style: none;
-            padding: 0;
-            margin-top: 20px;
-            overflow-y: auto;
-        }
-        #search-results li {
-            background-color: var(--surface-color);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        #search-results li:hover {
-            background-color: #2a2a2a;
-        }
-        .patient-name {
-            font-weight: bold;
-            color: var(--text-color);
-        }
-        .patient-details {
-            font-size: 0.9em;
-            color: var(--text-secondary-color);
-        }
-
-        /* --- MODAL DE DETALLES --- */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 100;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.7);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background-color: var(--surface-color);
-            margin: auto;
-            padding: 20px;
-            border: 1px solid var(--border-color);
-            width: 90%;
-            max-width: 500px;
-            border-radius: 10px;
-            position: relative;
-        }
-        #modal-close-btn {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            color: var(--text-secondary-color);
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        #modal-details-content p {
-            margin: 5px 0;
-            word-wrap: break-word;
-        }
-        #modal-details-content strong {
-            color: var(--primary-color);
-        }
-
-        /* --- PANEL DE ADMINISTRACIÓN (MEJORA 5) --- */
-        .admin-tabs {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .tab-button {
-            flex: 1;
-            padding: 10px;
-            background: none;
-            border: none;
-            color: var(--text-secondary-color);
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-        }
-        .tab-button.active {
-            color: var(--primary-color);
-            border-bottom-color: var(--primary-color);
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-
-        /* --- PESTAÑA PERSONAL (MEJORA 6 Y 7) --- */
-        #user-list-container { list-style: none; padding: 0; }
-        #user-list-container li {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid var(--border-color);
-            background-color: var(--surface-color);
-            border-radius: 5px;
-            margin-bottom: 5px;
-        }
+        button:hover { opacity: 0.9; }
+        .secondary-action { background: none; color: var(--secondary-color); text-align: center; font-size: 0.9em; margin-top: 10px; }
+        #main-menu-view .menu-buttons { display: flex; flex-direction: column; gap: 15px; margin-top: 30px; }
+        #search-results, #observados-list, #user-list-container { list-style: none; padding: 0; margin-top: 20px; overflow-y: auto; }
+        #search-results li, #observados-list li { background-color: var(--surface-color); padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: background-color 0.2s; }
+        #search-results li:hover, #observados-list li:hover { background-color: #2a2a2a; }
+        .patient-name { font-weight: bold; color: var(--text-color); }
+        .patient-details { font-size: 0.9em; color: var(--text-secondary-color); }
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
+        .modal-content { background-color: var(--surface-color); margin: auto; padding: 20px; border: 1px solid var(--border-color); width: 90%; max-width: 500px; border-radius: 10px; position: relative; }
+        #modal-close-btn { position: absolute; top: 10px; right: 15px; color: var(--text-secondary-color); font-size: 28px; font-weight: bold; cursor: pointer; }
+        #modal-details-content p { margin: 5px 0; word-wrap: break-word; }
+        #modal-details-content strong { color: var(--primary-color); }
+        .admin-tabs { display: flex; justify-content: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); }
+        .tab-button { flex: 1; padding: 10px; background: none; border: none; color: var(--text-secondary-color); cursor: pointer; border-bottom: 2px solid transparent; }
+        .tab-button.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        #user-list-container li { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border-color); background-color: var(--surface-color); border-radius: 5px; margin-bottom: 5px; }
         .user-info strong { display: block; color: var(--text-color); }
         .user-info span { font-size: 0.85em; color: var(--text-secondary-color); }
         .user-actions { display: flex; align-items: center; gap: 15px; }
         .whatsapp-icon { font-size: 24px; text-decoration: none; color: #25D366; }
         .delete-user-btn { background: none; border: none; font-size: 28px; color: var(--danger-color); cursor: pointer; padding: 0; }
-
-        /* Switch para validación */
         .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; }
         .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; }
-        input:checked + .slider { background-color: var(--secondary-color); }
+        input:checked + .slider { background-color: var(--success-color); }
         input:checked + .slider:before { transform: translateX(22px); }
         .slider.round { border-radius: 34px; }
         .slider.round:before { border-radius: 50%; }
-        
-        /* --- PESTAÑA OBSERVADOS (MEJORA 4) --- */
-        #observados-search-input {
-            width: calc(100% - 24px);
-            margin-bottom: 15px;
-        }
-        #observados-list { list-style: none; padding: 0; }
-        #observados-list li {
-            background-color: var(--surface-color);
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 8px;
-        }
-
-        /* --- CONTENEDOR INFERIOR (CHAT Y SALUDO) (MEJORA 2) --- */
-        #bottom-ui-container {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 10px 20px;
-            background-color: var(--bg-color);
-            transform: translateY(100%);
-            transition: transform 0.5s ease-in-out;
-            z-index: 20;
-        }
-        #bottom-ui-container.visible {
-            transform: translateY(0);
-        }
-
-        #greeting-container {
-            text-align: center;
-            padding: 10px;
-            font-size: 1.1em;
-            color: var(--secondary-color);
-        }
-
-        #chat-view {
-            display: none; /* Oculto por defecto */
-            flex-direction: column;
-            background-color: var(--surface-color);
-            border-radius: 15px;
-            padding: 10px;
-            max-height: 300px; /* Altura máxima del chat */
-        }
-        .chat-log {
-            flex-grow: 1;
-            overflow-y: auto;
-            margin-bottom: 10px;
-        }
-        .input-bar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .input-bar input {
-            flex-grow: 1;
-        }
-        .action-button img {
-            width: 24px;
-            height: 24px;
-        }
-        .action-button {
-            background: none;
-            border: none;
-            padding: 5px;
-        }
+        #bottom-ui-container { position: absolute; bottom: 0; left: 0; right: 0; padding: 10px 20px; background-color: var(--bg-color); transform: translateY(100%); transition: transform 0.5s ease-in-out; z-index: 20; }
+        #bottom-ui-container.visible { transform: translateY(0); }
+        #greeting-container { text-align: center; padding: 10px; font-size: 1.1em; color: var(--secondary-color); }
+        #chat-view { display: none; flex-direction: column; background-color: var(--surface-color); border-radius: 15px; padding: 10px; max-height: 300px; }
+        .chat-log { flex-grow: 1; overflow-y: auto; margin-bottom: 10px; }
+        .input-bar { display: flex; align-items: center; gap: 10px; }
+        .input-bar input { flex-grow: 1; }
+        .action-button img { width: 24px; height: 24px; }
+        .action-button { background: none; border: none; padding: 5px; }
+        .fua-entry-form { display: flex; flex-direction: column; gap: 15px; }
+        .fua-entry-row { display: flex; gap: 10px; align-items: center; }
+        .fua-entry-row input { flex-grow: 1; }
+        .delete-fua-btn { background: var(--danger-color); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; }
+        .fua-actions { display: flex; justify-content: center; gap: 20px; margin-top: 10px; }
+        .add-fua-btn, .remove-fua-btn { background: var(--button-bg-color); color: white; border-radius: 50%; width: 40px; height: 40px; font-size: 24px; cursor: pointer; }
     </style>
 </head>
 <body>
     <div id="phone-container">
-        <!-- Cabecera dinámica -->
-        <div id="header" style="display: none;">
+        <div id="header">
             <button id="back-button" onclick="goBack()">&#x2190;</button>
             <h2 id="view-title"></h2>
         </div>
 
         <div id="main-app">
-            <!-- VISTA DE LOGIN -->
             <div id="login-view" class="app-view active">
                 <div class="form-container">
                     <h1>Bienvenido</h1>
                     <input type="text" id="username" placeholder="Usuario">
                     <input type="password" id="password" placeholder="Contraseña">
                     <button onclick="handleLogin()">Ingresar</button>
-                    <button class="secondary-action" onclick="showView('register-view')">Registrarse</button>
+                    <button class="secondary-action" onclick="showView('register-view', 'Registro')">Registrarse</button>
                 </div>
             </div>
 
-            <!-- VISTA DE REGISTRO -->
             <div id="register-view" class="app-view">
                 <div class="form-container">
-                    <h2>Registro de Usuario</h2>
+                    <h2>Registro</h2>
                     <input type="text" id="reg-fullname" placeholder="Nombre Completo">
                     <input type="password" id="reg-password" placeholder="Contraseña">
                     <input type="email" id="reg-email" placeholder="Email">
@@ -377,47 +127,53 @@
                 </div>
             </div>
             
-            <!-- MENÚ PRINCIPAL -->
             <div id="main-menu-view" class="app-view">
                 <div class="menu-buttons">
-                    <button id="btn-buscar" onclick="showView('search-view', 'Buscar FUA')">Buscar FUA</button>
-                    <button id="btn-observados" onclick="showView('ver-observados-view', 'Ver Observados')">Ver Observados</button>
+                    <button onclick="showView('search-view', 'Buscar FUA')">Buscar FUA</button>
+                    <button onclick="showView('ver-observados-view', 'Ver Observados')">Ver Observados</button>
                     <button id="btn-admin" onclick="showView('admin-view', 'Administración')" style="display: none;">Admin</button>
-                    <button id="btn-contacto" onclick="showChat()">Contacto</button>
+                    <button onclick="showChat()">Contacto</button>
                 </div>
             </div>
 
-            <!-- VISTA DE BÚSQUEDA -->
             <div id="search-view" class="app-view">
                 <input type="text" id="search-input" placeholder="Buscar por FUA, Paciente, Documento...">
                 <ul id="search-results"></ul>
             </div>
             
-            <!-- VISTA DE VER OBSERVADOS -->
             <div id="ver-observados-view" class="app-view">
                 <input type="text" id="observados-search-input" placeholder="Filtrar por FUA, Episodio u Observación...">
                 <ul id="observados-list"></ul>
             </div>
 
-            <!-- VISTA DE ADMINISTRACIÓN -->
             <div id="admin-view" class="app-view">
-                <h2>Panel de Administración</h2>
                 <div class="admin-tabs">
-                    <button class="tab-button active" onclick="switchAdminTab('observados', this)">Observados</button>
-                    <button class="tab-button" onclick="switchAdminTab('personal', this)">Personal</button>
+                    <button class="tab-button active" onclick="switchAdminTab('observados', this)">Ingresar Observación</button>
+                    <button class="tab-button" onclick="switchAdminTab('personal', this)">Validar Personal</button>
                 </div>
                 <div id="tab-observados" class="tab-content active">
-                    <h3>Ingreso de FUA Observado</h3>
-                    <!-- Aquí irá el formulario de ingreso -->
+                    <div class="fua-entry-form">
+                        <div id="fua-entries-container">
+                            <div class="fua-entry-row">
+                                <input type="text" class="fua-episodio-input" placeholder="Nº FUA o Episodio">
+                                <input type="date" class="fua-fecha-input">
+                                <input type="text" class="fua-observacion-input" placeholder="Observación (opcional)">
+                                <button class="delete-fua-btn" onclick="this.parentElement.remove()">X</button>
+                            </div>
+                        </div>
+                        <div class="fua-actions">
+                            <button class="remove-fua-btn" onclick="removeLastFuaEntry()">-</button>
+                            <button class="add-fua-btn" onclick="addFuaEntry()">+</button>
+                        </div>
+                        <button class="save-all-btn" onclick="saveAllFuas()">Guardar Todo</button>
+                    </div>
                 </div>
                 <div id="tab-personal" class="tab-content">
-                    <h3>Validación de Personal</h3>
                     <ul id="user-list-container"></ul>
                 </div>
             </div>
         </div>
 
-        <!-- CONTENEDOR INFERIOR PARA CHAT Y SALUDO -->
         <div id="bottom-ui-container">
             <div id="greeting-container"></div>
             <div id="chat-view">
@@ -431,7 +187,6 @@
         </div>
     </div>
 
-    <!-- MODAL DE DETALLES (fuera de main-app ) -->
     <div id="details-modal" class="modal">
         <div class="modal-content">
             <span id="modal-close-btn">&times;</span>
@@ -440,33 +195,27 @@
     </div>
 
 <script>
-    // --- CONFIGURACIÓN DE SUPABASE ---
-    const SUPABASE_URL = 'https://zfowxdhyspabjavybbig.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpmb3d4ZGh5c3BhYmphdnliYmlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjMyNzE3ODUsImV4cCI6MjAzODg0Nzc4NX0.k32bX3a-U_E923v1S21rOlhXXfV5S2_1i4Irm-iP4qI';
+    const SUPABASE_URL = 'https://rpncjtakgljxhbvelgdh.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwbmNqdGFrZ2xqeGhidmVsZ2RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODUzMzAsImV4cCI6MjA3NjY2MTMzMH0.mEcAP4NSJQGYYgx3nmuSkYWRX2UkmJiiKZq9sv7UUq4';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY );
 
-    // --- ESTADO GLOBAL DE LA APP ---
     let currentUser = null;
-    let viewStack = ['login-view']; // Pila para manejar el historial de vistas
+    let viewStack = ['login-view'];
 
-    // --- FUNCIONES DE NAVEGACIÓN Y UI ---
     function showView(viewId, title = '') {
         document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active'));
-        document.getElementById(viewId).classList.add('active');
+        const targetView = document.getElementById(viewId);
+        if (targetView) targetView.classList.add('active');
 
         const header = document.getElementById('header');
-        if (viewId === 'login-view' || viewId === 'register-view' || viewId === 'main-menu-view') {
-            header.style.display = 'none';
-        } else {
-            header.style.display = 'flex';
-            document.getElementById('view-title').textContent = title;
-        }
+        const isMainMenu = viewId === 'login-view' || viewId === 'register-view' || viewId === 'main-menu-view';
+        header.style.display = isMainMenu ? 'none' : 'flex';
+        document.getElementById('view-title').textContent = title;
 
         if (viewId !== viewStack[viewStack.length - 1]) {
             viewStack.push(viewId);
         }
         
-        // Cargar datos específicos de la vista
         if (viewId === 'admin-view') loadPendingUsers();
         if (viewId === 'ver-observados-view') loadObservedFuas();
     }
@@ -474,10 +223,117 @@
     function goBack() {
         if (viewStack.length > 1) {
             viewStack.pop();
-            const previousViewId = viewStack[viewStack.length - 1];
+            const previousViewId = viewStack[viewStack.length - 1] || 'main-menu-view';
             const previousView = document.getElementById(previousViewId);
-            const title = previousView.querySelector('h2')?.textContent || 'Menú';
+            const title = previousView.querySelector('h2')?.textContent || '';
             showView(previousViewId, title);
+        }
+    }
+    
+    async function handleLogin() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        if (!username || !password) return alert('Por favor, ingrese usuario y contraseña.');
+
+        // Acceso maestro local
+        if (username.toLowerCase() === 'manuel' && password === 'mutter') {
+            currentUser = { nombre_completo: 'Manuel (Admin)', rol: 'admin' };
+            document.getElementById('btn-admin').style.display = 'block';
+            showView('main-menu-view');
+            return;
+        }
+        
+        // Login con Supabase
+        try {
+            const { data, error } = await supabaseClient.rpc('login_usuario', { p_nombre_completo: username, p_contrasena: password });
+            if (error || !data || data.length === 0) throw new Error('Usuario o contraseña incorrectos.');
+            
+            const user = data[0];
+            if (!user.esta_validado) return alert('Usuario no validado. Contacte al administrador.');
+            
+            currentUser = user;
+            document.getElementById('btn-admin').style.display = user.rol === 'admin' ? 'block' : 'none';
+            showView('main-menu-view');
+
+        } catch (error) {
+            console.error('Error en el login:', error);
+            alert(error.message);
+        }
+    }
+    
+    async function handleRegister() {
+        const nombre_completo = document.getElementById('reg-fullname').value;
+        const contrasena = document.getElementById('reg-password').value;
+        const email = document.getElementById('reg-email').value;
+        const telefono_whatsapp = document.getElementById('reg-whatsapp').value;
+        if (!nombre_completo || !contrasena) return alert('Nombre completo y contraseña son obligatorios.');
+
+        try {
+            const { error } = await supabaseClient.from('usuarios').insert([{ nombre_completo, contrasena, email, telefono_whatsapp, rol: 'user', esta_validado: false }]);
+            if (error) throw error;
+            alert('Registro exitoso. Espere la validación del administrador.');
+            showView('login-view');
+        } catch (error) {
+            console.error('Error en el registro:', error);
+            alert(`Error al registrar: ${error.message}`);
+        }
+    }
+
+    async function loadPendingUsers() {
+        const userListContainer = document.getElementById('user-list-container');
+        userListContainer.innerHTML = '<li>Cargando...</li>';
+        try {
+            const { data: users, error } = await supabaseClient.from('usuarios').select('id, nombre_completo, esta_validado, contrasena, telefono_whatsapp').order('nombre_completo');
+            if (error) throw error;
+            userListContainer.innerHTML = users.length > 0 ? users.map(user => {
+                const whatsappLink = user.telefono_whatsapp ? `<a href="https://wa.me/51${user.telefono_whatsapp.replace(/\s+/g, '' )}" target="_blank" class="whatsapp-icon">&#x1F4F1;</a>` : '';
+                return `<li>
+                    <div class="user-info"><strong>${user.nombre_completo}</strong><span>Pass: ${user.contrasena || 'N/A'}</span></div>
+                    <div class="user-actions">${whatsappLink}<label class="switch"><input type="checkbox" ${user.esta_validado ? 'checked' : ''} onchange="toggleUserValidation('${user.id}', this.checked)"><span class="slider round"></span></label><button onclick="deleteUser('${user.id}', '${user.nombre_completo}')" class="delete-user-btn">&times;</button></div>
+                </li>`;
+            }).join('') : '<li>No hay usuarios registrados.</li>';
+        } catch (error) {
+            console.error('Error cargando usuarios:', error);
+            userListContainer.innerHTML = '<li>Error al cargar usuarios.</li>';
+        }
+    }
+
+    async function toggleUserValidation(userId, isValidated) {
+        try {
+            const { error } = await supabaseClient.from('usuarios').update({ esta_validado: isValidated }).eq('id', userId);
+            if (error) throw error;
+        } catch (error) {
+            console.error('Error al actualizar usuario:', error);
+            alert('No se pudo actualizar el estado del usuario.');
+            loadPendingUsers();
+        }
+    }
+
+    async function deleteUser(userId, userName) {
+        if (prompt(`Para borrar a "${userName}", escriba BORRAR.`) !== 'BORRAR') return alert("Cancelado.");
+        try {
+            const { error } = await supabaseClient.from('usuarios').delete().eq('id', userId);
+            if (error) throw error;
+            alert(`Usuario "${userName}" borrado.`);
+            loadPendingUsers();
+        } catch (error) {
+            console.error("Error al borrar usuario:", error);
+            alert(`No se pudo borrar: ${error.message}`);
+        }
+    }
+
+    async function loadObservedFuas() {
+        const list = document.getElementById('observados-list');
+        list.innerHTML = '<li>Cargando...</li>';
+        try {
+            const { data, error } = await supabaseClient.from('observaciones').select('*').order('fecha_observacion', { ascending: false });
+            if (error) throw error;
+            list.innerHTML = data.length > 0 ? data.map(obs => `<li data-search-term="${obs.nro_fua_episodio} ${obs.observacion}"><strong>FUA/Episodio:</strong> ${obs.nro_fua_episodio}  
+<strong>Fecha:</strong> ${new Date(obs.fecha_observacion).toLocaleDateString()}  
+<strong>Obs:</strong> ${obs.observacion || 'N/A'}</li>`).join('') : '<li>No hay FUAs observados.</li>';
+        } catch (error) {
+            console.error('Error cargando observados:', error);
+            list.innerHTML = '<li>Error al cargar.</li>';
         }
     }
 
@@ -488,288 +344,79 @@
         element.classList.add('active');
     }
 
-    function showChat() {
-        const bottomContainer = document.getElementById('bottom-ui-container');
-        const greetingContainer = document.getElementById('greeting-container');
-        const chatView = document.getElementById('chat-view');
-        
-        greetingContainer.textContent = `Hola ${currentUser.nombre_completo.split(' ')[0]}, ¿en qué puedo ayudarte?`;
-        greetingContainer.style.display = 'block';
-        chatView.style.display = 'none';
-        
-        bottomContainer.classList.add('visible');
-
-        setTimeout(() => {
-            greetingContainer.style.display = 'none';
-            chatView.style.display = 'flex';
-        }, 3000); // 3 segundos antes de mostrar el chat
+    function addFuaEntry() {
+        const container = document.getElementById('fua-entries-container');
+        const newRow = document.createElement('div');
+        newRow.className = 'fua-entry-row';
+        newRow.innerHTML = `<input type="text" class="fua-episodio-input" placeholder="Nº FUA o Episodio"><input type="date" class="fua-fecha-input"><input type="text" class="fua-observacion-input" placeholder="Observación (opcional)"><button class="delete-fua-btn" onclick="this.parentElement.remove()">X</button>`;
+        container.appendChild(newRow);
     }
-
-    // --- FUNCIONES DE AUTENTICACIÓN (MEJORA 1) ---
-    async function handleLogin() {
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-
-        if (!username || !password) {
-            alert('Por favor, ingrese usuario y contraseña.');
-            return;
-        }
-
-        try {
-            // Usamos la función RPC para login case-insensitive
-            const { data, error } = await supabaseClient.rpc('login_usuario', {
-                p_nombre_completo: username,
-                p_contrasena: password
-            });
-
-            if (error) throw error;
-
-            if (data && data.length > 0) {
-                const user = data[0];
-                if (!user.esta_validado) {
-                    alert('Usuario no validado. Contacte al administrador.');
-                    return;
-                }
-                currentUser = user;
-                document.getElementById('btn-admin').style.display = user.rol === 'admin' ? 'block' : 'none';
-                showView('main-menu-view');
-            } else {
-                alert('Usuario o contraseña incorrectos.');
-            }
-        } catch (error) {
-            console.error('Error en el login:', error);
-            alert(`Error al intentar ingresar: ${error.message}`);
-        }
+    function removeLastFuaEntry() {
+        const rows = document.querySelectorAll('#fua-entries-container .fua-entry-row');
+        if (rows.length > 1) rows[rows.length - 1].remove();
     }
-    
-    async function handleRegister() {
-        const nombre_completo = document.getElementById('reg-fullname').value;
-        const contrasena = document.getElementById('reg-password').value;
-        const email = document.getElementById('reg-email').value;
-        const telefono_whatsapp = document.getElementById('reg-whatsapp').value;
+    async function saveAllFuas() {
+        const rows = document.querySelectorAll('#fua-entries-container .fua-entry-row');
+        const toSave = Array.from(rows).map(row => ({
+            nro_fua_episodio: row.querySelector('.fua-episodio-input').value,
+            fecha_observacion: row.querySelector('.fua-fecha-input').value,
+            observacion: row.querySelector('.fua-observacion-input').value,
+        })).filter(r => r.nro_fua_episodio && r.fecha_observacion);
 
-        if (!nombre_completo || !contrasena) {
-            alert('Nombre completo y contraseña son obligatorios.');
-            return;
-        }
-
+        if (toSave.length === 0) return alert("No hay registros válidos para guardar.");
         try {
-            const { error } = await supabaseClient
-                .from('usuarios')
-                .insert([{ nombre_completo, contrasena, email, telefono_whatsapp, rol: 'user', esta_validado: false }]);
-            
+            const { error } = await supabaseClient.from('observaciones').insert(toSave);
             if (error) throw error;
-
-            alert('Registro exitoso. Espere la validación del administrador.');
-            showView('login-view');
+            alert(`¡Éxito! Se guardaron ${toSave.length} registros.`);
+            document.getElementById('fua-entries-container').innerHTML = '';
+            addFuaEntry();
         } catch (error) {
-            console.error('Error en el registro:', error);
-            alert(`Error al registrar: ${error.message}`);
+            console.error("Error guardando observaciones:", error);
+            alert(`Error al guardar: ${error.message}`);
         }
     }
 
-    // --- FUNCIONES DEL PANEL DE ADMINISTRACIÓN (MEJORAS 6 y 7) ---
-    async function loadPendingUsers() {
-        const userListContainer = document.getElementById('user-list-container');
-        userListContainer.innerHTML = '<li>Cargando...</li>';
-
+    // --- Búsqueda y Modal ---
+    document.getElementById('search-input').addEventListener('keyup', async (e) => {
+        const term = e.target.value.trim();
+        const results = document.getElementById('search-results');
+        if (term.length < 3) { results.innerHTML = ''; return; }
         try {
-            const { data: users, error } = await supabaseClient
-                .from('usuarios')
-                .select('id, nombre_completo, esta_validado, contrasena, telefono_whatsapp') // Añadimos campos
-                .order('nombre_completo');
-
+            const { data, error } = await supabaseClient.rpc('buscar_atenciones', { search_term: term });
             if (error) throw error;
-
-            if (users && users.length > 0) {
-                userListContainer.innerHTML = users.map(user => {
-                    const whatsappLink = user.telefono_whatsapp
-                        ? `<a href="https://wa.me/51${user.telefono_whatsapp.replace(/\s+/g, '' )}" target="_blank" class="whatsapp-icon">&#x1F4F1;</a>` // Emoji de móvil
-                        : '';
-
-                    return `
-                        <li>
-                            <div class="user-info">
-                                <strong>${user.nombre_completo}</strong>
-                                <span>Pass: ${user.contrasena || 'N/A'}</span>
-                            </div>
-                            <div class="user-actions">
-                                ${whatsappLink}
-                                <label class="switch">
-                                    <input type="checkbox" ${user.esta_validado ? 'checked' : ''} onchange="toggleUserValidation('${user.id}', this.checked)">
-                                    <span class="slider round"></span>
-                                </label>
-                                <button onclick="deleteUser('${user.id}', '${user.nombre_completo}')" class="delete-user-btn">&times;</button>
-                            </div>
-                        </li>
-                    `;
-                }).join('');
-            } else {
-                userListContainer.innerHTML = '<li>No hay usuarios registrados.</li>';
-            }
-        } catch (error) {
-            console.error('Error cargando usuarios:', error);
-            userListContainer.innerHTML = '<li>Error al cargar usuarios.</li>';
-        }
-    }
-
-    async function toggleUserValidation(userId, isValidated) {
-        try {
-            const { error } = await supabaseClient
-                .from('usuarios')
-                .update({ esta_validado: isValidated })
-                .eq('id', userId);
-            if (error) throw error;
-        } catch (error) {
-            console.error('Error al actualizar usuario:', error);
-            alert('No se pudo actualizar el estado del usuario.');
-            loadPendingUsers(); // Recargar para revertir el cambio visual
-        }
-    }
-
-    async function deleteUser(userId, userName) {
-        const confirmacion = prompt(`Para borrar al usuario "${userName}", escriba la palabra BORRAR y presione Aceptar.`);
-        if (confirmacion !== 'BORRAR') {
-            alert("La palabra no coincide. Operación cancelada.");
-            return;
-        }
-        try {
-            const { error } = await supabaseClient.from('usuarios').delete().eq('id', userId);
-            if (error) throw error;
-            alert(`Usuario "${userName}" borrado exitosamente.`);
-            loadPendingUsers(); // Recargar la lista
-        } catch (error) {
-            console.error("Error al borrar usuario:", error);
-            alert(`No se pudo borrar al usuario: ${error.message}`);
-        }
-    }
-
-    // --- FUNCIONES DE BÚSQUEDA ---
-    const searchInput = document.getElementById('search-input');
-    searchInput.addEventListener('keyup', async (event) => {
-        const searchTerm = event.target.value.trim();
-        const resultsContainer = document.getElementById('search-results');
-
-        if (searchTerm.length < 3) {
-            resultsContainer.innerHTML = '';
-            return;
-        }
-
-        try {
-            const { data, error } = await supabaseClient.rpc('buscar_atenciones', { search_term: searchTerm });
-            if (error) throw error;
-
-            if (data && data.length > 0) {
-                resultsContainer.innerHTML = data.map(item => `
-                    <li onclick="showDetails('${item.IdFUA}')">
-                        <div class="patient-name">${item.PACIENTE}</div>
-                        <div class="patient-details">FUA: ${item.NFUA} | Doc: ${item.NroDocumento}</div>
-                    </li>
-                `).join('');
-            } else {
-                resultsContainer.innerHTML = '<li>No se encontraron resultados.</li>';
-            }
-        } catch (error) {
-            console.error('Error en la búsqueda:', error);
-            resultsContainer.innerHTML = '<li>Error al buscar.</li>';
-        }
+            results.innerHTML = data.length > 0 ? data.map(item => `<li onclick='showDetails(${JSON.stringify(item)})'><div class="patient-name">${item.PACIENTE}</div><div class="patient-details">FUA: ${item.NFUA} | Doc: ${item.NroDocumento}</div></li>`).join('') : '<li>No se encontraron resultados.</li>';
+        } catch (error) { results.innerHTML = '<li>Error al buscar.</li>'; }
     });
     
-    // --- FUNCIONES DE OBSERVADOS (MEJORA 4) ---
-    async function loadObservedFuas() {
-        const listContainer = document.getElementById('observados-list');
-        listContainer.innerHTML = '<li>Cargando...</li>';
-        try {
-            const { data, error } = await supabaseClient
-                .from('observaciones')
-                .select('*')
-                .order('fecha_observacion', { ascending: false });
-            if (error) throw error;
-
-            if (data && data.length > 0) {
-                listContainer.innerHTML = data.map(obs => `
-                    <li data-search-term="${obs.nro_fua_episodio} ${obs.observacion}">
-                        <strong>FUA/Episodio:</strong> ${obs.nro_fua_episodio}  
-
-                        <strong>Fecha:</strong> ${new Date(obs.fecha_observacion).toLocaleDateString()}  
-
-                        <strong>Observación:</strong> ${obs.observacion || 'N/A'}
-                    </li>
-                `).join('');
-            } else {
-                listContainer.innerHTML = '<li>No hay FUAs observados.</li>';
-            }
-        } catch (error) {
-            console.error('Error cargando observados:', error);
-            listContainer.innerHTML = '<li>Error al cargar.</li>';
-        }
-    }
-    
-    const observadosSearchInput = document.getElementById('observados-search-input');
-    observadosSearchInput.addEventListener('keyup', (event) => {
-        const searchTerm = event.target.value.toLowerCase();
-        const items = document.querySelectorAll('#observados-list li');
-        items.forEach(item => {
-            const text = item.dataset.searchTerm.toLowerCase();
-            if (text.includes(searchTerm)) {
-                item.style.display = '';
-            } else {
-                item.style.display = 'none';
-            }
-        });
-    });
-
-
-    // --- FUNCIONES DEL MODAL ---
-    async function showDetails(fuaId) {
+    async function showDetails(itemData) {
         const modal = document.getElementById('details-modal');
         const content = document.getElementById('modal-details-content');
-        content.innerHTML = '<p>Cargando detalles...</p>';
-        modal.style.display = 'flex';
-
-        try {
-            const { data, error } = await supabaseClient
-                .from('atenciones_emergencia')
-                .select()
-                .eq('"IdFUA"', fuaId)
-                .single();
-
-            if (error) throw error;
-
-            if (data) {
-                let detailsHtml = '';
-                for (const [key, value] of Object.entries(data)) {
-                    detailsHtml += `<p><strong>${key}:</strong> ${value || 'N/A'}</p>`;
-                }
-                content.innerHTML = detailsHtml;
-            } else {
-                content.innerHTML = '<p>No se encontraron detalles para este FUA.</p>';
-            }
-        } catch (error) {
-            console.error('Error al cargar detalles:', error);
-            content.innerHTML = `<p>Error al cargar: ${error.message}</p>`;
+        let detailsHtml = '';
+        for (const [key, value] of Object.entries(itemData)) {
+            detailsHtml += `<p><strong>${key}:</strong> ${value || 'N/A'}</p>`;
         }
+        content.innerHTML = detailsHtml;
+        modal.style.display = 'flex';
     }
+    document.getElementById('modal-close-btn').addEventListener('click', () => document.getElementById('details-modal').style.display = 'none');
 
-    function closeDetailsModal() {
-        document.getElementById('details-modal').style.display = 'none';
-    }
+    // --- Filtro en "Ver Observados" ---
+    document.getElementById('observados-search-input').addEventListener('keyup', (e) => {
+        const term = e.target.value.toLowerCase();
+        document.querySelectorAll('#observados-list li').forEach(item => {
+            item.style.display = item.dataset.searchTerm.toLowerCase().includes(term) ? '' : 'none';
+        });
+    });
 
-    // --- INICIALIZACIÓN DE EVENTOS ---
+    // --- Chat (Placeholder) ---
+    function showChat() { alert("Función de Chat/Contacto en desarrollo."); }
+    function handleAudio() { alert("Función de audio en desarrollo."); }
+    function handleSend() { alert("Función de envío en desarrollo."); }
+
+    // --- Inicialización ---
     document.addEventListener('DOMContentLoaded', () => {
-        const modal = document.getElementById('details-modal');
-        const closeBtn = document.getElementById('modal-close-btn');
-        closeBtn.addEventListener('click', closeDetailsModal);
-        window.addEventListener('click', (event) => {
-            if (event.target == modal) {
-                closeDetailsModal();
-            }
-        });
-        
-        // Evento para login con Enter
-        document.getElementById('password').addEventListener('keyup', (event) => {
-            if (event.key === 'Enter') handleLogin();
-        });
+        showView('login-view');
+        document.getElementById('password').addEventListener('keyup', (e) => { if (e.key === 'Enter') handleLogin(); });
     });
 </script>
 </body>
