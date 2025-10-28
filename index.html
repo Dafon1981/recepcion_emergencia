@@ -167,220 +167,140 @@
         <div id="password-prompt" class="fullscreen-view hidden"></div>
     </div>
 
-    <script>
-        // --- INICIALIZACIÓN ---
-        document.addEventListener('DOMContentLoaded', () => {
-             // --- 1. CONFIGURACIÓN E INICIALIZACIÓN (CORREGIDAS) ---
+   <script>
+    // --- 1. CONFIGURACIÓN DE SUPABASE Y VARIABLES GLOBALES ---
 
-    // Configuración de Supabase con las credenciales correctas del proyecto 'recepcion-emergencia'
+    // Usamos las credenciales correctas de tu proyecto 'recepcion-emergencia'
     const SUPABASE_URL = 'https://rpnctakgljxhbvelgdh.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwbmNqdGFrZ2xqeGhidmVsZ2RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODUzMzAsImV4cCI6MjA3NjY2MTMzMH0.mEcAP4NSJQGYYgx3nmuSkYWRX2UkmJiiKZq9sv7UUq4';
-    
-    // El resto del código no necesita cambios...
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY );
 
     let currentUser = null;
 
-            let currentUser = null;
+    // Selección de elementos del DOM
+    const loginView = document.getElementById('login-view');
+    const registerView = document.getElementById('register-view');
+    const mainApp = document.getElementById('main-app');
+    const assistantLogo = document.getElementById('assistant-logo');
+    const menuButtons = document.querySelectorAll('.menu-button');
+    const appViews = document.querySelectorAll('.app-view');
+    const chatView = document.getElementById('chat-view');
+    const backButton = document.getElementById('back-button');
+    const menuToggle = document.getElementById('menu-toggle');
+    const greetingContainer = document.getElementById('greeting-container');
 
-            const loginView = document.getElementById('login-view');
-            const registerView = document.getElementById('register-view');
-            const mainApp = document.getElementById('main-app');
-            const assistantLogo = document.getElementById('assistant-logo');
-            const menuButtons = document.querySelectorAll('.menu-button');
-            const appViews = document.querySelectorAll('.app-view');
-            const chatView = document.getElementById('chat-view');
-            const backButton = document.getElementById('back-button');
-            const menuToggle = document.getElementById('menu-toggle');
-            const greetingContainer = document.getElementById('greeting-container');
+    
+    // --- 2. LÓGICA DE LOGIN (CONECTADA A LA TABLA 'usuarios') ---
 
-            // --- LOGIN ---
-            window.handleLogin = async function() {
-                const email = document.getElementById('username').value.trim();
-                const password = document.getElementById('password').value.trim();
-                if (!email || !password) {
-                    alert("Por favor, ingrese su email y contraseña.");
-                    return;
-                }
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) {
-                    alert("Error: " + error.message);
-                    return;
-                }
-                const { data: profile, error: profileError } = await supabase
-                    .from('profiles')
-                    .select('is_validated, role, full_name')
-                    .eq('id', data.user.id)
-                    .single();
-                if (profileError || !profile || !profile.is_validated) {
-                    alert("Cuenta no validada o error de perfil.");
-                    await supabase.auth.signOut();
-                    return;
-                }
-                currentUser = { ...data.user, ...profile };
-                initApp();
-            };
+    async function handleLogin() {
+        const userInput = document.getElementById('username').value.trim();
+        const passwordInput = document.getElementById('password').value.trim();
 
-            window.handleRegister = function() {
-                alert("Registro simulado. Espera validación.");
-                showLoginView();
-            };
+        if (!userInput || !passwordInput) {
+            alert("Por favor, ingrese su usuario y contraseña.");
+            return;
+        }
 
-            function initApp() {
-                loginView.classList.add('hidden');
-                registerView.classList.add('hidden');
-                mainApp.classList.remove('hidden');
+        console.log(`Validando '${userInput}' contra la tabla 'usuarios' en Supabase.`);
 
-                setTimeout(() => {
-                    assistantLogo.classList.remove('initial-state');
-                    assistantLogo.classList.add('side-state');
+        // Consulta a tu tabla 'usuarios' en Supabase
+        const { data, error } = await supabase
+            .from('usuarios') // El nombre exacto de tu tabla
+            .select('*')      // Traemos todos los datos del usuario
+            .eq('usuario', userInput)         // Filtro: la columna 'usuario' debe coincidir
+            .eq('contrasena', passwordInput)  // Filtro: la columna 'contrasena' debe coincidir
+            .single(); // Esperamos un único resultado (o ninguno)
 
-                    menuButtons.forEach(button => {
-                        if (button.id === 'btn-admin' && currentUser.role !== 'admin') {
-                            button.remove(); // Elimina completamente
-                        } else {
-                            button.classList.add('visible');
-                        }
-                    });
+        // Manejo de errores de la consulta (ej. problemas de red)
+        // El código 'PGRST116' significa "No se encontró la fila", lo cual es normal si las credenciales son incorrectas.
+        if (error && error.code !== 'PGRST116') {
+            console.error("Error en la consulta a Supabase:", error);
+            alert("Error de conexión: " + error.message);
+            return;
+        }
 
-                    greetingContainer.classList.add('visible');
-                    const hour = new Date().getHours();
-                    const greeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches';
-                    greetingContainer.innerHTML = `<div class="chat-message ia-message">${greeting}, ${currentUser.full_name}.</div>`;
-                }, 1000);
+        // Si 'data' existe, encontramos un usuario con esas credenciales
+        if (data) {
+            // Ahora verificamos si el usuario está validado
+            if (data.esta_validado) {
+                console.log("Acceso concedido para:", data.usuario);
+                
+                // Guardamos los datos del usuario para usarlos en la app
+                currentUser = {
+                    id: data.id,
+                    usuario: data.usuario,
+                    full_name: data.usuario, // Para el saludo
+                    role: data.role || 'user', // Asume un rol 'user' si no hay columna 'role'
+                    is_validated: data.esta_validado
+                };
+
+                initApp(); // Inicia la aplicación principal
+
+            } else {
+                // El usuario existe pero no está validado
+                alert("Tu cuenta ha sido registrada pero aún no ha sido validada por un administrador.");
             }
+        } else {
+            // Si 'data' es null, no se encontró ninguna fila que coincida
+            alert("Usuario o contraseña incorrectos.");
+        }
+    }
 
-            // --- NAVEGACIÓN ---
-            window.handleMenuClick = function(section) {
-                if (section === 'contacto') {
-                    window.open('https://wa.me/51967188120', '_blank');
-                    return;
+    // --- 3. RESTO DE FUNCIONES DE LA APLICACIÓN ---
+
+    function initApp() {
+        loginView.classList.add('hidden');
+        registerView.classList.add('hidden');
+        mainApp.classList.remove('hidden');
+        
+        setTimeout(() => {
+            assistantLogo.classList.remove('initial-state');
+            assistantLogo.classList.add('side-state');
+            menuButtons.forEach(button => {
+                if (button.id === 'btn-admin' && currentUser.role !== 'admin') {
+                    button.style.display = 'none';
+                } else {
+                    button.classList.add('visible');
                 }
-                menuButtons.forEach(btn => btn.classList.add('hidden-by-view'));
-                assistantLogo.classList.add('hidden-by-view');
-                greetingContainer.style.opacity = '0';
-                appViews.forEach(view => view.classList.toggle('visible', view.id === `${section}-view`));
-                backButton.classList.add('visible');
-                chatView.classList.add('hidden-by-view');
-            };
+            });
+            greetingContainer.classList.add('visible');
+        }, 1000);
 
-            window.returnToMenu = function() {
-                appViews.forEach(view => view.classList.remove('visible'));
-                backButton.classList.remove('visible');
-                menuButtons.forEach(btn => btn.classList.remove('hidden-by-view'));
-                assistantLogo.classList.remove('hidden-by-view');
-                greetingContainer.style.opacity = '1';
-                chatView.classList.remove('hidden-by-view');
-            };
+        const hour = new Date().getHours();
+        let greeting = (hour < 12) ? 'Buenos días' : (hour < 18) ? 'Buenas tardes' : 'Buenas noches';
+        // Usamos la propiedad 'full_name' que creamos en currentUser
+        greetingContainer.innerHTML = `<div class="chat-message ia-message">${greeting}, ${currentUser.full_name}.</div>`;
+    }
 
-            window.showRegisterView = () => { loginView.classList.add('hidden'); registerView.classList.remove('hidden'); };
-            window.showLoginView = () => { registerView.classList.add('hidden'); loginView.classList.remove('hidden'); };
+    // ... (Aquí van el resto de tus funciones: handleMenuClick, returnToMenu, etc. No necesitan cambios)
+    
+    function handleMenuClick(section) {
+        if (section === 'contacto') {
+            window.open('https://wa.me/51967188120', '_blank'  );
+            return;
+        }
+        menuButtons.forEach(btn => btn.classList.add('hidden-by-view'));
+        assistantLogo.classList.add('hidden-by-view');
+        greetingContainer.style.opacity = '0';
+        appViews.forEach(view => view.classList.toggle('visible', view.id === `${section}-view`));
+        backButton.classList.add('visible');
+        chatView.classList.add('hidden-by-view');
+    }
 
-            window.togglePasswordVisibility = (id, btn) => {
-                const input = document.getElementById(id);
-                input.type = input.type === 'password' ? 'text' : 'password';
-                btn.textContent = input.type === 'password' ? '👁️' : '🙈';
-            };
+    function returnToMenu() {
+        appViews.forEach(view => view.classList.remove('visible'));
+        backButton.classList.remove('visible');
+        menuButtons.forEach(btn => btn.classList.remove('hidden-by-view'));
+        assistantLogo.classList.remove('hidden-by-view');
+        greetingContainer.style.opacity = '1';
+        chatView.classList.remove('hidden-by-view');
+    }
 
-            // --- BÚSQUEDA ---
-            window.performSearch = async function() {
-                const query = document.getElementById('search-input').value.trim();
-                const resultsList = document.getElementById('search-results-list');
-                if (!query) {
-                    resultsList.innerHTML = '<p style="text-align: center; color: #777;">Ingrese un término de búsqueda.</p>';
-                    return;
-                }
-                resultsList.innerHTML = '<p style="text-align: center; color: #777;">Buscando...</p>';
-                const { data, error } = await supabase
-                    .from('fuas')
-                    .select('*')
-                    .or(`numero_fua.ilike.%${query}%, episodio.ilike.%${query}%, nombre_paciente.ilike.%${query}%`);
-                if (error || !data || data.length === 0) {
-                    resultsList.innerHTML = '<p style="text-align: center; color: #777;">No se encontraron resultados.</p>';
-                    return;
-                }
-                resultsList.innerHTML = '';
-                data.forEach(fua => {
-                    const div = document.createElement('div');
-                    div.style.padding = '10px';
-                    div.style.borderBottom = '1px solid #eee';
-                    div.innerHTML = `<strong>FUA:</strong> ${fua.numero_fua}<br><strong>Paciente:</strong> ${fua.nombre_paciente}<br><strong>Episodio:</strong> ${fua.episodio}`;
-                    resultsList.appendChild(div);
-                });
-            };
+    // ... (Pega aquí todas las demás funciones que ya tenías)
 
-            window.handleVoiceSearch = () => alert('Búsqueda por voz simulada');
+</script>
 
-            // --- CHAT ---
-            window.enterChatMode = function() {
-                if (assistantLogo.classList.contains('chat-mode-state')) return;
-                returnToMenu();
-                setTimeout(() => {
-                    assistantLogo.classList.remove('side-state');
-                    assistantLogo.classList.add('chat-mode-state');
-                    menuButtons.forEach(btn => btn.classList.add('hidden-by-chat'));
-                    greetingContainer.style.opacity = '0';
-                    menuToggle.classList.add('visible');
-                }, 10);
-            };
-
-            window.exitChatMode = function() {
-                assistantLogo.classList.remove('chat-mode-state');
-                assistantLogo.classList.add('side-state');
-                menuButtons.forEach(btn => btn.classList.remove('hidden-by-chat'));
-                greetingContainer.style.opacity = '1';
-                menuToggle.classList.remove('visible');
-            };
-
-            window.handleSend = function() {
-                const input = document.getElementById('text-input');
-                const msg = input.value.trim().toLowerCase();
-                if (!msg) return;
-                const log = document.getElementById('chat-log');
-                const userMsg = document.createElement('div');
-                userMsg.className = 'chat-message user-message';
-                userMsg.textContent = input.value;
-                log.appendChild(userMsg);
-                log.scrollTop = log.scrollHeight;
-                input.value = '';
-
-                if (msg.includes('buscar') || msg.includes('fua')) handleMenuClick('buscar');
-                else if (msg.includes('observados')) handleMenuClick('observados');
-                else if (msg.includes('admin') || msg.includes('ingresar')) handleMenuClick('admin');
-                else if (msg.includes('info') || msg.includes('tutorial')) handleMenuClick('info');
-                else if (msg.includes('contacto')) handleMenuClick('contacto');
-            };
-
-            window.handleAudio = () => alert('Audio activado');
-
-            // --- ADMIN ---
-            window.switchAdminTab = (tab, btn) => {
-                document.querySelectorAll('#admin-view .tab-button').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                document.querySelectorAll('#admin-view .tab-content').forEach(c => c.classList.toggle('active', c.id === `tab-${tab}`));
-            };
-
-            window.addFuaEntry = () => {
-                const container = document.getElementById('fua-entries-container');
-                const row = document.createElement('div');
-                row.className = 'fua-entry-row';
-                row.innerHTML = `<input type="text" placeholder="Nº FUA o Episodio"><input type="date"><button class="delete-fua-btn" onclick="deleteFuaEntry(this)">X</button>`;
-                container.appendChild(row);
-            };
-
-            window.deleteFuaEntry = (btn) => btn.parentElement.remove();
-
-            window.removeLastFuaEntry = () => {
-                const rows = document.querySelectorAll('#fua-entries-container .fua-entry-row');
-                if (rows.length > 1) rows[rows.length - 1].remove();
-            };
-
-            window.saveAllFuas = () => {
-                const count = document.querySelectorAll('.fua-entry-row').length;
-                alert(`Guardando ${count} FUAs...`);
-            };
-        });
-    </script>
 </body>
 </html>
+
 
