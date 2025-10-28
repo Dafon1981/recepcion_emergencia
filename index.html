@@ -190,126 +190,99 @@ input:checked + .slider:before { transform: translateX(22px); }
 </head>
 <body>
 
-    <div class="mobile-container">
-        <!-- VISTAS DE LOGIN Y REGISTRO (CORREGIDAS) -->
-        <div id="login-view" class="fullscreen-view">
-             <div class="login-box">
-                <h2>Bienvenido</h2>
-                <div class="input-wrapper"><input type="text" id="username" placeholder="Usuario" required></div>
-                <div class="input-wrapper"><input type="text" id="password" placeholder="Contraseña" required></div>
-
-                <button class="btn-primary" onclick="handleLogin()">Entrar</button>
-                <button class="btn-secondary" onclick="showRegisterView()">Registrarse</button>
-             </div>
-        </div>
-        <div id="register-view" class="fullscreen-view hidden">
-            <div class="login-box">
-                <h2>Registrarse</h2>
-                <div class="input-wrapper"><input type="text" id="reg-username" placeholder="Nombre Completo" required></div>
-                <div class="input-wrapper"><input type="text" id="reg-password" placeholder="Crear Contraseña" required></div>
-
-                <div class="input-wrapper"><input type="email" id="reg-email" placeholder="Email (para login)" required></div>
-                <div class="input-wrapper"><input type="tel" id="reg-whatsapp" placeholder="WhatsApp" required></div>
-                <button class="btn-primary" onclick="handleRegister()">Registrar</button>
-                <button class="btn-secondary" onclick="showLoginView()">Volver al Inicio</button>
-            </div>
+      <div id="phone-container">
+        <!-- Cabecera dinámica -->
+        <div id="header" style="display: none;">
+            <button id="back-button" onclick="goBack()">&#x2190;</button>
+            <h2 id="view-title"></h2>
         </div>
 
-        <!-- APLICACIÓN PRINCIPAL (SIN CAMBIOS) -->
-          <!-- APLICACIÓN PRINCIPAL -->
-        <div id="main-app" class="hidden">
-            <header id="main-header" class="header"><button id="back-button" class="back-button" onclick="returnToMenu()">←</button><div id="header-title" class="header-title" onclick="enterChatMode()">Recepción Emergencia</div></header>
-            <video id="assistant-logo" class="initial-state" autoplay muted loop playsinline><source src="https://github.com/Dafon1981/recepcion/blob/main/cayetanologo.mp4?raw=true" type="video/mp4"></video>
-            
-            <button id="btn-buscar" class="menu-button" onclick="handleMenuClick('buscar' )">Buscar FUA</button>
-            <button id="btn-observados" class="menu-button" onclick="handleMenuClick('observados')">Ver Observados</button>
-            <button id="btn-admin" class="menu-button" onclick="handleMenuClick('admin')">Administrar</button>
-            <button id="btn-info" class="menu-button" onclick="handleMenuClick('info')">Información</button>
-            <button id="btn-contacto" class="menu-button" onclick="handleMenuClick('contacto')">Contacto</button>
-            
-            <!-- VISTAS INTERNAS -->
-           
-            <div id="buscar-view" class="app-view"><h2>Búsqueda de FUAs</h2><div class="search-bar-wrapper"><input type="text" id="search-input" placeholder="Buscar por FUA, episodio, paciente..." onkeydown="if (event.key === 'Enter' ) performSearch()"><button class="action-button" onclick="handleVoiceSearch()"><img src="https://www.pngmart.com/files/17/Volume-Button-Transparent-PNG.png" alt="Audio"></button><button class="action-button" onclick="performSearch( )"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar"></button></div><div class="search-results-list" id="search-results-list"><p style="text-align: center; color: #777;">Ingrese un término de búsqueda para comenzar.</p></div></div>
-            
-            <div id="observados-view" class="app-view"><h2>Pacientes Observados</h2>   
-                <div class="search-bar-wrapper">
-        <input type="text" id="observados-search-input" placeholder="Buscar en observados..." onkeyup="filterObservados()">
-    </div>
-    <div id="observados-list-container" class="search-results-list" style="padding-top: 15px;">
-        <!-- ... la lista se cargará aquí ... -->
-    </div>
+        <div id="main-app">
+            <!-- VISTA DE LOGIN -->
+            <div id="login-view" class="app-view active">
+                <div class="form-container">
+                    <h1>Bienvenido</h1>
+                    <input type="text" id="username" placeholder="Usuario">
+                    <input type="password" id="password" placeholder="Contraseña">
+                    <button onclick="handleLogin()">Ingresar</button>
+                    <button class="secondary-action" onclick="showView('register-view')">Registrarse</button>
+                </div>
             </div>
 
+            <!-- VISTA DE REGISTRO -->
+            <div id="register-view" class="app-view">
+                <div class="form-container">
+                    <h2>Registro de Usuario</h2>
+                    <input type="text" id="reg-fullname" placeholder="Nombre Completo">
+                    <input type="password" id="reg-password" placeholder="Contraseña">
+                    <input type="email" id="reg-email" placeholder="Email">
+                    <input type="tel" id="reg-whatsapp" placeholder="Nº WhatsApp (9 dígitos)">
+                    <button onclick="handleRegister()">Registrar</button>
+                    <button class="secondary-action" onclick="showView('login-view')">Volver al Login</button>
+                </div>
+            </div>
             
-            <div id="info-view" class="app-view"><h2>Información</h2></div>
+            <!-- MENÚ PRINCIPAL -->
+            <div id="main-menu-view" class="app-view">
+                <div class="menu-buttons">
+                    <button id="btn-buscar" onclick="showView('search-view', 'Buscar FUA')">Buscar FUA</button>
+                    <button id="btn-observados" onclick="showView('ver-observados-view', 'Ver Observados')">Ver Observados</button>
+                    <button id="btn-admin" onclick="showView('admin-view', 'Administración')" style="display: none;">Admin</button>
+                    <button id="btn-contacto" onclick="showChat()">Contacto</button>
+                </div>
+            </div>
+
+            <!-- VISTA DE BÚSQUEDA -->
+            <div id="search-view" class="app-view">
+                <input type="text" id="search-input" placeholder="Buscar por FUA, Paciente, Documento...">
+                <ul id="search-results"></ul>
+            </div>
+            
+            <!-- VISTA DE VER OBSERVADOS -->
+            <div id="ver-observados-view" class="app-view">
+                <input type="text" id="observados-search-input" placeholder="Filtrar por FUA, Episodio u Observación...">
+                <ul id="observados-list"></ul>
+            </div>
+
+            <!-- VISTA DE ADMINISTRACIÓN -->
             <div id="admin-view" class="app-view">
-    <h2>Panel de Administración</h2>
-    
-    <!-- Pestañas en el orden correcto -->
-    <div class="admin-tabs">
-    <button class="tab-button active" onclick="switchAdminTab('observados', this)">Observados</button>
-    <button class="tab-button" onclick="switchAdminTab('personal', this)">Personal</button>
-</div>
-
-    <!-- Contenido de la pestaña "Observados" (CORREGIDO) -->
-  <div id="tab-observados" class="tab-content active">
-    <h3>Ingreso de FUA Observado</h3>
-    <div class="fua-entry-form">
-        <div id="fua-entries-container">
-            <div class="fua-entry-row">
-                <input type="text" class="fua-episodio-input" placeholder="Nº FUA o Episodio">
-                <input type="date" class="fua-fecha-input">
-                <input type="text" class="fua-observacion-input" placeholder="Observación (opcional)">
-                <button class="delete-fua-btn" onclick="deleteFuaEntry(this)">X</button>
+                <h2>Panel de Administración</h2>
+                <div class="admin-tabs">
+                    <button class="tab-button active" onclick="switchAdminTab('observados', this)">Observados</button>
+                    <button class="tab-button" onclick="switchAdminTab('personal', this)">Personal</button>
+                </div>
+                <div id="tab-observados" class="tab-content active">
+                    <h3>Ingreso de FUA Observado</h3>
+                    <!-- Aquí irá el formulario de ingreso -->
+                </div>
+                <div id="tab-personal" class="tab-content">
+                    <h3>Validación de Personal</h3>
+                    <ul id="user-list-container"></ul>
+                </div>
             </div>
         </div>
-        <div class="fua-actions">
-            <button class="remove-fua-btn" onclick="removeLastFuaEntry()">-</button>
-            <button class="add-fua-btn" onclick="addFuaEntry()">+</button>
-        </div>
-        <button class="save-all-btn" onclick="saveAllFuas()">Guardar Todo</button>
-    </div>
-</div>
-    <!-- Contenido de la pestaña "Personal" (CORREGIDO) -->
-   <div id="tab-personal" class="tab-content">
-    <h3>Validación de Personal</h3>
-    <ul id="user-list-container" style="list-style: none; padding: 0;">
-        <!-- La lista de usuarios se cargará aquí con JavaScript -->
-    </ul>
-</div>
 
-
-            <!-- VISTA DEL CHAT -->
+        <!-- CONTENEDOR INFERIOR PARA CHAT Y SALUDO -->
         <div id="bottom-ui-container">
             <div id="greeting-container"></div>
             <div id="chat-view">
                 <div class="chat-log" id="chat-log"></div>
-               <div class="input-bar">
-    <button class="action-button" onclick="handleAudio()"><img src="https://www.pngmart.com/files/17/Volume-Button-Transparent-PNG.png" alt="Audio"></button>
-    <input type="text" id="text-input" placeholder="Haz una consulta..." onkeydown="if(event.key==='Enter' ) handleSend()" onfocus="enterChatMode()">
-    <button class="action-button" onclick="handleSend()"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Enviar"></button>
-</div>
-
-            </div>
-        </div>
-
-        </div> <!-- FIN DE #main-app -->
-
-        <!-- VENTANA MODAL DE DETALLES (LUGAR CORRECTO ) -->
-        <div id="details-modal" class="modal-overlay">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>Detalles de la Atención</h2>
-                    <button id="modal-close-btn" class="modal-close-btn">&times;</button>
-                </div>
-                <div id="modal-body" class="modal-body">
-                    <!-- El contenido se insertará aquí -->
+                <div class="input-bar">
+                    <button class="action-button" onclick="handleAudio()"><img src="https://www.pngmart.com/files/17/Volume-Button-Transparent-PNG.png" alt="Audio"></button>
+                    <input type="text" id="text-input" placeholder="Haz una consulta..." onkeydown="if(event.key==='Enter' ) handleSend()">
+                    <button class="action-button" onclick="handleSend()"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Enviar"></button>
                 </div>
             </div>
         </div>
+    </div>
 
-    </div> <!-- FIN DE .mobile-container -->
-
+    <!-- MODAL DE DETALLES (fuera de main-app ) -->
+    <div id="details-modal" class="modal">
+        <div class="modal-content">
+            <span id="modal-close-btn">&times;</span>
+            <div id="modal-details-content"></div>
+        </div>
+    </div>
 <script>
     // --- JAVASCRIPT ---
 
@@ -643,6 +616,7 @@ async function deleteUser(userId, userName) {
 </script>
 </body>
 </html>
+
 
 
 
