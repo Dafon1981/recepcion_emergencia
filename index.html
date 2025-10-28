@@ -46,26 +46,23 @@
         bottom: 30px;
         height: 85%;
         z-index: 1;
-        transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Transición elástica */
+        transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
         object-fit: cover;
         object-position: center top;
         filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1));
     }
     
-    /* Estado Inicial del Video (Centrado) */
     #assistant-video.initial-state {
         right: 50%;
         transform: translateX(50%);
         height: 90%;
     }
 
-    /* Estado Normal del Video (A un lado) */
     #assistant-video.side-state {
         right: -40px;
         transform: translateX(0);
     }
     
-    /* Estado del Video en Modo Chat (Centrado y Grande) */
     #assistant-video.chat-mode-state {
         right: 50%;
         transform: translateX(50%);
@@ -84,6 +81,9 @@
         justify-content: center;
         align-items: center;
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        /* NUEVA ANIMACIÓN */
+        transform: translateY(-100%);
+        animation: slide-down 0.8s ease-out 0.5s forwards;
     }
     .header-title {
         color: white;
@@ -91,12 +91,15 @@
         font-weight: bold;
         text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         opacity: 0;
-        animation: fade-in-down 1s ease-out 0.5s forwards;
+        animation: fade-in 1s ease-out 1.3s forwards;
+        cursor: pointer; /* NUEVO: Cursor para indicar que es clickeable */
     }
 
-    @keyframes fade-in-down {
-        from { opacity: 0; transform: translateY(-20px); }
-        to { opacity: 1; transform: translateY(0); }
+    @keyframes slide-down {
+        to { transform: translateY(0); }
+    }
+    @keyframes fade-in {
+        to { opacity: 1; }
     }
 
     /* --- Botones del Menú --- */
@@ -143,82 +146,40 @@
 
     /* --- Caja de Diálogo --- */
     .dialog-box {
-        position: absolute;
-        bottom: 25px;
-        left: 25px;
-        right: 25px;
-        z-index: 3;
-        display: flex;
-        flex-direction: column;
-        max-height: 45%;
+        position: absolute; bottom: 25px; left: 25px; right: 25px; z-index: 3; display: flex; flex-direction: column; max-height: 45%;
     }
     .chat-log {
-        flex-grow: 1;
-        overflow-y: auto;
-        margin-bottom: 20px;
-        padding: 15px;
-        background-color: rgba(255, 255, 255, 0.6);
-        border-radius: 20px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-        backdrop-filter: blur(5px);
-        max-height: 150px;
+        flex-grow: 1; overflow-y: auto; margin-bottom: 20px; padding: 15px; background-color: rgba(255, 255, 255, 0.6);
+        border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); backdrop-filter: blur(5px); max-height: 150px;
     }
-    .chat-message {
-        margin-bottom: 12px; padding: 12px 16px; border-radius: 18px; max-width: 80%; font-size: 16px; line-height: 1.5;
-    }
-    .user-message { 
-        background: linear-gradient(135deg, var(--primary-color-start) 0%, var(--primary-color-end) 100%);
-        color: white; align-self: flex-end;
-    }
-    .ia-message {
-        background: #fff; color: #2d3748; align-self: flex-start;
-    }
-    .input-bar { 
-        display: flex; align-items: center; background: white; border-radius: 30px; padding: 8px 15px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-    }
-    #text-input { 
-        flex-grow: 1; border: none; background: none; outline: none; padding: 0 15px; font-size: 16px; color: #4a5568;
-    }
-    .action-button { 
-        background: none; border: none; cursor: pointer; padding: 8px; display: flex;
-    }
+    .chat-message { margin-bottom: 12px; padding: 12px 16px; border-radius: 18px; max-width: 80%; font-size: 16px; line-height: 1.5; }
+    .user-message { background: linear-gradient(135deg, var(--primary-color-start) 0%, var(--primary-color-end) 100%); color: white; align-self: flex-end; }
+    .ia-message { background: #fff; color: #2d3748; align-self: flex-start; }
+    .input-bar { display: flex; align-items: center; background: white; border-radius: 30px; padding: 8px 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+    #text-input { flex-grow: 1; border: none; background: none; outline: none; padding: 0 15px; font-size: 16px; color: #4a5568; }
+    .action-button { background: none; border: none; cursor: pointer; padding: 8px; display: flex; }
     .action-button img { width: 24px; height: 24px; }
     
-    /* Botón para volver al menú */
     .menu-toggle {
-        display: none; /* Oculto por defecto */
-        position: absolute;
-        left: 25px;
-        top: 120px;
-        background: linear-gradient(to right, var(--secondary-color-start) 0%, var(--secondary-color-end) 100%);
+        display: none; position: absolute; left: 25px; top: 120px; background: linear-gradient(to right, var(--secondary-color-start) 0%, var(--secondary-color-end) 100%);
         width: 50px; height: 50px; border-radius: 50%; border: none; color: white; font-size: 24px;
-        cursor: pointer; z-index: 12; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        justify-content: center; align-items: center;
+        cursor: pointer; z-index: 12; box-shadow: 0 4px 10px rgba(0,0,0,0.2); justify-content: center; align-items: center;
     }
-    .menu-toggle.visible {
-        display: flex;
-    }
+    .menu-toggle.visible { display: flex; }
 
     /* --- Vista de Contacto --- */
     #contact-view {
-        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-        display: flex; padding: 25px; box-sizing: border-box; flex-direction: column;
-        opacity: 0; pointer-events: none; transition: opacity 0.4s ease-in-out; z-index: 15;
-        background: var(--background-gradient);
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; padding: 25px; box-sizing: border-box; flex-direction: column;
+        opacity: 0; pointer-events: none; transition: opacity 0.4s ease-in-out; z-index: 15; background: var(--background-gradient);
     }
-    #contact-view.visible {
-        opacity: 1; pointer-events: auto;
-    }
+    #contact-view.visible { opacity: 1; pointer-events: auto; }
     #contact-view h3 { text-align: center; margin-top: 60px; color: #2d3748; font-size: 24px; }
     .map-wrapper { width: 100%; height: 40%; border-radius: 25px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.1); margin: 15px 0; }
     .map-wrapper iframe { width: 100%; height: 100%; border: none; }
     .form-contact { display: flex; flex-direction: column; gap: 15px; }
     .form-contact input, .form-contact textarea { padding: 15px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 16px; }
     .form-contact button { background: linear-gradient(135deg, var(--primary-color-start) 0%, var(--primary-color-end) 100%); color: white; padding: 16px; border: none; border-radius: 12px; font-size: 18px; cursor: pointer; }
-    #btn-back-from-contact {
-        position: absolute; top: 45px; left: 25px; background: none; border: none; font-size: 28px; color: #2d3748; cursor: pointer;
-    }
+    #btn-back-from-contact { position: absolute; top: 45px; left: 25px; background: none; border: none; font-size: 28px; color: #2d3748; cursor: pointer; }
 
 </style>
 </head>
@@ -226,25 +187,22 @@
 
     <div class="mobile-container">
         <header id="main-header" class="header">
-            <div class="header-title">Impulso Creativo</div>
+            <!-- NUEVO: Añadido el onclick para entrar a modo chat -->
+            <div class="header-title" onclick="enterChatMode()">Impulso Creativo</div>
         </header>
         
-        <!-- Video del Asistente -->
         <video id="assistant-video" class="initial-state" autoplay muted loop playsinline>
             <source src="https://github.com/Dafon1981/recepcion/blob/main/eee.mp4?raw=true" type="video/mp4">
             Tu navegador no soporta el vídeo.
         </video>
 
-        <!-- Botones del Menú -->
         <button id="btn-servicios" class="menu-button" onclick="handleMenuClick('Servicios', this )">Servicios</button>
         <button id="btn-portafolio" class="menu-button" onclick="handleMenuClick('Portafolio', this)">Portafolio</button>
         <button id="btn-nosotros" class="menu-button" onclick="handleMenuClick('Nosotros', this)">Nosotros</button>
         <button id="btn-contacto" class="menu-button" onclick="handleMenuClick('Contacto', this)">Contacto</button>
         
-        <!-- Botón para volver a mostrar el menú -->
         <button id="menu-toggle" class="menu-toggle" onclick="exitChatMode()">≡</button>
 
-        <!-- Vista de Chat -->
         <div id="chat-view" class="dialog-box">
             <div class="chat-log" id="chat-log">
                 <div class="chat-message ia-message">¡Hola! Soy tu asistente digital. ¿En qué puedo ayudarte a impulsar tu negocio hoy?</div>
@@ -259,9 +217,8 @@
             </div>
         </div>
         
-        <!-- Vista de Contacto -->
         <div id="contact-view">
-            <button id="btn-back-from-contact" onclick="handleMenuClick('Inicio', document.getElementById('btn-servicios' ))">&times;</button>
+            <button id="btn-back-from-contact" onclick="handleMenuClick('Inicio', null )">&times;</button>
             <h3>Nuestra Ubicación y Contacto</h3>
             <div class="map-wrapper">
                 <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.939393928124!2d-77.03013968518738!3d-12.04565199146927!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c8b5d37f136f%3A0x93130538a84a2a62!2sPlaza%20de%20Armas%20de%20Lima!5e0!3m2!1ses!2spe!4v1668023073045!5m2!1ses!2spe" allowfullscreen="" loading="lazy"></iframe>
@@ -276,7 +233,6 @@
     </div>
 
     <script>
-        // --- Referencias a Elementos del DOM ---
         const assistantVideo = document.getElementById('assistant-video');
         const chatView = document.getElementById('chat-view');
         const contactView = document.getElementById('contact-view');
@@ -286,38 +242,36 @@
         const menuToggle = document.getElementById('menu-toggle');
         const mainHeader = document.getElementById('main-header');
 
-        // --- Lógica de la Aplicación ---
-
-        // 1. Secuencia de Inicio
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 assistantVideo.classList.remove('initial-state');
                 assistantVideo.classList.add('side-state');
                 menuButtons.forEach(button => button.classList.add('visible'));
-            }, 3000); // Espera 3 segundos antes de iniciar la animación
+            }, 3000);
         });
 
-        // 2. Manejo de Clics en el Menú
         function handleMenuClick(section, clickedButton) {
+            // CORREGIDO: Asegurarse de que siempre salimos del modo chat al usar el menú
+            exitChatMode(); 
+
             menuButtons.forEach(button => button.classList.remove('active'));
             if(clickedButton) clickedButton.classList.add('active');
 
             if (section === 'Contacto') {
-                // Ocultar todo y mostrar la vista de contacto
                 assistantVideo.style.opacity = '0';
                 chatView.style.opacity = '0';
                 mainHeader.style.opacity = '0';
                 menuButtons.forEach(btn => btn.classList.remove('visible'));
                 contactView.classList.add('visible');
             } else {
-                // Asegurarse de que la vista principal esté visible
                 assistantVideo.style.opacity = '1';
                 chatView.style.opacity = '1';
                 mainHeader.style.opacity = '1';
                 contactView.classList.remove('visible');
-                exitChatMode(); // Salir del modo chat si se estaba en él
                 
-                // Simular una respuesta de la IA si no es 'Inicio'
+                // Hacemos visibles los botones del menú principal
+                menuButtons.forEach(btn => btn.classList.add('visible'));
+                
                 if (section !== 'Inicio') {
                     addMessage(`Quisiera saber más sobre: ${section}`, 'user-message');
                     let iaResponse = '';
@@ -331,7 +285,6 @@
             }
         }
 
-        // 3. Lógica del Chat
         function handleSend() {
             const message = textInput.value.trim();
             if (!message) return;
@@ -348,10 +301,9 @@
             chatLog.scrollTop = chatLog.scrollHeight;
         }
 
-        // 4. Lógica de Modos (Exploración vs. Chat)
         function enterChatMode() {
             menuButtons.forEach(button => {
-                button.classList.add('hidden-by-chat');
+                button.classList.remove('visible'); // Usamos la clase de visibilidad
             });
             menuToggle.classList.add('visible');
             assistantVideo.classList.remove('side-state');
@@ -360,12 +312,12 @@
 
         function exitChatMode() {
             menuButtons.forEach(button => {
-                button.classList.remove('hidden-by-chat');
+                button.classList.add('visible'); // Hacemos visibles los botones principales
             });
             menuToggle.classList.remove('visible');
             assistantVideo.classList.remove('chat-mode-state');
             assistantVideo.classList.add('side-state');
-            textInput.blur(); // Quita el foco del input
+            textInput.blur();
         }
     </script>
 
