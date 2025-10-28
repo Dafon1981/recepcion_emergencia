@@ -2,158 +2,154 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recepción de Emergencia - Consulta FUA v4.2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Recepción de Emergencia</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-    /* --- ESTILOS CSS --- */
-    :root {
-        --primary-color: #0A2A43; --accent-color: #D4AF37; --text-color-light: #FFFFFF;
-        --background-color: #f0f2f5; --success-color: #28a745; --danger-color: #dc3545;
-    }
-    body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background-color ); display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
-    .mobile-container { width: 390px; height: 700px; position: relative; overflow: hidden; border-radius: 45px; box-shadow: 0 15px 40px rgba(0,0,0,0.25); background: #ffffff; border: 12px solid #fff; }
-    
-    .fullscreen-view { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--background-color); z-index: 20; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; transition: opacity 0.3s, transform 0.3s; }
-    .fullscreen-view.hidden { opacity: 0; pointer-events: none; transform: scale(0.95); }
-    .login-box { width: 100%; max-width: 320px; padding: 30px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
-    .login-box h2 { color: var(--primary-color); margin-top: 0; }
-    .login-box button { width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 18px; font-weight: 600; cursor: pointer; }
-    .btn-primary { background: var(--primary-color); color: white; }
-    .btn-secondary { background: none; color: var(--primary-color); margin-top: 10px; }
-
-    .input-wrapper { width: 100%; margin-bottom: 15px; display: flex; align-items: center; border: 1px solid #ccc; border-radius: 10px; background: white; }
-    .input-wrapper input { flex-grow: 1; padding: 15px; border: none; background: none; outline: none; font-size: 16px; }
-    .toggle-password { padding: 0 15px; background: none; border: none; cursor: pointer; opacity: 0.5; }
-    
-    #main-app.hidden { display: none; }
-    .header { position: absolute; top: 0; left: 0; right: 0; height: 90px; background: var(--primary-color); z-index: 5; display: flex; justify-content: center; align-items: center; }
-    .header-title { color: var(--text-color-light); font-size: 24px; font-weight: bold; cursor: pointer; }
-    
-    #assistant-logo { position: absolute; bottom: 30px; height: 85%; z-index: 1; transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); object-fit: cover; object-position: center bottom; }
-    #assistant-logo.initial-state { right: 50%; transform: translateX(50%); height: 90%; opacity: 1; }
-    #assistant-logo.side-state { right: -40px; transform: translateX(0); opacity: 1; height: 85%; }
-    #assistant-logo.hidden-by-view { opacity: 0; }
-    #assistant-logo.chat-mode-state { right: 50%; transform: translateX(50%); height: 95%; }
-
-    .menu-button { position: absolute; left: 25px; z-index: 10; background: var(--primary-color); border: 2px solid var(--accent-color); border-radius: 30px; padding: 15px 25px; font-size: 16px; font-weight: 600; color: var(--text-color-light); cursor: pointer; min-width: 180px; opacity: 0; transform: translateX(-30px); pointer-events: none; transition: all 0.4s; }
-    .menu-button.visible { opacity: 1; transform: translateX(0); pointer-events: auto; }
-    .menu-button.hidden-by-view, .menu-button.hidden-by-chat { opacity: 0 !important; transform: translateX(-30px) !important; pointer-events: none !important; }
-    #btn-buscar { top: 120px; transition-delay: 0.2s; } #btn-observados { top: 190px; transition-delay: 0.3s; } #btn-admin { top: 260px; transition-delay: 0.4s; } #btn-info { top: 330px; transition-delay: 0.5s; } #btn-contacto { top: 400px; transition-delay: 0.6s; }
-
-    #greeting-container { position: absolute; top: 480px; left: 25px; right: 25px; z-index: 10; opacity: 0; transition: opacity 0.5s 1.5s; }
-    #greeting-container.visible { opacity: 1; }
-
-    #chat-view { position: absolute; bottom: 10px; left: 10px; right: 10px; z-index: 15; transition: all 0.4s; opacity: 1; pointer-events: auto; }
-    #chat-view.hidden-by-view { opacity: 0 !important; pointer-events: none !important; }
-    
-    .chat-log { max-height: 150px; overflow-y: auto; margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.7); border-radius: 15px; backdrop-filter: blur(5px); }
-    .chat-message { margin-bottom: 10px; padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 14px; line-height: 1.4; }
-    
-    .user-message { background: white; color: var(--primary-color); align-self: flex-end; margin-left: auto; border: 1px solid var(--primary-color); }
-    .ia-message { background: #e9e9eb; color: #333; align-self: flex-start; }
-    
-    .input-bar { display: flex; align-items: center; background: white; border-radius: 30px; padding: 5px 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-    #text-input { flex-grow: 1; border: none; background: none; outline: none; padding: 10px; font-size: 16px; }
-    .action-button { background: none; border: none; cursor: pointer; padding: 8px; }
-    .action-button img { width: 24px; height: 24px; }
-    
-    .back-button { display: none; position: absolute; left: 20px; top: 50%; transform: translateY(-50%); background: none; border: none; color: white; font-size: 28px; cursor: pointer; z-index: 6; }
-    .back-button.visible { display: block; }
-    .menu-toggle { display: none; position: absolute; right: 20px; top: 100px; background: var(--primary-color); width: 40px; height: 40px; border-radius: 50%; border: none; color: white; font-size: 20px; cursor: pointer; z-index: 12; box-shadow: 0 4px 10px rgba(0,0,0,0.2); justify-content: center; align-items: center; }
-    .menu-toggle.visible { display: flex; }
-    
-    .app-view { position: absolute; top: 90px; left: 0; right: 0; bottom: 0; padding: 20px; box-sizing: border-box; background: var(--background-color); z-index: 4; opacity: 0; pointer-events: none; transition: opacity 0.3s; display: flex; flex-direction: column; }
-    .app-view.visible { opacity: 1; pointer-events: auto; }
-    
-    .search-bar-wrapper { display: flex; gap: 10px; margin-bottom: 20px; }
-    #search-input { flex-grow: 1; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
-    .search-results-list { flex-grow: 1; overflow-y: auto; background: white; border-radius: 8px; padding: 10px; }
-    
-    .admin-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-    .tab-button { flex: 1; padding: 10px; border: 1px solid var(--primary-color); background: none; color: var(--primary-color); border-radius: 8px; cursor: pointer; }
-    .tab-button.active { background: var(--primary-color); color: white; }
-    .tab-content { display: none; flex-grow: 1; flex-direction: column; }
-    .tab-content.active { display: flex; }
-
-    .fua-entry-form { flex-grow: 1; display: flex; flex-direction: column; }
-    #fua-entries-container { flex-grow: 1; overflow-y: auto; padding-right: 10px; }
-    .fua-entry-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
-    .fua-entry-row input { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
-    .fua-entry-row input[type="text"] { flex-grow: 1; }
-    .fua-entry-row input[type="date"] { width: 130px; }
-    .delete-fua-btn { background: var(--danger-color); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    
-    .fua-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding: 0 10px; }
-    .add-fua-btn, .remove-fua-btn { border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 24px; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; }
-    .add-fua-btn { background: var(--success-color); }
-    .remove-fua-btn { background: var(--danger-color); }
-    
-    .save-all-btn { background: var(--primary-color); color: white; padding: 15px; border-radius: 10px; border: none; font-size: 18px; cursor: pointer; margin-top: auto; }
-</style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* --- ESTILOS DEL DISEÑO "IMPACTO" (RESTAURADO) --- */
+        :root {
+            --primary-color: #0A2A43; /* Azul oscuro */
+            --accent-color: #D4AF37; /* Dorado/Amarillo */
+            --text-color-light: #FFFFFF;
+            --background-color: #FFFFFF; /* Fondo del contenedor blanco */
+            --body-bg-color: #f0f2f5; /* Fondo exterior gris claro */
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+        }
+        body {
+            margin: 0; font-family: 'Inter', sans-serif; background: var(--body-bg-color); display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden;
+        }
+        #phone-container {
+            width: 390px; height: 700px; position: relative; overflow: hidden; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); background: var(--background-color);
+        }
+        #main-app {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; z-index: 2;
+        }
+        #background-logo {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; opacity: 0.08; z-index: 1; pointer-events: none;
+        }
+        .app-view {
+            display: none; flex-direction: column; flex-grow: 1; padding: 20px; padding-top: 100px; box-sizing: border-box;
+        }
+        .app-view.active { display: flex; }
+        #header {
+            position: absolute; top: 0; left: 0; right: 0; height: 80px; background: var(--primary-color); color: var(--text-color-light); display: flex; align-items: center; justify-content: center; padding: 0 20px; z-index: 10; border-radius: 20px 20px 0 0;
+        }
+        #back-button {
+            position: absolute; left: 15px; background: none; border: none; color: white; font-size: 32px; cursor: pointer;
+        }
+        #view-title { font-size: 1.5em; font-weight: bold; }
+        #login-view, #register-view { padding-top: 20px; justify-content: center; background: var(--primary-color); }
+        .form-container {
+            width: 100%; max-width: 300px; margin: 0 auto; padding: 30px; background: rgba(255, 255, 255, 0.95); border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        h1, h2 { color: var(--primary-color); text-align: center; }
+        input[type="text"], input[type="password"], input[type="email"], input[type="tel"], input[type="date"] {
+            width: calc(100% - 24px); padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 8px; font-size: 1em;
+        }
+        button {
+            width: 100%; padding: 12px; border: 2px solid var(--accent-color); border-radius: 30px; background-color: var(--primary-color); color: var(--text-color-light); font-size: 1em; font-weight: 600; cursor: pointer; transition: all 0.3s;
+        }
+        button:hover { background-color: #082135; transform: translateY(-2px); }
+        .secondary-action {
+            background: none; border: none; color: var(--primary-color); margin-top: 10px; font-size: 0.9em;
+        }
+        #main-menu-view { padding-top: 100px; }
+        #main-menu-view .menu-buttons { display: flex; flex-direction: column; gap: 15px; padding: 0 30px; }
+        #greeting-container {
+            text-align: center; padding: 12px; background: #e9ecef; border-radius: 10px; color: #333; margin: 25px 30px 0; font-size: 0.95em;
+        }
+        /* Estilos para las vistas internas */
+        #search-results, #observados-list, #user-list-container { list-style: none; padding: 0; margin-top: 10px; overflow-y: auto; }
+        #search-results li, #observados-list li, #user-list-container li { background-color: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid var(--primary-color); box-shadow: 0 2px 5px rgba(0,0,0,0.05); color: #333; }
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
+        .modal-content { background-color: #fefefe; padding: 20px; border-radius: 10px; width: 90%; max-width: 370px; position: relative; color: #333; }
+        #modal-close-btn { position: absolute; top: 5px; right: 15px; font-size: 28px; font-weight: bold; cursor: pointer; color: #aaa; }
+        #modal-details-content p strong { color: var(--primary-color); }
+        /* Admin Panel Styles */
+        .admin-tabs { display: flex; margin-bottom: 15px; }
+        .admin-tabs button {
+            flex: 1; border-radius: 8px 8px 0 0; border: 1px solid #ccc; background: #eee; color: #555; padding: 10px; font-weight: normal;
+        }
+        .admin-tabs button.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .tab-content { display: none; padding-top: 15px; }
+        .tab-content.active { display: block; }
+        .fua-entry-row { display: flex; gap: 5px; margin-bottom: 10px; align-items: center; }
+        .fua-entry-row input { margin-bottom: 0; }
+        .delete-fua-btn { background: var(--danger-color); color: white; border: none; border-radius: 50%; width: 25px; height: 25px; font-size: 14px; cursor: pointer; }
+        .fua-actions { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+        .fua-actions button { width: 40px; height: 40px; border-radius: 50%; font-size: 20px; }
+        .save-all-btn { margin-top: 15px; }
+        .whatsapp-icon { font-size: 24px; text-decoration: none; color: var(--success-color); }
+        .delete-user-btn { background: none; border: none; font-size: 20px; color: var(--danger-color); cursor: pointer; padding: 0; }
+        .user-info strong { color: var(--primary-color); }
+        .user-info span { font-size: 0.8em; color: #666; }
+        .user-actions { display: flex; align-items: center; gap: 10px; }
+    </style>
 </head>
 <body>
-
-    <div class="mobile-container">
-        <!-- VISTAS DE LOGIN Y REGISTRO -->
-        <div id="login-view" class="fullscreen-view">
-             <div class="login-box"><h2>Bienvenido</h2><div class="input-wrapper"><input type="text" id="username" placeholder="Usuario"></div><div class="input-wrapper"><input type="password" id="password" placeholder="Contraseña"><button class="toggle-password" onclick="togglePasswordVisibility('password', this)">👁️</button></div><button class="btn-primary" onclick="handleLogin()">Entrar</button><button class="btn-secondary" onclick="showRegisterView()">Registrarse</button></div>
-        </div>
-        <div id="register-view" class="fullscreen-view hidden">
-            <div class="login-box"><h2>Registrarse</h2><div class="input-wrapper"><input type="text" id="reg-username" placeholder="Nombre Completo"></div><div class="input-wrapper"><input type="password" id="reg-password" placeholder="Crear Contraseña"><button class="toggle-password" onclick="togglePasswordVisibility('reg-password', this)">👁️</button></div><div class="input-wrapper"><input type="email" id="reg-email" placeholder="Email"></div><div class="input-wrapper"><input type="tel" id="reg-whatsapp" placeholder="WhatsApp"></div><button class="btn-primary" onclick="handleRegister()">Registrar</button><button class="btn-secondary" onclick="showLoginView()">Volver al Inicio</button></div>
-        </div>
-
-        <!-- APLICACIÓN PRINCIPAL -->
-        <div id="main-app" class="hidden">
-            <header id="main-header" class="header">
-                <button id="back-button" class="back-button" onclick="returnToMenu()">←</button>
-                <div id="header-title" class="header-title" onclick="enterChatMode()">Recepción Emergencia</div>
-            </header>
-            
-            <video id="assistant-logo" class="initial-state" autoplay muted loop playsinline>
-                <source src="https://github.com/Dafon1981/recepcion/blob/main/cayetanologo.mp4?raw=true" type="video/mp4">
-                Tu navegador no soporta el vídeo.
-            </video>
-            <button class="menu-toggle" id="menu-toggle" onclick="exitChatMode( )">≡</button>
-
-            <!-- Contenedor del Saludo -->
-            <div id="greeting-container"></div>
-
-            <!-- Menú de Navegación -->
-            <button id="btn-buscar" class="menu-button" onclick="handleMenuClick('buscar')">Buscar FUA</button>
-            <button id="btn-observados" class="menu-button" onclick="handleMenuClick('observados')">Ver Observados</button>
-            <button id="btn-admin" class="menu-button" onclick="handleMenuClick('admin')">Administrar</button>
-            <button id="btn-info" class="menu-button" onclick="handleMenuClick('info')">Información</button>
-            <button id="btn-contacto" class="menu-button" onclick="handleMenuClick('contacto')">Contacto</button>
-
-            <!-- Vistas de la Aplicación -->
-            <div id="buscar-view" class="app-view">
-                <h2>Búsqueda de FUAs</h2>
-                <div class="search-bar-wrapper">
-                    <input type="text" id="search-input" placeholder="Buscar por FUA, episodio, paciente...">
-                    <button class="action-button" onclick="handleVoiceSearch()"><img src="https://www.pngmart.com/files/17/Volume-Button-Transparent-PNG.png" alt="Audio"></button>
-                    <button class="action-button" onclick="performSearch( )"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar"></button>
-                </div>
-                <div class="search-results-list" id="search-results-list">
-                    <p style="text-align: center; color: #777;">Ingrese un término de búsqueda para comenzar.</p>
+    <div id="phone-container">
+        <img id="background-logo" src="https://i.ibb.co/L631h3D/logo-cayetano.png" alt="Logo Hospital" style="display: none;">
+        <div id="main-app">
+            <div id="header">
+                <button id="back-button" onclick="goBack()" style="display: none;">&#x2190;</button>
+                <span id="view-title"></span>
+            </div>
+            <div id="login-view" class="app-view active">
+                <div class="form-container">
+                    <h1>Bienvenido</h1>
+                    <input type="text" id="username" placeholder="Usuario">
+                    <input type="password" id="password" placeholder="Contraseña">
+                    <button onclick="handleLogin()">Ingresar</button>
+                    <button class="secondary-action" onclick="showView('register-view', 'Registro')">Registrarse</button>
                 </div>
             </div>
-            <div id="observados-view" class="app-view"> <h2>Pacientes Observados</h2> </div>
-            <div id="info-view" class="app-view"> <h2>Información</h2> </div>
-            <div id="admin-view" class="app-view">
-                <h2>Panel de Administración</h2>
-                <div class="admin-tabs">
-                    <button class="tab-button active" onclick="switchAdminTab('personal', this )">Personal</button>
-                    <button class="tab-button" onclick="switchAdminTab('observados', this)">Observados</button>
+            <div id="register-view" class="app-view">
+                <div class="form-container">
+                    <h2>Registro</h2>
+                    <input type="text" id="reg-fullname" placeholder="Nombre Completo">
+                    <input type="password" id="reg-password" placeholder="Contraseña">
+                    <input type="email" id="reg-email" placeholder="Email">
+                    <input type="tel" id="reg-whatsapp" placeholder="Nº WhatsApp (9 dígitos)">
+                    <button onclick="handleRegister()">Registrar</button>
+                    <button class="secondary-action" onclick="showView('login-view', 'Recepción Emergencia')">Volver al Login</button>
                 </div>
-                <div id="tab-personal" class="tab-content active"><h3>Validación de Personal</h3><ul id="user-list-container" style="list-style: none; padding: 0;"></ul></div>
-                <div id="tab-observados" class="tab-content">
-                    <h3>Ingreso de FUA Observado</h3>
+            </div>
+            <div id="main-menu-view" class="app-view">
+                <div class="menu-buttons">
+                    <button onclick="showView('search-view', 'Buscar FUA')">Buscar FUA</button>
+                    <button onclick="showView('ver-observados-view', 'Ver Observados')">Ver Observados</button>
+                    <button id="btn-admin" onclick="showView('admin-view', 'Administración')" style="display: none;">Administrar</button>
+                    <button onclick="showInfo()">Información</button>
+                    <button onclick="showContact()">Contacto</button>
+                </div>
+                <div id="greeting-container" style="display: none;"></div>
+            </div>
+            <div id="search-view" class="app-view">
+                <input type="text" id="search-input" placeholder="Buscar por FUA, Paciente, Documento...">
+                <ul id="search-results"></ul>
+            </div>
+            <div id="ver-observados-view" class="app-view">
+                <input type="text" id="observados-search-input" placeholder="Filtrar por FUA, Episodio u Observación...">
+                <ul id="observados-list"></ul>
+            </div>
+            <div id="admin-view" class="app-view">
+                <div class="admin-tabs">
+                    <button class="tab-button active" onclick="switchAdminTab('observados', this)">Ingresar Observación</button>
+                    <button class="tab-button" onclick="switchAdminTab('personal', this)">Validar Personal</button>
+                </div>
+                <div id="tab-observados" class="tab-content active">
                     <div class="fua-entry-form">
                         <div id="fua-entries-container">
-                            <div class="fua-entry-row"><input type="text" placeholder="Nº FUA o Episodio"><input type="date"><button class="delete-fua-btn" onclick="deleteFuaEntry(this)">X</button></div>
+                            <div class="fua-entry-row">
+                                <input type="text" class="fua-episodio-input" placeholder="Nº FUA o Episodio">
+                                <input type="date" class="fua-fecha-input">
+                                <input type="text" class="fua-observacion-input" placeholder="Observación (opcional)">
+                                <button class="delete-fua-btn" onclick="this.parentElement.remove()">X</button>
+                            </div>
                         </div>
                         <div class="fua-actions">
                             <button class="remove-fua-btn" onclick="removeLastFuaEntry()">-</button>
@@ -162,209 +158,268 @@
                         <button class="save-all-btn" onclick="saveAllFuas()">Guardar Todo</button>
                     </div>
                 </div>
-            </div>
-
-            <!-- MODO CHAT -->
-            <div id="chat-view">
-                <div class="chat-log" id="chat-log"></div>
-                <div class="input-bar">
-                    <button class="action-button" onclick="handleAudio()"><img src="https://www.pngmart.com/files/17/Volume-Button-Transparent-PNG.png" alt="Audio"></button>
-                    <input type="text" id="text-input" placeholder="Haz una consulta..." onkeydown="if(event.key==='Enter' ) handleSend()" onfocus="enterChatMode()">
-                    <button class="action-button" onclick="handleSend()"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Enviar"></button>
+                <div id="tab-personal" class="tab-content">
+                    <ul id="user-list-container"></ul>
                 </div>
             </div>
         </div>
-        <div id="password-prompt" class="fullscreen-view hidden"></div>
+    </div>
+    <div id="details-modal" class="modal">
+        <div class="modal-content">
+            <span id="modal-close-btn">&times;</span>
+            <div id="modal-details-content"></div>
+        </div>
     </div>
 
 <script>
-    // --- JAVASCRIPT ---
+    // --- CONFIGURACIÓN SUPABASE ---
+    const SUPABASE_URL = 'https://zfowxdhyspabjavybbig.supabase.co'; // Usando la URL del contexto original
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpmb3d4ZGh5c3BhYmphdnliYmlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjMyNzE3ODUsImV4cCI6MjAzODg0Nzc4NX0.k32bX3a-G_E923v1S21rOlhXXfV5S2_1i4Irm-iP4qI'; // Usando la KEY del contexto original
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     let currentUser = null;
-    let db_users = [
-        { id: 1, name: 'manuel', password: 'mutter', is_validated: true, role: 'admin' },
-        { id: 2, name: 'Ana Lopez', password: '123', is_validated: false, role: 'user' }
-    ];
+    let viewStack = ['login-view'];
 
-    const loginView = document.getElementById('login-view' );
-    const registerView = document.getElementById('register-view');
-    const mainApp = document.getElementById('main-app');
-    const assistantLogo = document.getElementById('assistant-logo');
-    const menuButtons = document.querySelectorAll('.menu-button');
-    const appViews = document.querySelectorAll('.app-view');
-    const chatView = document.getElementById('chat-view');
+    const viewTitle = document.getElementById('view-title');
     const backButton = document.getElementById('back-button');
-    const menuToggle = document.getElementById('menu-toggle');
-    const greetingContainer = document.getElementById('greeting-container');
+    const backgroundLogo = document.getElementById('background-logo');
 
-    function handleLogin() {
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value.trim();
-        const user = db_users.find(u => u.name === username && u.password === password);
-        if (user) {
-            if (user.is_validated) { currentUser = user; initApp(); } 
-            else { alert("Tu cuenta aún no ha sido validada."); }
-        } else { alert("Usuario o contraseña incorrectos."); }
+    // --- FUNCIONES DE NAVEGACIÓN ---
+    function showView(viewId, title) {
+        document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
+        const targetView = document.getElementById(viewId);
+        if(targetView) targetView.classList.add('active');
+
+        const isMain = viewId === 'main-menu-view';
+        const isLoginOrRegister = viewId === 'login-view' || viewId === 'register-view';
+
+        backButton.style.display = isMain || isLoginOrRegister ? 'none' : 'block';
+        viewTitle.textContent = title;
+        backgroundLogo.style.display = isMain ? 'block' : 'none';
+        
+        if (viewId !== viewStack[viewStack.length - 1]) {
+            viewStack.push(viewId);
+        }
+
+        const greeting = document.getElementById('greeting-container');
+        if (isMain && currentUser) {
+            const hour = new Date().getHours();
+            const saludo = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches';
+            greeting.textContent = `${saludo}, ${currentUser.nombre_completo.split(' ')[0]}`;
+            greeting.style.display = 'block';
+        } else {
+            greeting.style.display = 'none';
+        }
+
+        if (viewId === 'admin-view') loadPendingUsers();
+        if (viewId === 'ver-observados-view') loadObservedFuas();
+    }
+
+    function goBack() {
+        if (viewStack.length > 1) {
+            viewStack.pop();
+            const prevViewId = viewStack[viewStack.length - 1];
+            const prevTitle = prevViewId === 'login-view' || prevViewId === 'main-menu-view' ? 'Recepción Emergencia' : 'Volver';
+            showView(prevViewId, prevTitle);
+        }
     }
     
-    function initApp() {
-        loginView.classList.add('hidden');
-        registerView.classList.add('hidden');
-        mainApp.classList.remove('hidden');
-        
-        setTimeout(() => {
-            assistantLogo.classList.remove('initial-state');
-            assistantLogo.classList.add('side-state');
-            menuButtons.forEach(button => {
-                if (button.id === 'btn-admin' && currentUser.role !== 'admin') {
-                    button.style.display = 'none';
-                } else {
-                    button.classList.add('visible');
-                }
-            });
-            greetingContainer.classList.add('visible');
-        }, 1000);
+    // --- AUTENTICACIÓN (Login Case-Insensitive) ---
+    async function handleLogin() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        if (!username || !password) return alert('Por favor, ingrese usuario y contraseña.');
 
-        const hour = new Date().getHours();
-        let greeting = (hour < 12) ? 'Buenos días' : (hour < 18) ? 'Buenas tardes' : 'Buenas noches';
-        greetingContainer.innerHTML = `<div class="chat-message ia-message">${greeting}, ${currentUser.name}.</div>`;
-    }
-
-    function handleMenuClick(section) {
-        if (section === 'contacto') {
-            window.open('https://wa.me/51967188120', '_blank' );
+        // Acceso maestro local (si aplica)
+        if (username.toLowerCase() === 'manuel' && password === 'mutter') {
+            currentUser = { nombre_completo: 'Manuel (Admin)', rol: 'admin' };
+            document.getElementById('btn-admin').style.display = 'block';
+            showView('main-menu-view', 'Recepción Emergencia');
             return;
         }
-        menuButtons.forEach(btn => btn.classList.add('hidden-by-view'));
-        assistantLogo.classList.add('hidden-by-view');
-        greetingContainer.style.opacity = '0';
-        appViews.forEach(view => view.classList.toggle('visible', view.id === `${section}-view`));
-        backButton.classList.add('visible');
-        chatView.classList.add('hidden-by-view');
-    }
-
-    function returnToMenu() {
-        appViews.forEach(view => view.classList.remove('visible'));
-        backButton.classList.remove('visible');
-        menuButtons.forEach(btn => btn.classList.remove('hidden-by-view'));
-        assistantLogo.classList.remove('hidden-by-view');
-        greetingContainer.style.opacity = '1';
-        chatView.classList.remove('hidden-by-view');
-    }
-    
-    function enterChatMode() {
-        if (assistantLogo.classList.contains('chat-mode-state')) return;
-        returnToMenu();
-        setTimeout(() => {
-            assistantLogo.classList.remove('side-state');
-            assistantLogo.classList.add('chat-mode-state');
-            menuButtons.forEach(btn => btn.classList.add('hidden-by-chat'));
-            greetingContainer.style.opacity = '0';
-            menuToggle.classList.add('visible');
-        }, 10);
-    }
-
-    function exitChatMode() {
-        assistantLogo.classList.remove('chat-mode-state');
-        assistantLogo.classList.add('side-state');
-        menuButtons.forEach(btn => btn.classList.remove('hidden-by-chat'));
-        greetingContainer.style.opacity = '1';
-        menuToggle.classList.remove('visible');
-    }
-    
-    function togglePasswordVisibility(inputId, button) {
-        const input = document.getElementById(inputId);
-        const isPassword = input.type === 'password';
-        input.type = isPassword ? 'text' : 'password';
-        button.textContent = isPassword ? '🙈' : '👁️';
-    }
-    
-    function handleSend() {
-        const textInput = document.getElementById('text-input');
-        const message = textInput.value.trim();
-        if (!message) return;
-
-        const chatLog = document.getElementById('chat-log');
-        const userDiv = document.createElement('div');
-        userDiv.className = 'chat-message user-message';
-        userDiv.textContent = message;
-        chatLog.appendChild(userDiv);
-        chatLog.scrollTop = chatLog.scrollHeight;
-        textInput.value = '';
-
-        // *** INICIO DE LA LÓGICA DE ATAJOS ***
-        const command = message.toLowerCase();
-        if (command.includes('busqueda') || command.includes('fua')) {
-            handleMenuClick('buscar');
-        } else if (command.includes('observados')) {
-            handleMenuClick('observados');
-        } else if (command.includes('administrar') || command.includes('ingresar')) {
-            handleMenuClick('admin');
-        } else if (command.includes('tutorial') || command.includes('informacion')) {
-            handleMenuClick('info');
-        } else if (command.includes('contacto')) {
-            handleMenuClick('contacto');
+        
+        try {
+            // Usa la función RPC 'login_usuario' para login case-insensitive
+            const { data, error } = await supabaseClient.rpc('login_usuario', { p_nombre_completo: username, p_contrasena: password });
+            if (error || !data || data.length === 0) throw new Error('Usuario o contraseña incorrectos.');
+            
+            const user = data[0];
+            if (!user.esta_validado) return alert('Usuario no validado. Contacte al administrador.');
+            
+            currentUser = user;
+            document.getElementById('btn-admin').style.display = user.rol === 'admin' ? 'block' : 'none';
+            showView('main-menu-view', 'Recepción Emergencia');
+        } catch (error) {
+            alert(error.message);
         }
-        // *** FIN DE LA LÓGICA DE ATAJOS ***
     }
 
-    function handleAudio() { alert('Función de audio activada...'); }
-    
-    function showRegisterView() {
-        loginView.classList.add('hidden');
-        registerView.classList.remove('hidden');
+    async function handleRegister() {
+        const fullName = document.getElementById('reg-fullname').value.trim();
+        const password = document.getElementById('reg-password').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const whatsapp = document.getElementById('reg-whatsapp').value.trim();
+
+        if (!password || !fullName) return alert("Por favor, complete los campos de Nombre y Contraseña.");
+
+        try {
+            const { error } = await supabaseClient.from('usuarios').insert({ nombre_completo: fullName, contrasena: password, email: email, telefono_whatsapp: whatsapp, rol: 'user', esta_validado: false });
+            if (error) throw error;
+            alert("¡Registro exitoso! Por favor, espera a que un administrador valide tu cuenta.");
+            showView('login-view', 'Recepción Emergencia');
+        } catch (error) {
+            alert(`Error en el registro: ${error.message}`);
+        }
     }
 
-    function showLoginView() {
-        registerView.classList.add('hidden');
-        loginView.classList.remove('hidden');
+    // --- BÚSQUEDA DE FUA (CONEXIÓN RESTAURADA) ---
+    document.getElementById('search-input').addEventListener('keyup', async (e) => {
+        const term = e.target.value.trim();
+        const results = document.getElementById('search-results');
+        if (term.length < 3) { results.innerHTML = ''; return; }
+        results.innerHTML = '<li>Buscando...</li>';
+        try {
+            // Usa la función RPC 'buscar_atenciones'
+            const { data, error } = await supabaseClient.rpc('buscar_atenciones', { search_term: term });
+            if (error) throw error;
+            results.innerHTML = data.length > 0 ? data.map(item => `<li onclick='showDetails(${JSON.stringify(item)})'><div class="patient-name">${item.PACIENTE}</div><div class="patient-details">FUA: ${item.NFUA} | Doc: ${item.NroDocumento}</div></li>`).join('') : '<li>No se encontraron resultados.</li>';
+        } catch (error) { results.innerHTML = '<li>Error al buscar.</li>'; }
+    });
+
+    // --- VISTA DE OBSERVADOS (CON BÚSQUEDA/FILTRO) ---
+    async function loadObservedFuas() {
+        const list = document.getElementById('observados-list');
+        list.innerHTML = '<li>Cargando...</li>';
+        try {
+            const { data, error } = await supabaseClient
+                .from('observaciones')
+                .select('nro_fua_episodio, fecha_observacion, observacion')
+                .order('fecha_observacion', { ascending: false });
+            if (error) throw error;
+            
+            list.innerHTML = data.length > 0 ? data.map(obs => `<li data-search-term="${obs.nro_fua_episodio} ${obs.observacion}"><strong>FUA/Episodio:</strong> ${obs.nro_fua_episodio}<br><strong>Fecha:</strong> ${new Date(obs.fecha_observacion).toLocaleDateString()}<br><strong>Obs:</strong> ${obs.observacion || 'N/A'}</li>`).join('') : '<li>No hay FUAs observados.</li>';
+        } catch (error) {
+            list.innerHTML = '<li>Error al cargar.</li>';
+        }
     }
 
-    function handleRegister() {
-        alert("Se ha registrado. Espere a que su cuenta sea confirmada.");
-        showLoginView();
-    }
-
-    function switchAdminTab(tabName, clickedButton) {
-        document.querySelectorAll('#admin-view .tab-button').forEach(btn => btn.classList.remove('active'));
-        clickedButton.classList.add('active');
-        document.querySelectorAll('#admin-view .tab-content').forEach(content => {
-            content.classList.toggle('active', content.id === `tab-${tabName}`);
+    document.getElementById('observados-search-input').addEventListener('keyup', (e) => {
+        const term = e.target.value.toLowerCase();
+        document.querySelectorAll('#observados-list li').forEach(item => {
+            const itemText = item.dataset.searchTerm || item.textContent;
+            item.style.display = itemText.toLowerCase().includes(term) ? '' : 'none';
         });
+    });
+
+    // --- PANEL DE ADMINISTRACIÓN (Validación y Borrado) ---
+    function switchAdminTab(tabName, element) {
+        document.querySelectorAll('#admin-view .tab-content').forEach(tc => tc.classList.remove('active'));
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+        document.querySelectorAll('#admin-view .tab-button').forEach(btn => btn.classList.remove('active'));
+        element.classList.add('active');
     }
 
+    async function loadPendingUsers() {
+        const userListContainer = document.getElementById('user-list-container');
+        userListContainer.innerHTML = '<li>Cargando...</li>';
+        try {
+            const { data: users, error } = await supabaseClient
+                .from('usuarios')
+                .select('id, nombre_completo, esta_validado, contrasena, telefono_whatsapp')
+                .order('nombre_completo');
+            if (error) throw error;
+            
+            userListContainer.innerHTML = users.length > 0 ? users.map(user => {
+                const whatsappLink = user.telefono_whatsapp ? `<a href="https://wa.me/51${user.telefono_whatsapp.replace(/\s+/g, '')}" target="_blank" class="whatsapp-icon">&#x1F4F1;</a>` : '';
+                return `<li>
+                    <div class="user-info"><strong>${user.nombre_completo}</strong><span>Pass: ${user.contrasena || 'N/A'}</span></div>
+                    <div class="user-actions">
+                        ${whatsappLink}
+                        <label class="switch"><input type="checkbox" ${user.esta_validado ? 'checked' : ''} onchange="toggleUserValidation('${user.id}', this.checked)"><span class="slider round"></span></label>
+                        <button onclick="deleteUser('${user.id}', '${user.nombre_completo}')" class="delete-user-btn">&times;</button>
+                    </div>
+                </li>`;
+            }).join('') : '<li>No hay usuarios registrados.</li>';
+        } catch (error) {
+            userListContainer.innerHTML = '<li>Error al cargar usuarios.</li>';
+        }
+    }
+
+    async function toggleUserValidation(userId, isValidated) {
+        try {
+            const { error } = await supabaseClient.from('usuarios').update({ esta_validado: isValidated }).eq('id', userId);
+            if (error) throw error;
+        } catch (error) {
+            alert('No se pudo actualizar el estado del usuario.');
+            loadPendingUsers();
+        }
+    }
+
+    async function deleteUser(userId, userName) {
+        if (prompt(`Para borrar a "${userName}", escriba BORRAR.`) !== 'BORRAR') return alert("Cancelado.");
+        try {
+            const { error } = await supabaseClient.from('usuarios').delete().eq('id', userId);
+            if (error) throw error;
+            alert(`Usuario "${userName}" borrado.`);
+            loadPendingUsers();
+        } catch (error) {
+            alert(`No se pudo borrar: ${error.message}`);
+        }
+    }
+
+    // --- INGRESO DE OBSERVACIONES ---
     function addFuaEntry() {
         const container = document.getElementById('fua-entries-container');
-        const newEntryRow = document.createElement('div');
-        newEntryRow.className = 'fua-entry-row';
-        newEntryRow.innerHTML = `<input type="text" placeholder="Nº FUA o Episodio"><input type="date"><button class="delete-fua-btn" onclick="deleteFuaEntry(this)">X</button>`;
-        container.appendChild(newEntryRow);
+        const newRow = document.createElement('div');
+        newRow.className = 'fua-entry-row';
+        newRow.innerHTML = `<input type="text" class="fua-episodio-input" placeholder="Nº FUA o Episodio"><input type="date" class="fua-fecha-input"><input type="text" class="fua-observacion-input" placeholder="Observación (opcional)"><button class="delete-fua-btn" onclick="this.parentElement.remove()">X</button>`;
+        container.appendChild(newRow);
     }
-
-    function deleteFuaEntry(button) {
-        button.parentElement.remove();
-    }
-
     function removeLastFuaEntry() {
-        const container = document.getElementById('fua-entries-container');
-        const rows = container.querySelectorAll('.fua-entry-row');
-        if (rows.length > 1) {
-            rows[rows.length - 1].remove();
+        const rows = document.querySelectorAll('#fua-entries-container .fua-entry-row');
+        if (rows.length > 1) rows[rows.length - 1].remove();
+    }
+    async function saveAllFuas() {
+        const rows = document.querySelectorAll('#fua-entries-container .fua-entry-row');
+        const toSave = Array.from(rows).map(row => ({
+            nro_fua_episodio: row.querySelector('.fua-episodio-input').value,
+            fecha_observacion: row.querySelector('.fua-fecha-input').value,
+            observacion: row.querySelector('.fua-observacion-input').value,
+        })).filter(r => r.nro_fua_episodio && r.fecha_observacion);
+
+        if (toSave.length === 0) return alert("No hay registros válidos para guardar.");
+        try {
+            const { error } = await supabaseClient.from('observaciones').insert(toSave);
+            if (error) throw error;
+            alert(`¡Éxito! Se guardaron ${toSave.length} registros.`);
+            document.getElementById('fua-entries-container').innerHTML = '<div class="fua-entry-row"><input type="text" class="fua-episodio-input" placeholder="Nº FUA o Episodio"><input type="date" class="fua-fecha-input"><input type="text" class="fua-observacion-input" placeholder="Observación (opcional)"><button class="delete-fua-btn" onclick="this.parentElement.remove()">X</button></div>';
+        } catch (error) {
+            alert(`Error al guardar: ${error.message}`);
         }
     }
 
-    function saveAllFuas() {
-        const entries = document.querySelectorAll('.fua-entry-row');
-        alert(`Simulando guardado de ${entries.length} registros.`);
+    // --- MODAL Y OTROS ---
+    function showDetails(itemData) {
+        const modal = document.getElementById('details-modal');
+        const content = document.getElementById('modal-details-content');
+        let detailsHtml = '';
+        for (const [key, value] of Object.entries(itemData)) {
+            detailsHtml += `<p><strong>${key}:</strong> ${value || 'N/A'}</p>`;
+        }
+        content.innerHTML = detailsHtml;
+        modal.style.display = 'flex';
     }
-    
-    function performSearch() {
-        const query = document.getElementById('search-input').value;
-        alert(`Buscando: ${query}`);
-    }
+    document.getElementById('modal-close-btn').addEventListener('click', () => document.getElementById('details-modal').style.display = 'none');
+    window.addEventListener('click', (event) => { if (event.target == document.getElementById('details-modal')) { document.getElementById('details-modal').style.display = 'none'; } });
 
-    function handleVoiceSearch() {
-        alert('Simulando búsqueda por voz...');
-    }
+    function showInfo() { alert("Función 'Información' en desarrollo."); }
+    function showContact() { window.open('https://wa.me/51967188120', '_blank'); }
+
+    // --- INICIALIZACIÓN ---
+    document.addEventListener('DOMContentLoaded', () => {
+        showView('login-view', 'Recepción Emergencia');
+        document.getElementById('password').addEventListener('keyup', (e) => { if (e.key === 'Enter') handleLogin(); });
+    });
 </script>
 </body>
 </html>
