@@ -2,195 +2,350 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recepción de Emergencia - v5.4 (Acceso Maestro)</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Recepción de Emergencia</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-    /* --- ESTILOS CSS (SIN CAMBIOS ) --- */
+    <style>
+        /* --- VARIABLES DE TEMA OSCURO --- */
+        :root {
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --primary-color: #bb86fc;
+            --secondary-color: #03dac6;
+            --text-color: #e1e1e1;
+            --text-secondary-color: #b3b3b3;
+            --error-color: #cf6679;
+            --border-color: #333;
+            --input-bg-color: #2c2c2c;
+            --button-bg-color: #333;
+            --danger-color: #ff4d4d;
+        }
 
-    /* --- ESTILOS PARA EL INTERRUPTOR (SWITCH) DE VALIDACIÓN --- */
-.switch { position: relative; display: inline-block; width: 50px; height: 28px; }
-.switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; }
-.slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; }
-input:checked + .slider { background-color: var(--success-color); }
-input:focus + .slider { box-shadow: 0 0 1px var(--success-color); }
-input:checked + .slider:before { transform: translateX(22px); }
-.slider.round { border-radius: 34px; }
-.slider.round:before { border-radius: 50%; }
+        /* --- ESTILOS GENERALES --- */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #333; /* Fondo exterior */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
 
-    :root { --primary-color: #0A2A43; --accent-color: #D4AF37; --text-color-light: #FFFFFF; --background-color: #f0f2f5; --success-color: #28a745; --danger-color: #dc3545; }
-    body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background-color ); display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
-    .mobile-container { width: 390px; height: 700px; position: relative; overflow: hidden; border-radius: 45px; box-shadow: 0 15px 40px rgba(0,0,0,0.25); background: #ffffff; border: 12px solid #fff; }
-    .fullscreen-view { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--background-color); z-index: 20; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; transition: opacity 0.3s, transform 0.3s; }
-    .fullscreen-view.hidden { opacity: 0; pointer-events: none; transform: scale(0.95); }
-    .login-box { width: 100%; max-width: 320px; padding: 30px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
-    .login-box h2 { color: var(--primary-color); margin-top: 0; }
-    .login-box button { width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 18px; font-weight: 600; cursor: pointer; }
-    .btn-primary { background: var(--primary-color); color: white; }
-    .btn-secondary { background: none; color: var(--primary-color); margin-top: 10px; }
-    .input-wrapper { width: 100%; margin-bottom: 15px; display: flex; align-items: center; border: 1px solid #ccc; border-radius: 10px; background: white; }
-    .input-wrapper input { flex-grow: 1; padding: 15px; border: none; background: none; outline: none; font-size: 16px; }
-    .toggle-password { padding: 0 15px; background: none; border: none; cursor: pointer; opacity: 0.5; }
-    #main-app.hidden { display: none; }
-    .header { position: absolute; top: 0; left: 0; right: 0; height: 90px; background: var(--primary-color); z-index: 5; display: flex; justify-content: center; align-items: center; }
-    .header-title { color: var(--text-color-light); font-size: 20px; font-weight: bold; cursor: pointer; }
-    #assistant-logo { position: absolute; bottom: 30px; height: 70%; z-index: 1; transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); object-fit: cover; object-position: center bottom; }
-    #assistant-logo.initial-state { right: 50%; transform: translateX(50%); height: 75%; opacity: 1; }
-    #assistant-logo.side-state { right: -40px; transform: translateX(0); opacity: 1; height: 85%; }
-    #assistant-logo.hidden-by-view { opacity: 0; }
-    #assistant-logo.chat-mode-state { right: 50%; transform: translateX(50%); height: 95%; }
-    .menu-button { position: absolute; left: 25px; z-index: 10; background: var(--primary-color); border: 2px solid var(--accent-color); border-radius: 30px; padding: 15px 25px; font-size: 16px; font-weight: 600; color: var(--text-color-light); cursor: pointer; min-width: 180px; opacity: 0; transform: translateX(-30px); pointer-events: none; transition: all 0.4s; }
-    .menu-button.visible { opacity: 1; transform: translateX(0); pointer-events: auto; }
-    .menu-button.hidden-by-view, .menu-button.hidden-by-chat { opacity: 0 !important; transform: translateX(-30px) !important; pointer-events: none !important; }
-    #btn-buscar { top: 120px; transition-delay: 0.2s; } #btn-observados { top: 190px; transition-delay: 0.3s; } #btn-admin { top: 260px; transition-delay: 0.4s; } #btn-info { top: 330px; transition-delay: 0.5s; } #btn-contacto { top: 400px; transition-delay: 0.6s; }
-    #greeting-container { position: absolute; top: 480px; left: 25px; right: 25px; z-index: 10; opacity: 0; transition: opacity 0.5s 1.5s; }
-    #greeting-container.visible { opacity: 1; }
-    #chat-view { position: absolute; bottom: 10px; left: 10px; right: 10px; z-index: 15; transition: all 0.4s; opacity: 1; pointer-events: auto; }
-    #chat-view.hidden-by-view { opacity: 0 !important; pointer-events: none !important; }
-    .chat-log { max-height: 150px; overflow-y: auto; margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.7); border-radius: 15px; backdrop-filter: blur(5px); }
-    .chat-message { margin-bottom: 10px; padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 14px; line-height: 1.4; }
-    .user-message { background: white; color: var(--primary-color); align-self: flex-end; margin-left: auto; border: 1px solid var(--primary-color); }
-    .ia-message { background: #e9e9eb; color: #333; align-self: flex-start; }
-    .input-bar { display: flex; align-items: center; background: white; border-radius: 30px; padding: 5px 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-    #text-input { flex-grow: 1; border: none; background: none; outline: none; padding: 10px; font-size: 16px; }
-    .action-button { 
-    background: none; 
-    border: none; 
-    cursor: pointer; 
-    padding: 10px; /* Aumentamos el padding para un área de clic más grande */
-    display: flex; /* Centramos el icono dentro del botón */
-    align-items: center;
-    justify-content: center;
-}
+        #phone-container {
+            width: 390px;
+            height: 700px;
+            background-color: var(--bg-color );
+            color: var(--text-color);
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
 
-   .action-button img { width: 30px; height: 30px; } /* Aumentamos el tamaño del icono */
+        #main-app {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
 
-    .back-button { display: none; position: absolute; left: 20px; top: 50%; transform: translateY(-50%); background: none; border: none; color: white; font-size: 32px;  padding: 0 15px;  cursor: pointer; z-index: 6; }
-    .back-button.visible { display: block; }
-    .menu-toggle { display: none; position: absolute; right: 20px; top: 100px; background: var(--primary-color); width: 40px; height: 40px; border-radius: 50%; border: none; color: white; font-size: 20px; cursor: pointer; z-index: 12; box-shadow: 0 4px 10px rgba(0,0,0,0.2); justify-content: center; align-items: center; }
-    .menu-toggle.visible { display: flex; }
-    .app-view { position: absolute; top: 90px; left: 0; right: 0; bottom: 0; padding: 20px; box-sizing: border-box; background: var(--background-color); z-index: 4; opacity: 0; pointer-events: none; transition: opacity 0.3s; display: flex; flex-direction: column; }
-    .app-view.visible { opacity: 1; pointer-events: auto; }
-    .search-bar-wrapper { display: flex; gap: 10px; margin-bottom: 20px; }
-    #search-input { flex-grow: 1; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
-    .search-results-list { flex-grow: 1; overflow-y: auto; background: white; border-radius: 8px; padding: 10px; }
-    .admin-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-    .tab-button { flex: 1; padding: 10px; border: 1px solid var(--primary-color); background: none; color: var(--primary-color); border-radius: 8px; cursor: pointer; }
-    .tab-button.active { background: var(--primary-color); color: white; }
-    .tab-content { display: none; flex-grow: 1; flex-direction: column; }
-    .tab-content.active { display: flex; }
-    .fua-entry-form { flex-grow: 1; display: flex; flex-direction: column; }
-    #fua-entries-container { flex-grow: 1; overflow-y: auto; padding-right: 10px; }
-    .fua-entry-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
-    .fua-entry-row input { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
-    .fua-entry-row input[type="text"] { flex-grow: 1; }
-    .fua-entry-row input[type="date"] { width: 130px; }
-    .delete-fua-btn { background: var(--danger-color); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .fua-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding: 0 10px; }
-    .add-fua-btn, .remove-fua-btn { border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 24px; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; }
-    .add-fua-btn { background: var(--success-color); }
-    .remove-fua-btn { background: var(--danger-color); }
-    .save-all-btn { background: var(--primary-color); color: white; padding: 15px; border-radius: 10px; border: none; font-size: 18px; cursor: pointer; margin-top: auto; }
-/* --- ESTILOS PARA LA VENTANA MODAL DE DETALLES --- */
-.modal-overlay {
-    display: none; /* Oculto por defecto */
-    position: fixed; /* Se queda fijo en la pantalla */
-    z-index: 100; /* Se asegura de que esté por encima de todo */
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto; /* Permite scroll si el contenido es muy largo */
-    background-color: rgba(0,0,0,0.6); /* Fondo negro semitransparente */
-    justify-content: center;
-    align-items: center;
-}
+        h1, h2, h3 {
+            color: var(--primary-color);
+            text-align: center;
+        }
+        
+        /* --- ESTILOS DE NAVEGACIÓN Y CABECERA (MEJORA 3) --- */
+        #header {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: var(--surface-color);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
 
-.modal-content {
-    background-color: #fefefe;
-    margin: auto;
-    padding: 20px;
-    border: 1px solid #888;
-    border-radius: 15px;
-    width: 90%; /* Ocupa el 90% del ancho del contenedor móvil */
-    max-width: 370px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    animation: fadeIn 0.3s;
-}
+        #back-button {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 28px; /* Más grande */
+            font-weight: bold; /* Más visible */
+            cursor: pointer;
+            padding: 0 10px 0 0;
+            text-shadow: 0 0 5px var(--primary-color); /* Efecto neón */
+        }
 
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-}
+        #view-title {
+            flex-grow: 1;
+            text-align: center;
+            font-size: 1.1em; /* Título más comprimido */
+            color: var(--text-color);
+            margin: 0;
+            padding-right: 30px; /* Espacio para compensar el botón de regreso */
+        }
 
-.modal-header h2 {
-    margin: 0;
-    font-size: 1.2em;
-    color: var(--primary-color);
-}
+        /* --- VISTAS DE LA APP --- */
+        .app-view {
+            display: none;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        .app-view.active {
+            display: flex;
+        }
 
-.modal-close-btn {
-    color: #aaa;
-    font-size: 28px;
-    font-weight: bold;
-    background: none;
-    border: none;
-    cursor: pointer;
-}
+        /* --- FORMULARIOS (LOGIN, REGISTRO) --- */
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 300px;
+            margin: auto;
+        }
 
-.modal-close-btn:hover,
-.modal-close-btn:focus {
-    color: #333;
-}
+        input[type="text"], input[type="password"], input[type="email"], input[type="tel"] {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--input-bg-color);
+            color: var(--text-color);
+            font-size: 1em;
+        }
 
-.modal-body p {
-    margin: 0 0 10px 0;
-    font-size: 0.95em;
-    line-height: 1.5;
-    color: #333;
-}
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--primary-color);
+            color: #000;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .secondary-action {
+            background: none;
+            color: var(--secondary-color);
+            text-align: center;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
 
-.modal-body p strong {
-    color: var(--primary-color);
-    display: inline-block;
-    width: 110px; /* Alinea los valores */
-}
+        /* --- MENÚ PRINCIPAL --- */
+        #main-menu-view .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 30px;
+        }
 
-@keyframes fadeIn {
-    from {opacity: 0; transform: scale(0.9);}
-    to {opacity: 1; transform: scale(1);}
-}
+        /* --- VISTA DE BÚSQUEDA --- */
+        #search-input {
+            width: calc(100% - 24px); /* Ajuste por padding */
+        }
+        #search-results {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+            overflow-y: auto;
+        }
+        #search-results li {
+            background-color: var(--surface-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #search-results li:hover {
+            background-color: #2a2a2a;
+        }
+        .patient-name {
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        .patient-details {
+            font-size: 0.9em;
+            color: var(--text-secondary-color);
+        }
 
-  #bottom-ui-container {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding-bottom: 10px; /* Un pequeño margen inferior */
-    display: flex;
-    flex-direction: column;
-    z-index: 15;
-    transition: opacity 0.5s 1.5s;
-    opacity: 0;
-}
-#bottom-ui-container.visible {
-    opacity: 1;
-}
-  
+        /* --- MODAL DE DETALLES --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: var(--surface-color);
+            margin: auto;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            width: 90%;
+            max-width: 500px;
+            border-radius: 10px;
+            position: relative;
+        }
+        #modal-close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: var(--text-secondary-color);
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #modal-details-content p {
+            margin: 5px 0;
+            word-wrap: break-word;
+        }
+        #modal-details-content strong {
+            color: var(--primary-color);
+        }
 
-</style>
+        /* --- PANEL DE ADMINISTRACIÓN (MEJORA 5) --- */
+        .admin-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .tab-button {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            color: var(--text-secondary-color);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* --- PESTAÑA PERSONAL (MEJORA 6 Y 7) --- */
+        #user-list-container { list-style: none; padding: 0; }
+        #user-list-container li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--surface-color);
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        .user-info strong { display: block; color: var(--text-color); }
+        .user-info span { font-size: 0.85em; color: var(--text-secondary-color); }
+        .user-actions { display: flex; align-items: center; gap: 15px; }
+        .whatsapp-icon { font-size: 24px; text-decoration: none; color: #25D366; }
+        .delete-user-btn { background: none; border: none; font-size: 28px; color: var(--danger-color); cursor: pointer; padding: 0; }
+
+        /* Switch para validación */
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; }
+        input:checked + .slider { background-color: var(--secondary-color); }
+        input:checked + .slider:before { transform: translateX(22px); }
+        .slider.round { border-radius: 34px; }
+        .slider.round:before { border-radius: 50%; }
+        
+        /* --- PESTAÑA OBSERVADOS (MEJORA 4) --- */
+        #observados-search-input {
+            width: calc(100% - 24px);
+            margin-bottom: 15px;
+        }
+        #observados-list { list-style: none; padding: 0; }
+        #observados-list li {
+            background-color: var(--surface-color);
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+        }
+
+        /* --- CONTENEDOR INFERIOR (CHAT Y SALUDO) (MEJORA 2) --- */
+        #bottom-ui-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 10px 20px;
+            background-color: var(--bg-color);
+            transform: translateY(100%);
+            transition: transform 0.5s ease-in-out;
+            z-index: 20;
+        }
+        #bottom-ui-container.visible {
+            transform: translateY(0);
+        }
+
+        #greeting-container {
+            text-align: center;
+            padding: 10px;
+            font-size: 1.1em;
+            color: var(--secondary-color);
+        }
+
+        #chat-view {
+            display: none; /* Oculto por defecto */
+            flex-direction: column;
+            background-color: var(--surface-color);
+            border-radius: 15px;
+            padding: 10px;
+            max-height: 300px; /* Altura máxima del chat */
+        }
+        .chat-log {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+        .input-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .input-bar input {
+            flex-grow: 1;
+        }
+        .action-button img {
+            width: 24px;
+            height: 24px;
+        }
+        .action-button {
+            background: none;
+            border: none;
+            padding: 5px;
+        }
+    </style>
 </head>
 <body>
-
-      <div id="phone-container">
+    <div id="phone-container">
         <!-- Cabecera dinámica -->
         <div id="header" style="display: none;">
             <button id="back-button" onclick="goBack()">&#x2190;</button>
@@ -283,336 +438,339 @@ input:checked + .slider:before { transform: translateX(22px); }
             <div id="modal-details-content"></div>
         </div>
     </div>
+
 <script>
-    // --- JAVASCRIPT ---
+    // --- CONFIGURACIÓN DE SUPABASE ---
+    const SUPABASE_URL = 'https://zfowxdhyspabjavybbig.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpmb3d4ZGh5c3BhYmphdnliYmlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjMyNzE3ODUsImV4cCI6MjAzODg0Nzc4NX0.k32bX3a-U_E923v1S21rOlhXXfV5S2_1i4Irm-iP4qI';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY );
 
-    // --- CONFIGURACIÓN DE APIS ---
-    const SUPABASE_URL = 'https://rpncjtakgljxhbvelgdh.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwbmNqdGFrZ2xqeGhidmVsZ2RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwODUzMzAsImV4cCI6MjA3NjY2MTMzMH0.mEcAP4NSJQGYYgx3nmuSkYWRX2UkmJiiKZq9sv7UUq4';
-    const OPENROUTER_API_KEY = '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';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY  );
-
-    // --- Variables y constantes del DOM ---
+    // --- ESTADO GLOBAL DE LA APP ---
     let currentUser = null;
-    const loginView = document.getElementById('login-view');
-    const registerView = document.getElementById('register-view');
-    const mainApp = document.getElementById('main-app');
-    const assistantLogo = document.getElementById('assistant-logo');
-    const menuButtons = document.querySelectorAll('.menu-button');
-    const appViews = document.querySelectorAll('.app-view');
-    const chatView = document.getElementById('chat-view');
-    const backButton = document.getElementById('back-button');
-    const greetingContainer = document.getElementById('greeting-container');
+    let viewStack = ['login-view']; // Pila para manejar el historial de vistas
 
+    // --- FUNCIONES DE NAVEGACIÓN Y UI ---
+    function showView(viewId, title = '') {
+        document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
 
-    
-    // --- FUNCIONES DE LOGIN Y REGISTRO ---
-    async function handleLogin() {
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value.trim();
-        if (!username || !password) return alert("Por favor, ingrese usuario y contraseña.");
+        const header = document.getElementById('header');
+        if (viewId === 'login-view' || viewId === 'register-view' || viewId === 'main-menu-view') {
+            header.style.display = 'none';
+        } else {
+            header.style.display = 'flex';
+            document.getElementById('view-title').textContent = title;
+        }
 
-        if (username === 'manuel' && password === 'mutter') {
-            currentUser = { nombre_completo: 'Manuel (Admin)', rol: 'admin' };
-            if (currentUser.rol === 'admin') await loadPendingUsers();
-            return initApp();
+        if (viewId !== viewStack[viewStack.length - 1]) {
+            viewStack.push(viewId);
         }
         
-      const { data: user, error } = await supabaseClient
-    .rpc('login_usuario', {
-        p_username: username,
-        p_password: password
-    })
-    .single();
-        if (error || !user) return alert("Usuario o contraseña incorrectos.");
+        // Cargar datos específicos de la vista
+        if (viewId === 'admin-view') loadPendingUsers();
+        if (viewId === 'ver-observados-view') loadObservedFuas();
+    }
 
-        if (user.esta_validado) {
-            currentUser = user;
-            if (currentUser.rol === 'admin') await loadPendingUsers();
-            initApp();
-        } else {
-            alert("Tu cuenta aún no ha sido validada por un administrador.");
+    function goBack() {
+        if (viewStack.length > 1) {
+            viewStack.pop();
+            const previousViewId = viewStack[viewStack.length - 1];
+            const previousView = document.getElementById(previousViewId);
+            const title = previousView.querySelector('h2')?.textContent || 'Menú';
+            showView(previousViewId, title);
         }
     }
 
+    function switchAdminTab(tabName, element) {
+        document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        element.classList.add('active');
+    }
 
+    function showChat() {
+        const bottomContainer = document.getElementById('bottom-ui-container');
+        const greetingContainer = document.getElementById('greeting-container');
+        const chatView = document.getElementById('chat-view');
+        
+        greetingContainer.textContent = `Hola ${currentUser.nombre_completo.split(' ')[0]}, ¿en qué puedo ayudarte?`;
+        greetingContainer.style.display = 'block';
+        chatView.style.display = 'none';
+        
+        bottomContainer.classList.add('visible');
+
+        setTimeout(() => {
+            greetingContainer.style.display = 'none';
+            chatView.style.display = 'flex';
+        }, 3000); // 3 segundos antes de mostrar el chat
+    }
+
+    // --- FUNCIONES DE AUTENTICACIÓN (MEJORA 1) ---
+    async function handleLogin() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        if (!username || !password) {
+            alert('Por favor, ingrese usuario y contraseña.');
+            return;
+        }
+
+        try {
+            // Usamos la función RPC para login case-insensitive
+            const { data, error } = await supabaseClient.rpc('login_usuario', {
+                p_nombre_completo: username,
+                p_contrasena: password
+            });
+
+            if (error) throw error;
+
+            if (data && data.length > 0) {
+                const user = data[0];
+                if (!user.esta_validado) {
+                    alert('Usuario no validado. Contacte al administrador.');
+                    return;
+                }
+                currentUser = user;
+                document.getElementById('btn-admin').style.display = user.rol === 'admin' ? 'block' : 'none';
+                showView('main-menu-view');
+            } else {
+                alert('Usuario o contraseña incorrectos.');
+            }
+        } catch (error) {
+            console.error('Error en el login:', error);
+            alert(`Error al intentar ingresar: ${error.message}`);
+        }
+    }
     
     async function handleRegister() {
-        const fullName = document.getElementById('reg-username').value.trim();
-        const password = document.getElementById('reg-password').value.trim();
-        const email = document.getElementById('reg-email').value.trim();
-        const whatsapp = document.getElementById('reg-whatsapp').value.trim();
+        const nombre_completo = document.getElementById('reg-fullname').value;
+        const contrasena = document.getElementById('reg-password').value;
+        const email = document.getElementById('reg-email').value;
+        const telefono_whatsapp = document.getElementById('reg-whatsapp').value;
 
-        if (!password || !fullName) return alert("Por favor, complete los campos de Nombre y Contraseña.");
+        if (!nombre_completo || !contrasena) {
+            alert('Nombre completo y contraseña son obligatorios.');
+            return;
+        }
 
-        const { error } = await supabaseClient.from('usuarios').insert({ nombre_completo: fullName, contrasena: password, email: email, telefono_whatsapp: whatsapp, rol: 'user', esta_validado: false });
-        if (error) return alert(`Error en el registro: ${error.message}`);
+        try {
+            const { error } = await supabaseClient
+                .from('usuarios')
+                .insert([{ nombre_completo, contrasena, email, telefono_whatsapp, rol: 'user', esta_validado: false }]);
+            
+            if (error) throw error;
 
-        alert("¡Registro exitoso! Por favor, espera a que un administrador valide tu cuenta.");
-        showLoginView();
+            alert('Registro exitoso. Espere la validación del administrador.');
+            showView('login-view');
+        } catch (error) {
+            console.error('Error en el registro:', error);
+            alert(`Error al registrar: ${error.message}`);
+        }
     }
 
-    
-    // --- FUNCIONES DEL PANEL DE ADMINISTRACIÓN ---
+    // --- FUNCIONES DEL PANEL DE ADMINISTRACIÓN (MEJORAS 6 y 7) ---
     async function loadPendingUsers() {
         const userListContainer = document.getElementById('user-list-container');
-        userListContainer.innerHTML = '<li>Cargando usuarios...</li>';
+        userListContainer.innerHTML = '<li>Cargando...</li>';
+
         try {
-            const { data: users, error } = await supabaseClient.from('usuarios').select('id, nombre_completo, email, esta_validado, contrasena, telefono_whatsapp')
-.order('nombre_completo', { ascending: true });
+            const { data: users, error } = await supabaseClient
+                .from('usuarios')
+                .select('id, nombre_completo, esta_validado, contrasena, telefono_whatsapp') // Añadimos campos
+                .order('nombre_completo');
+
             if (error) throw error;
-           userListContainer.innerHTML = users.map(user => {
-    // Preparamos el link de WhatsApp (solo si hay número)
-    const whatsappLink = user.telefono_whatsapp 
-        ? `<a href="https://wa.me/51${user.telefono_whatsapp.replace(/\s+/g, '' )}" target="_blank" style="font-size: 24px; text-decoration: none; margin-left: 15px;">&#128241;</a>` // Emoji de teléfono
-        : '';
 
-    return `
-        <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
-            <div style="flex-grow: 1;">
-                <strong style="display: block; color: #333;">${user.nombre_completo}</strong>
-                <span style="font-size: 0.85em; color: #777;">Contraseña: ${user.contrasena || 'N/A'}</span>
-            </div>
-            <div style="display: flex; align-items: center;">
-                ${whatsappLink}
-                <label class="switch" style="margin-left: 15px;">
-                    <input type="checkbox" ${user.esta_validado ? 'checked' : ''} onchange="toggleUserValidation('${user.id}', this.checked)">
-                    <span class="slider round"></span>
-                </label>
-                <button onclick="deleteUser('${user.id}', '${user.nombre_completo}')" style="background: none; border: none; font-size: 24px; color: var(--danger-color); cursor: pointer; margin-left: 10px;">&times;</button>
-            </div>
-        </li>
-    `;
-}).join('');
+            if (users && users.length > 0) {
+                userListContainer.innerHTML = users.map(user => {
+                    const whatsappLink = user.telefono_whatsapp
+                        ? `<a href="https://wa.me/51${user.telefono_whatsapp.replace(/\s+/g, '' )}" target="_blank" class="whatsapp-icon">&#x1F4F1;</a>` // Emoji de móvil
+                        : '';
 
-        } catch (error) { console.error('Error al cargar usuarios:', error); userListContainer.innerHTML = `<li style="color: var(--danger-color);">Error al cargar la lista.</li>`; }
+                    return `
+                        <li>
+                            <div class="user-info">
+                                <strong>${user.nombre_completo}</strong>
+                                <span>Pass: ${user.contrasena || 'N/A'}</span>
+                            </div>
+                            <div class="user-actions">
+                                ${whatsappLink}
+                                <label class="switch">
+                                    <input type="checkbox" ${user.esta_validado ? 'checked' : ''} onchange="toggleUserValidation('${user.id}', this.checked)">
+                                    <span class="slider round"></span>
+                                </label>
+                                <button onclick="deleteUser('${user.id}', '${user.nombre_completo}')" class="delete-user-btn">&times;</button>
+                            </div>
+                        </li>
+                    `;
+                }).join('');
+            } else {
+                userListContainer.innerHTML = '<li>No hay usuarios registrados.</li>';
+            }
+        } catch (error) {
+            console.error('Error cargando usuarios:', error);
+            userListContainer.innerHTML = '<li>Error al cargar usuarios.</li>';
+        }
     }
 
-
-    
     async function toggleUserValidation(userId, isValidated) {
         try {
-            const { error } = await supabaseClient.from('usuarios').update({ esta_validado: isValidated }).eq('id', userId);
+            const { error } = await supabaseClient
+                .from('usuarios')
+                .update({ esta_validado: isValidated })
+                .eq('id', userId);
             if (error) throw error;
-            console.log(`Usuario ${userId} actualizado a: ${isValidated ? 'VÁLIDO' : 'NO VÁLIDO'}`);
-        } catch (error) { console.error('Error al actualizar el usuario:', error); alert(`No se pudo actualizar el estado del usuario.`); loadPendingUsers(); }
+        } catch (error) {
+            console.error('Error al actualizar usuario:', error);
+            alert('No se pudo actualizar el estado del usuario.');
+            loadPendingUsers(); // Recargar para revertir el cambio visual
+        }
     }
 
-    // --- FUNCIONES DE LA VISTA DE OBSERVADOS ---
-    async function loadObservados() {
-        const container = document.getElementById('observados-list-container');
-        container.innerHTML = '<p style="text-align: center; color: #777;">Cargando observados...</p>';
+    async function deleteUser(userId, userName) {
+        const confirmacion = prompt(`Para borrar al usuario "${userName}", escriba la palabra BORRAR y presione Aceptar.`);
+        if (confirmacion !== 'BORRAR') {
+            alert("La palabra no coincide. Operación cancelada.");
+            return;
+        }
         try {
-            const { data, error } = await supabaseClient.from('observaciones').select('*').order('fecha_observacion', { ascending: false });
+            const { error } = await supabaseClient.from('usuarios').delete().eq('id', userId);
             if (error) throw error;
-            // Por esto (añadiendo la clase):
-container.innerHTML = data.map(item => `
-    <div class="observado-item" style="padding: 10px; border-bottom: 1px solid #eee;">
-                    <p style="margin: 0; font-weight: bold; color: #333;">FUA/Episodio: ${item.nro_fua_episodio || 'N/A'}</p>
-                    <p style="margin: 2px 0; font-size: 0.9em; color: #555;">Fecha: ${item.fecha_observacion || 'N/A'}</p>
-                    <p style="margin: 2px 0; font-size: 0.9em; color: #777;">Observación: ${item.observacion || 'Sin detalles'}</p>
-                </div>`).join('') : '<p style="text-align: center; color: #777;">No hay pacientes en observación registrados.</p>';
-        } catch (error) { console.error('Error al cargar observados:', error); container.innerHTML = `<p style="text-align: center; color: var(--danger-color);">Error al cargar la lista.</p>`; }
-    }
-
-    async function saveAllFuas() {
-        const entryRows = document.querySelectorAll('#fua-entries-container .fua-entry-row');
-        if (entryRows.length === 0) return alert("No hay registros para guardar.");
-        const registrosParaGuardar = [];
-        let hayErrores = false;
-        entryRows.forEach(row => {
-            const nroFuaEpisodio = row.querySelector('.fua-episodio-input').value.trim();
-            const fechaObservacion = row.querySelector('.fua-fecha-input').value;
-            const observacion = row.querySelector('.fua-observacion-input').value.trim();
-            if (!nroFuaEpisodio || !fechaObservacion) { hayErrores = true; return; }
-            registrosParaGuardar.push({ nro_fua_episodio: nroFuaEpisodio, fecha_observacion: fechaObservacion, observacion: observacion });
-        });
-        if (hayErrores) return alert("Algunas filas están incompletas. Por favor, complete al menos el Nº FUA/Episodio y la Fecha.");
-        if (registrosParaGuardar.length === 0 || !confirm(`¿Está seguro de que desea guardar ${registrosParaGuardar.length} registro(s)?`)) return;
-        try {
-            const { error } = await supabaseClient.from('observaciones').insert(registrosParaGuardar);
-            if (error) throw error;
-            alert(`¡Éxito! Se han guardado ${registrosParaGuardar.length} registro(s) correctamente.`);
-            document.getElementById('fua-entries-container').innerHTML = ''; addFuaEntry();
-        } catch (error) { console.error("Error al guardar en 'observaciones':", error); alert(`Ocurrió un error: ${error.message}`); }
+            alert(`Usuario "${userName}" borrado exitosamente.`);
+            loadPendingUsers(); // Recargar la lista
+        } catch (error) {
+            console.error("Error al borrar usuario:", error);
+            alert(`No se pudo borrar al usuario: ${error.message}`);
+        }
     }
 
     // --- FUNCIONES DE BÚSQUEDA ---
-    async function performSearch() {
-        const searchTerm = document.getElementById('search-input').value.trim();
-        const resultsList = document.getElementById('search-results-list');
-        if (!searchTerm) { resultsList.innerHTML = '<p>Ingrese un término para buscar.</p>'; return; }
-        resultsList.innerHTML = '<p>Buscando...</p>';
-        try {
-            const { data, error } = await supabaseClient.rpc('buscar_atenciones', { termino_busqueda: searchTerm });
-            if (error) throw error;
-            resultsList.innerHTML = data && data.length > 0 ? data.map(item => {
-                const costoTotal = parseFloat(item.CostoTotal) || 0;
-                return `<div style="padding: 10px; border-bottom: 1px solid #eee; cursor: pointer;" onclick='showFuaDetails(${JSON.stringify(item).replace(/'/g, "&apos;")})'>
-                    <p style="margin: 0; font-weight: bold;">Paciente: ${item.PACIENTE || 'N/A'}</p>
-                    <p style="margin: 2px 0; font-size: 0.9em;">FUA: ${item.NFUA || 'N/A'} | Episodio: ${item.Episodio || 'N/A'}</p>
-                    <p style="margin: 2px 0; font-size: 0.9em;">Fecha Atención: ${item.FecAte || 'N/A'}</p>
-                    <p style="margin: 2px 0; font-weight: 500; color: ${costoTotal > 0 ? 'var(--danger-color)' : 'var(--success-color)'};">${costoTotal > 0 ? 'Con Consumo' : 'Sin Consumo'}</p>
-                </div>`;
-            }).join('') : '<p>No se encontraron resultados.</p>';
-        } catch (error) { console.error('Error en búsqueda RPC:', error); resultsList.innerHTML = `<p style="color: var(--danger-color);">Error en la búsqueda.</p>`; }
-    }
+    const searchInput = document.getElementById('search-input');
+    searchInput.addEventListener('keyup', async (event) => {
+        const searchTerm = event.target.value.trim();
+        const resultsContainer = document.getElementById('search-results');
 
-    function showFuaDetails(fuaData) {
-        const modal = document.getElementById('details-modal');
-        const modalBody = document.getElementById('modal-body');
-        modalBody.innerHTML = '';
-        const camposMostrados = { "PACIENTE": "Paciente", "NroDocumento": "Documento", "FecNac": "Fecha Nac.", "Episodio": "Episodio", "NFUA": "Nº FUA", "FecAte": "Fecha Atención", "ServicioAtencion": "Servicio", "CostoTotal": "Costo Total", "Observacion": "Observación" };
-        let detailsHtml = '';
-        for (const key in camposMostrados) {
-            if (fuaData.hasOwnProperty(key)) {
-                let valor = fuaData[key] || 'No especificado';
-                if (key === 'CostoTotal') valor = `S/ ${parseFloat(valor).toFixed(2)}`;
-                detailsHtml += `<p><strong>${camposMostrados[key]}:</strong> ${valor}</p>`;
-            }
+        if (searchTerm.length < 3) {
+            resultsContainer.innerHTML = '';
+            return;
         }
-        modalBody.innerHTML = detailsHtml;
+
+        try {
+            const { data, error } = await supabaseClient.rpc('buscar_atenciones', { search_term: searchTerm });
+            if (error) throw error;
+
+            if (data && data.length > 0) {
+                resultsContainer.innerHTML = data.map(item => `
+                    <li onclick="showDetails('${item.IdFUA}')">
+                        <div class="patient-name">${item.PACIENTE}</div>
+                        <div class="patient-details">FUA: ${item.NFUA} | Doc: ${item.NroDocumento}</div>
+                    </li>
+                `).join('');
+            } else {
+                resultsContainer.innerHTML = '<li>No se encontraron resultados.</li>';
+            }
+        } catch (error) {
+            console.error('Error en la búsqueda:', error);
+            resultsContainer.innerHTML = '<li>Error al buscar.</li>';
+        }
+    });
+    
+    // --- FUNCIONES DE OBSERVADOS (MEJORA 4) ---
+    async function loadObservedFuas() {
+        const listContainer = document.getElementById('observados-list');
+        listContainer.innerHTML = '<li>Cargando...</li>';
+        try {
+            const { data, error } = await supabaseClient
+                .from('observaciones')
+                .select('*')
+                .order('fecha_observacion', { ascending: false });
+            if (error) throw error;
+
+            if (data && data.length > 0) {
+                listContainer.innerHTML = data.map(obs => `
+                    <li data-search-term="${obs.nro_fua_episodio} ${obs.observacion}">
+                        <strong>FUA/Episodio:</strong> ${obs.nro_fua_episodio}  
+
+                        <strong>Fecha:</strong> ${new Date(obs.fecha_observacion).toLocaleDateString()}  
+
+                        <strong>Observación:</strong> ${obs.observacion || 'N/A'}
+                    </li>
+                `).join('');
+            } else {
+                listContainer.innerHTML = '<li>No hay FUAs observados.</li>';
+            }
+        } catch (error) {
+            console.error('Error cargando observados:', error);
+            listContainer.innerHTML = '<li>Error al cargar.</li>';
+        }
+    }
+    
+    const observadosSearchInput = document.getElementById('observados-search-input');
+    observadosSearchInput.addEventListener('keyup', (event) => {
+        const searchTerm = event.target.value.toLowerCase();
+        const items = document.querySelectorAll('#observados-list li');
+        items.forEach(item => {
+            const text = item.dataset.searchTerm.toLowerCase();
+            if (text.includes(searchTerm)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+
+
+    // --- FUNCIONES DEL MODAL ---
+    async function showDetails(fuaId) {
+        const modal = document.getElementById('details-modal');
+        const content = document.getElementById('modal-details-content');
+        content.innerHTML = '<p>Cargando detalles...</p>';
         modal.style.display = 'flex';
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('atenciones_emergencia')
+                .select()
+                .eq('"IdFUA"', fuaId)
+                .single();
+
+            if (error) throw error;
+
+            if (data) {
+                let detailsHtml = '';
+                for (const [key, value] of Object.entries(data)) {
+                    detailsHtml += `<p><strong>${key}:</strong> ${value || 'N/A'}</p>`;
+                }
+                content.innerHTML = detailsHtml;
+            } else {
+                content.innerHTML = '<p>No se encontraron detalles para este FUA.</p>';
+            }
+        } catch (error) {
+            console.error('Error al cargar detalles:', error);
+            content.innerHTML = `<p>Error al cargar: ${error.message}</p>`;
+        }
     }
 
     function closeDetailsModal() {
         document.getElementById('details-modal').style.display = 'none';
     }
 
-    function handleVoiceSearch() {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) return alert("Navegador no compatible con búsqueda por voz.");
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'es-PE';
-        recognition.interimResults = false;
-        const searchInput = document.getElementById('search-input');
-        const originalPlaceholder = searchInput.placeholder;
-        recognition.onstart = () => { searchInput.placeholder = "Escuchando..."; };
-        recognition.onend = () => { searchInput.placeholder = originalPlaceholder; };
-        recognition.onresult = (event) => { searchInput.value = event.results[0][0].transcript; performSearch(); };
-        recognition.onerror = (event) => { console.error('Error de voz:', event.error); searchInput.placeholder = originalPlaceholder; alert(event.error === 'no-speech' ? "No se detectó voz." : "Permiso de micrófono denegado."); };
-        recognition.start();
-    }
-
-    // --- FUNCIONES DE UI (NAVEGACIÓN Y OTROS) ---
-    function initApp() {
-        loginView.classList.add('hidden');
-        registerView.classList.add('hidden');
-        mainApp.classList.remove('hidden');
-        setTimeout(() => {
-            assistantLogo.classList.remove('initial-state');
-            assistantLogo.classList.add('side-state');
-            menuButtons.forEach(button => { if (button.id !== 'btn-admin' || currentUser.rol === 'admin') button.classList.add('visible'); });
-            document.getElementById('bottom-ui-container').classList.add('visible');
-
-        }, 1000);
-        const hour = new Date().getHours();
-        greetingContainer.innerHTML = `<div class="chat-message ia-message">${hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches'}, ${currentUser.nombre_completo}.</div>`;
-    }
-
-    async function handleMenuClick(section) {
-        if (section === 'admin') {
-            const password = prompt("Ingrese la contraseña de administrador:");
-            if (password !== 'mutter') return alert("Contraseña incorrecta.");
-            await loadPendingUsers(); 
-        }
-        if (section === 'observados') await loadObservados();
-        if (section === 'contacto') { window.open('https://wa.me/51967188120', '_blank'  ); return; }
-        menuButtons.forEach(btn => btn.classList.add('hidden-by-view'));
-        assistantLogo.classList.add('hidden-by-view');
-        greetingContainer.style.opacity = '0';
-        appViews.forEach(view => view.classList.toggle('visible', view.id === `${section}-view`));
-        backButton.classList.add('visible');
-        chatView.classList.add('hidden-by-view');
-    }
-
-
-/**
- * Filtra la lista de observados en tiempo real según el texto de búsqueda.
- */
-function filterObservados() {
-    const searchTerm = document.getElementById('observados-search-input').value.toLowerCase();
-    const items = document.querySelectorAll('#observados-list-container .observado-item');
-    
-    items.forEach(item => {
-        const itemText = item.textContent.toLowerCase();
-        if (itemText.includes(searchTerm)) {
-            item.style.display = 'block'; // Muestra el item si coincide
-        } else {
-            item.style.display = 'none'; // Oculta el item si no coincide
-        }
-    });
-}
-
-
-    
-    function returnToMenu() {
-        appViews.forEach(view => view.classList.remove('visible'));
-        backButton.classList.remove('visible');
-        menuButtons.forEach(btn => btn.classList.remove('hidden-by-view'));
-        assistantLogo.classList.remove('hidden-by-view');
-        greetingContainer.style.opacity = '1';
-        chatView.classList.remove('hidden-by-view');
-    }
-    
-    function showRegisterView() { loginView.classList.add('hidden'); registerView.classList.remove('hidden'); }
-    function showLoginView() { registerView.classList.add('hidden'); loginView.classList.remove('hidden'); }
-    function switchAdminTab(tabName, clickedButton) {
-        document.querySelectorAll('#admin-view .tab-button').forEach(btn => btn.classList.remove('active'));
-        clickedButton.classList.add('active');
-        document.querySelectorAll('#admin-view .tab-content').forEach(content => content.classList.toggle('active', content.id === `tab-${tabName}`));
-    }
-    function addFuaEntry() { const container = document.getElementById('fua-entries-container'); const newEntryRow = document.createElement('div'); newEntryRow.className = 'fua-entry-row'; newEntryRow.innerHTML = `<input type="text" class="fua-episodio-input" placeholder="Nº FUA o Episodio"><input type="date" class="fua-fecha-input"><input type="text" class="fua-observacion-input" placeholder="Observación (opcional)"><button class="delete-fua-btn" onclick="deleteFuaEntry(this)">X</button>`; container.appendChild(newEntryRow); }
-    function deleteFuaEntry(button) { button.parentElement.remove(); }
-    function removeLastFuaEntry() { const container = document.getElementById('fua-entries-container'); const rows = container.querySelectorAll('.fua-entry-row'); if (rows.length > 1) rows[rows.length - 1].remove(); }
-
-
-
-    /**
- * Borra un usuario de la base de datos previa confirmación.
- * @param {string} userId - El ID del usuario a borrar.
- * @param {string} userName - El nombre del usuario para el mensaje de confirmación.
- */
-async function deleteUser(userId, userName) {
-    const confirmacion = prompt(`Para borrar al usuario "${userName}", escriba la palabra BORRAR y presione Aceptar.`);
-    
-    if (confirmacion !== 'BORRAR') {
-        alert("La palabra no coincide. Operación cancelada.");
-        return;
-    }
-
-    try {
-        const { error } = await supabaseClient
-            .from('usuarios')
-            .delete()
-            .eq('id', userId);
-
-        if (error) throw error;
-
-        alert(`Usuario "${userName}" borrado exitosamente.`);
-        loadPendingUsers(); // Recargamos la lista para que se actualice
-
-    } catch (error) {
-        console.error("Error al borrar usuario:", error);
-        alert(`No se pudo borrar al usuario: ${error.message}`);
-    }
-}
     // --- INICIALIZACIÓN DE EVENTOS ---
     document.addEventListener('DOMContentLoaded', () => {
-        const detailsModal = document.getElementById('details-modal');
-        const modalCloseBtn = document.getElementById('modal-close-btn');
-
-        if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeDetailsModal);
-        window.addEventListener('click', (event) => { if (event.target == detailsModal) closeDetailsModal(); });
-
-        const passwordInput = document.getElementById('password');
-        if (passwordInput) passwordInput.addEventListener('keyup', (event) => { if (event.key === 'Enter') handleLogin(); });
+        const modal = document.getElementById('details-modal');
+        const closeBtn = document.getElementById('modal-close-btn');
+        closeBtn.addEventListener('click', closeDetailsModal);
+        window.addEventListener('click', (event) => {
+            if (event.target == modal) {
+                closeDetailsModal();
+            }
+        });
+        
+        // Evento para login con Enter
+        document.getElementById('password').addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') handleLogin();
+        });
     });
-
-
-
-
-    
 </script>
 </body>
 </html>
