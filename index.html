@@ -352,21 +352,44 @@ input:checked + .slider:before { transform: translateX(22px); }
         showLoginView();
     }
 
+    
     // --- FUNCIONES DEL PANEL DE ADMINISTRACIÓN ---
     async function loadPendingUsers() {
         const userListContainer = document.getElementById('user-list-container');
         userListContainer.innerHTML = '<li>Cargando usuarios...</li>';
         try {
-            const { data: users, error } = await supabaseClient.from('usuarios').select('id, nombre_completo, email, esta_validado').order('nombre_completo', { ascending: true });
+            const { data: users, error } = await supabaseClient.from('usuarios').select('id, nombre_completo, email, esta_validado, contrasena, telefono_whatsapp')
+.order('nombre_completo', { ascending: true });
             if (error) throw error;
-            userListContainer.innerHTML = users && users.length > 0 ? users.map(user => `
-                <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
-                    <div><strong style="display: block; color: #333;">${user.nombre_completo}</strong><span style="font-size: 0.85em; color: #777;">${user.email || 'Sin email'}</span></div>
-                    <label class="switch"><input type="checkbox" ${user.esta_validado ? 'checked' : ''} onchange="toggleUserValidation('${user.id}', this.checked)"><span class="slider round"></span></label>
-                </li>`).join('') : '<li>No hay usuarios registrados.</li>';
+           userListContainer.innerHTML = users.map(user => {
+    // Preparamos el link de WhatsApp (solo si hay número)
+    const whatsappLink = user.telefono_whatsapp 
+        ? `<a href="https://wa.me/51${user.telefono_whatsapp.replace(/\s+/g, '' )}" target="_blank" style="font-size: 24px; text-decoration: none; margin-left: 15px;">&#128241;</a>` // Emoji de teléfono
+        : '';
+
+    return `
+        <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
+            <div style="flex-grow: 1;">
+                <strong style="display: block; color: #333;">${user.nombre_completo}</strong>
+                <span style="font-size: 0.85em; color: #777;">Contraseña: ${user.contrasena || 'N/A'}</span>
+            </div>
+            <div style="display: flex; align-items: center;">
+                ${whatsappLink}
+                <label class="switch" style="margin-left: 15px;">
+                    <input type="checkbox" ${user.esta_validado ? 'checked' : ''} onchange="toggleUserValidation('${user.id}', this.checked)">
+                    <span class="slider round"></span>
+                </label>
+                <button onclick="deleteUser('${user.id}', '${user.nombre_completo}')" style="background: none; border: none; font-size: 24px; color: var(--danger-color); cursor: pointer; margin-left: 10px;">&times;</button>
+            </div>
+        </li>
+    `;
+}).join('');
+
         } catch (error) { console.error('Error al cargar usuarios:', error); userListContainer.innerHTML = `<li style="color: var(--danger-color);">Error al cargar la lista.</li>`; }
     }
 
+
+    
     async function toggleUserValidation(userId, isValidated) {
         try {
             const { error } = await supabaseClient.from('usuarios').update({ esta_validado: isValidated }).eq('id', userId);
@@ -554,9 +577,43 @@ function filterObservados() {
         const passwordInput = document.getElementById('password');
         if (passwordInput) passwordInput.addEventListener('keyup', (event) => { if (event.key === 'Enter') handleLogin(); });
     });
+
+/**
+ * Borra un usuario de la base de datos previa confirmación.
+ * @param {string} userId - El ID del usuario a borrar.
+ * @param {string} userName - El nombre del usuario para el mensaje de confirmación.
+ */
+async function deleteUser(userId, userName) {
+    const confirmacion = prompt(`Para borrar al usuario "${userName}", escriba la palabra BORRAR y presione Aceptar.`);
+    
+    if (confirmacion !== 'BORRAR') {
+        alert("La palabra no coincide. Operación cancelada.");
+        return;
+    }
+
+    try {
+        const { error } = await supabaseClient
+            .from('usuarios')
+            .delete()
+            .eq('id', userId);
+
+        if (error) throw error;
+
+        alert(`Usuario "${userName}" borrado exitosamente.`);
+        loadPendingUsers(); // Recargamos la lista para que se actualice
+
+    } catch (error) {
+        console.error("Error al borrar usuario:", error);
+        alert(`No se pudo borrar al usuario: ${error.message}`);
+    }
+}
+
+
+    
 </script>
 </body>
 </html>
+
 
 
 
