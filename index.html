@@ -566,18 +566,6 @@ function filterObservados() {
     function deleteFuaEntry(button) { button.parentElement.remove(); }
     function removeLastFuaEntry() { const container = document.getElementById('fua-entries-container'); const rows = container.querySelectorAll('.fua-entry-row'); if (rows.length > 1) rows[rows.length - 1].remove(); }
 
-    // --- INICIALIZACIÓN DE EVENTOS ---
-    document.addEventListener('DOMContentLoaded', () => {
-        const detailsModal = document.getElementById('details-modal');
-        const modalCloseBtn = document.getElementById('modal-close-btn');
-
-        if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeDetailsModal);
-        window.addEventListener('click', (event) => { if (event.target == detailsModal) closeDetailsModal(); });
-
-        const passwordInput = document.getElementById('password');
-        if (passwordInput) passwordInput.addEventListener('keyup', (event) => { if (event.key === 'Enter') handleLogin(); });
-    });
-
 /**
  * Borra un usuario de la base de datos previa confirmación.
  * @param {string} userId - El ID del usuario a borrar.
@@ -608,11 +596,27 @@ async function deleteUser(userId, userName) {
     }
 }
 
+    
+    // --- INICIALIZACIÓN DE EVENTOS ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const detailsModal = document.getElementById('details-modal');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+
+        if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeDetailsModal);
+        window.addEventListener('click', (event) => { if (event.target == detailsModal) closeDetailsModal(); });
+
+        const passwordInput = document.getElementById('password');
+        if (passwordInput) passwordInput.addEventListener('keyup', (event) => { if (event.key === 'Enter') handleLogin(); });
+    });
+
+
+
 
     
 </script>
 </body>
 </html>
+
 
 
 
