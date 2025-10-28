@@ -183,28 +183,18 @@
     </div>
 
 <script>
+    // --- 1. CONFIGURACIÓN E INICIALIZACIÓN ---
 
-// --- JAVASCRIPT ---
-
-    // --- CONFIGURACIÓN SUPABASE ---
+    // Configuración de Supabase
     const SUPABASE_URL = 'https://zfowxdhyspabjavybbig.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpmb3d4ZGh5c3BhYmphdnliYmlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjMyNzE3ODUsImV4cCI6MjAzODg0Nzc4NX0.k32bX3a-G_E923v1S21rOlhXXfV5S2_1i4Irm-iP4qI';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY ); // Corregido a 'supabase'
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY );
 
+    // Variable para guardar el usuario actual
     let currentUser = null;
-    // let db_users = [...]; // Ya no necesitas este array, puedes eliminarlo.
 
-    // ... el resto de tus variables de elementos del DOM ...
-
-    
-    // --- JAVASCRIPT ---
-    let currentUser = null;
-    let db_users = [
-        { id: 1, name: 'manuel', password: 'mutter', is_validated: true, role: 'admin' },
-        { id: 2, name: 'Ana Lopez', password: '123', is_validated: false, role: 'user' }
-    ];
-
-    const loginView = document.getElementById('login-view' );
+    // Selección de elementos del DOM (una sola vez)
+    const loginView = document.getElementById('login-view');
     const registerView = document.getElementById('register-view');
     const mainApp = document.getElementById('main-app');
     const assistantLogo = document.getElementById('assistant-logo');
@@ -215,16 +205,58 @@
     const menuToggle = document.getElementById('menu-toggle');
     const greetingContainer = document.getElementById('greeting-container');
 
-    function handleLogin() {
-        const username = document.getElementById('username').value.trim();
+    // --- 2. LÓGICA DE AUTENTICACIÓN Y NAVEGACIÓN ---
+
+    // LOGIN CON SUPABASE (Función actualizada)
+    async function handleLogin() {
+        const email = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value.trim();
-        const user = db_users.find(u => u.name === username && u.password === password);
-        if (user) {
-            if (user.is_validated) { currentUser = user; initApp(); } 
-            else { alert("Tu cuenta aún no ha sido validada."); }
-        } else { alert("Usuario o contraseña incorrectos."); }
+
+        if (!email || !password) {
+            alert("Por favor, ingrese su email y contraseña.");
+            return;
+        }
+
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password,
+        });
+
+        if (error) {
+            alert("Error: " + error.message);
+            return;
+        }
+
+        if (data.user) {
+            const { data: userProfile, error: profileError } = await supabase
+                .from('profiles')
+                .select('is_validated, role, full_name')
+                .eq('id', data.user.id)
+                .single();
+
+            if (profileError) {
+                alert("Error al obtener el perfil del usuario: " + profileError.message);
+                await supabase.auth.signOut();
+                return;
+            }
+
+            if (userProfile && userProfile.is_validated) {
+                currentUser = { ...data.user, ...userProfile };
+                initApp();
+            } else {
+                alert("Tu cuenta aún no ha sido validada por un administrador.");
+                await supabase.auth.signOut();
+            }
+        }
+    }
+
+    // REGISTRO (Función simulada por ahora)
+    function handleRegister() {
+        alert("Se ha registrado. Espere a que su cuenta sea confirmada.");
+        showLoginView();
     }
     
+    // Inicializa la aplicación después del login
     function initApp() {
         loginView.classList.add('hidden');
         registerView.classList.add('hidden');
@@ -234,6 +266,7 @@
             assistantLogo.classList.remove('initial-state');
             assistantLogo.classList.add('side-state');
             menuButtons.forEach(button => {
+                // Oculta el botón de admin si el usuario no tiene el rol 'admin'
                 if (button.id === 'btn-admin' && currentUser.role !== 'admin') {
                     button.style.display = 'none';
                 } else {
@@ -245,9 +278,12 @@
 
         const hour = new Date().getHours();
         let greeting = (hour < 12) ? 'Buenos días' : (hour < 18) ? 'Buenas tardes' : 'Buenas noches';
-        greetingContainer.innerHTML = `<div class="chat-message ia-message">${greeting}, ${currentUser.name}.</div>`;
+        greetingContainer.innerHTML = `<div class="chat-message ia-message">${greeting}, ${currentUser.full_name || 'usuario'}.</div>`;
     }
 
+    // --- 3. FUNCIONES DE LA INTERFAZ (UI) ---
+
+    // Click en los botones del menú principal
     function handleMenuClick(section) {
         if (section === 'contacto') {
             window.open('https://wa.me/51967188120', '_blank' );
@@ -261,6 +297,7 @@
         chatView.classList.add('hidden-by-view');
     }
 
+    // Volver al menú principal desde una vista
     function returnToMenu() {
         appViews.forEach(view => view.classList.remove('visible'));
         backButton.classList.remove('visible');
@@ -269,6 +306,78 @@
         greetingContainer.style.opacity = '1';
         chatView.classList.remove('hidden-by-view');
     }
+    
+    // Vistas de Login y Registro
+    function showRegisterView() {
+        loginView.classList.add('hidden');
+        registerView.classList.remove('hidden');
+    }
+
+    function showLoginView() {
+        registerView.classList.add('hidden');
+        loginView.classList.remove('hidden');
+    }
+
+    // Mostrar/Ocultar contraseña
+    function togglePasswordVisibility(inputId, button) {
+        const input = document.getElementById(inputId);
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        button.textContent = isPassword ? '🙈' : '👁️';
+    }
+
+    // --- 4. FUNCIONALIDAD DE BÚSQUEDA ---
+
+    // BÚSQUEDA REAL CON SUPABASE
+    async function performSearch() {
+        const query = document.getElementById('search-input').value.trim();
+        const resultsList = document.getElementById('search-results-list');
+        
+        if (!query) {
+            resultsList.innerHTML = '<p style="text-align: center; color: #777;">Ingrese un término de búsqueda para comenzar.</p>';
+            return;
+        }
+
+        resultsList.innerHTML = '<p style="text-align: center; color: #777;">Buscando...</p>';
+
+        const { data, error } = await supabase
+            .from('fuas')
+            .select('*')
+            .or(`numero_fua.ilike.%${query}%, episodio.ilike.%${query}%, nombre_paciente.ilike.%${query}%`);
+
+        if (error) {
+            console.error('Error en la búsqueda:', error);
+            resultsList.innerHTML = `<p style="text-align: center; color: var(--danger-color);">Error al buscar: ${error.message}</p>`;
+            return;
+        }
+
+        if (data && data.length > 0) {
+            resultsList.innerHTML = '';
+            data.forEach(fua => {
+                const resultItem = document.createElement('div');
+                resultItem.style.padding = '10px';
+                resultItem.style.borderBottom = '1px solid #eee';
+                resultItem.innerHTML = `
+                    <strong>FUA:</strong> ${fua.numero_fua || 'N/A'}  
+
+                    <strong>Paciente:</strong> ${fua.nombre_paciente || 'N/A'}  
+
+                    <strong>Episodio:</strong> ${fua.episodio || 'N/A'}  
+
+                    <strong>Fecha:</strong> ${new Date(fua.created_at).toLocaleDateString()}
+                `;
+                resultsList.appendChild(resultItem);
+            });
+        } else {
+            resultsList.innerHTML = '<p style="text-align: center; color: #777;">No se encontraron resultados.</p>';
+        }
+    }
+
+    function handleVoiceSearch() {
+        alert('Simulando búsqueda por voz...');
+    }
+
+    // --- 5. OTRAS FUNCIONES (CHAT, ADMIN, ETC.) ---
     
     function enterChatMode() {
         if (assistantLogo.classList.contains('chat-mode-state')) return;
@@ -290,13 +399,6 @@
         menuToggle.classList.remove('visible');
     }
     
-    function togglePasswordVisibility(inputId, button) {
-        const input = document.getElementById(inputId);
-        const isPassword = input.type === 'password';
-        input.type = isPassword ? 'text' : 'password';
-        button.textContent = isPassword ? '🙈' : '👁️';
-    }
-    
     function handleSend() {
         const textInput = document.getElementById('text-input');
         const message = textInput.value.trim();
@@ -310,38 +412,15 @@
         chatLog.scrollTop = chatLog.scrollHeight;
         textInput.value = '';
 
-        // *** INICIO DE LA LÓGICA DE ATAJOS ***
         const command = message.toLowerCase();
-        if (command.includes('busqueda') || command.includes('fua')) {
-            handleMenuClick('buscar');
-        } else if (command.includes('observados')) {
-            handleMenuClick('observados');
-        } else if (command.includes('administrar') || command.includes('ingresar')) {
-            handleMenuClick('admin');
-        } else if (command.includes('tutorial') || command.includes('informacion')) {
-            handleMenuClick('info');
-        } else if (command.includes('contacto')) {
-            handleMenuClick('contacto');
-        }
-        // *** FIN DE LA LÓGICA DE ATAJOS ***
+        if (command.includes('busqueda') || command.includes('fua')) { handleMenuClick('buscar'); } 
+        else if (command.includes('observados')) { handleMenuClick('observados'); } 
+        else if (command.includes('administrar') || command.includes('ingresar')) { handleMenuClick('admin'); } 
+        else if (command.includes('tutorial') || command.includes('informacion')) { handleMenuClick('info'); } 
+        else if (command.includes('contacto')) { handleMenuClick('contacto'); }
     }
 
     function handleAudio() { alert('Función de audio activada...'); }
-    
-    function showRegisterView() {
-        loginView.classList.add('hidden');
-        registerView.classList.remove('hidden');
-    }
-
-    function showLoginView() {
-        registerView.classList.add('hidden');
-        loginView.classList.remove('hidden');
-    }
-
-    function handleRegister() {
-        alert("Se ha registrado. Espere a que su cuenta sea confirmada.");
-        showLoginView();
-    }
 
     function switchAdminTab(tabName, clickedButton) {
         document.querySelectorAll('#admin-view .tab-button').forEach(btn => btn.classList.remove('active'));
@@ -359,76 +438,23 @@
         container.appendChild(newEntryRow);
     }
 
-    function deleteFuaEntry(button) {
-        button.parentElement.remove();
-    }
+    function deleteFuaEntry(button) { button.parentElement.remove(); }
 
     function removeLastFuaEntry() {
         const container = document.getElementById('fua-entries-container');
         const rows = container.querySelectorAll('.fua-entry-row');
-        if (rows.length > 1) {
-            rows[rows.length - 1].remove();
-        }
+        if (rows.length > 1) { rows[rows.length - 1].remove(); }
     }
 
     function saveAllFuas() {
         const entries = document.querySelectorAll('.fua-entry-row');
         alert(`Simulando guardado de ${entries.length} registros.`);
     }
-    
-    // REEMPLAZA TU FUNCIÓN performSearch CON ESTA
-async function performSearch() {
-    const query = document.getElementById('search-input').value.trim();
-    const resultsList = document.getElementById('search-results-list');
-    
-    if (!query) {
-        resultsList.innerHTML = '<p style="text-align: center; color: #777;">Ingrese un término de búsqueda para comenzar.</p>';
-        return;
-    }
 
-    resultsList.innerHTML = '<p style="text-align: center; color: #777;">Buscando...</p>';
-
-    // Consulta a Supabase. Busca en las columnas 'numero_fua', 'episodio' y 'nombre_paciente'
-    // 'ilike' es para búsqueda case-insensitive que contenga el texto.
-    const { data, error } = await supabase
-        .from('fuas') // Asume que tu tabla se llama 'fuas'
-        .select('*')
-        .or(`numero_fua.ilike.%${query}%, episodio.ilike.%${query}%, nombre_paciente.ilike.%${query}%`);
-
-    if (error) {
-        console.error('Error en la búsqueda:', error);
-        resultsList.innerHTML = `<p style="text-align: center; color: var(--danger-color);">Error al buscar: ${error.message}</p>`;
-        return;
-    }
-
-    if (data && data.length > 0) {
-        resultsList.innerHTML = ''; // Limpia el mensaje "Buscando..."
-        data.forEach(fua => {
-            const resultItem = document.createElement('div');
-            resultItem.style.padding = '10px';
-            resultItem.style.borderBottom = '1px solid #eee';
-            resultItem.innerHTML = `
-                <strong>FUA:</strong> ${fua.numero_fua || 'N/A'}  
-
-                <strong>Paciente:</strong> ${fua.nombre_paciente || 'N/A'}  
-
-                <strong>Episodio:</strong> ${fua.episodio || 'N/A'}  
-
-                <strong>Fecha:</strong> ${new Date(fua.created_at).toLocaleDateString()}
-            `;
-            resultsList.appendChild(resultItem);
-        });
-    } else {
-        resultsList.innerHTML = '<p style="text-align: center; color: #777;">No se encontraron resultados.</p>';
-    }
-}
-
-
-    function handleVoiceSearch() {
-        alert('Simulando búsqueda por voz...');
-    }
 </script>
+
 </body>
 </html>
+
 
 
