@@ -135,12 +135,19 @@
     /* --- Botón de Menú Hamburguesa (Volver) --- */
     .menu-toggle {
         display: none; position: absolute; 
-        right: 25px; bottom: 35px;
+        right: 25px; bottom: 35px; /* Posición por defecto (para vistas de contenido) */
         background: var(--hch-blue);
         width: 50px; height: 50px; border-radius: 50%; border: none; color: white; font-size: 24px;
         cursor: pointer; z-index: 12; box-shadow: 0 4px 10px rgba(0,0,0,0.2); justify-content: center; align-items: center;
+        transition: top 0.5s, bottom 0.5s; /* Animación suave para el cambio de posición */
     }
     .menu-toggle.visible { display: flex; }
+    
+    /* === NUEVO: Clase para mover el botón en modo chat === */
+    .menu-toggle.in-chat-mode {
+        bottom: auto; /* Anulamos la posición inferior */
+        top: 20px; /* Lo posicionamos arriba */
+    }
     
     /* --- Estilos para las Vistas de Contenido --- */
     .content-view {
@@ -183,24 +190,18 @@
     .tab-button.active { color: var(--hch-blue); border-bottom-color: var(--hch-blue); }
     .tab-content { display: none; flex-direction: column; gap: 15px; }
     .tab-content.active { display: flex; }
-    #add-obs { overflow-y: auto; } /* Permite scroll si hay muchos ingresos */
+    #add-obs { overflow-y: auto; }
 
-    /* === CAMBIO: Estilos para el formulario de "Añadir Obs." === */
+    /* --- Estilos para el formulario de "Añadir Obs." --- */
     .form-group { display: flex; flex-direction: column; gap: 5px; }
     .form-group label { font-weight: 600; color: #555; font-size: 14px; }
     .form-group input, .form-group textarea {
         width: 100%; padding: 10px; font-size: 16px;
         border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box;
     }
-    /* Contenedor para cada bloque de ingreso */
     .ingreso-entry {
-        padding: 15px;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        margin-bottom: 15px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
+        padding: 15px; border: 1px solid #ddd; border-radius: 10px;
+        margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px;
     }
     .observation-controls { display: flex; gap: 10px; margin-top: 10px; }
     .control-button {
@@ -213,7 +214,7 @@
     .save-button {
         background: var(--hch-blue); color: white; padding: 15px;
         border: none; border-radius: 12px; font-size: 18px;
-        cursor: pointer; margin-top: auto; /* Empuja el botón al final */
+        cursor: pointer; margin-top: auto;
     }
 
 </style>
@@ -287,12 +288,10 @@
                 <button class="tab-button" onclick="openTab(event, 'user-list')">Lista de Usuarios</button>
             </div>
 
-            <!-- === CAMBIO: Formulario para "Añadir Obs." con bloques duplicables === -->
             <form id="add-obs" class="tab-content active" onsubmit="event.preventDefault(); alert('Guardando observación...');">
                 <h3>Añadir Paciente a Observación</h3>
                 
                 <div id="ingresos-container">
-                    <!-- El primer bloque de ingreso -->
                     <div class="ingreso-entry">
                         <div class="form-group">
                             <label>NFUA o Episodio</label>
@@ -370,6 +369,9 @@
         function returnToMainMenu() {
             if (menuToggle.classList.contains('visible')) {
                 menuToggle.classList.remove('visible');
+                // Quitamos la clase de modo chat para que el botón vuelva a su posición original (abajo)
+                menuToggle.classList.remove('in-chat-mode'); 
+                
                 menuButtons.forEach(button => {
                     button.classList.remove('hidden-by-view', 'hidden-by-chat');
                     button.classList.add('visible');
@@ -393,6 +395,9 @@
             
             menuButtons.forEach(button => button.classList.add('hidden-by-chat'));
             menuToggle.classList.add('visible');
+            // === CAMBIO: Añadimos la clase para reposicionar el botón ===
+            menuToggle.classList.add('in-chat-mode'); 
+            
             assistantVideo.classList.remove('side-state');
             assistantVideo.classList.add('chat-mode-state');
         }
@@ -424,7 +429,6 @@
             evt.currentTarget.classList.add('active');
         }
 
-        // === CAMBIO: Funciones para añadir/quitar bloques de ingreso ===
         function addIngreso() {
             const container = document.getElementById('ingresos-container');
             const newIngreso = document.createElement('div');
@@ -448,7 +452,6 @@
 
         function removeIngreso() {
             const container = document.getElementById('ingresos-container');
-            // Solo elimina si hay más de un bloque de ingreso
             if (container.children.length > 1) {
                 container.removeChild(container.lastChild);
             }
@@ -457,4 +460,3 @@
 
 </body>
 </html>
-
