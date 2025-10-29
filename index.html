@@ -135,18 +135,37 @@
     /* --- Botón de Menú Hamburguesa (Volver) --- */
     .menu-toggle {
         display: none; position: absolute; 
-        right: 25px; bottom: 35px; /* Posición por defecto (para vistas de contenido) */
+        right: 25px; bottom: 35px;
         background: var(--hch-blue);
         width: 50px; height: 50px; border-radius: 50%; border: none; color: white; font-size: 24px;
         cursor: pointer; z-index: 12; box-shadow: 0 4px 10px rgba(0,0,0,0.2); justify-content: center; align-items: center;
-        transition: top 0.5s, bottom 0.5s; /* Animación suave para el cambio de posición */
+        transition: top 0.5s, bottom 0.5s;
     }
     .menu-toggle.visible { display: flex; }
     
-    /* === NUEVO: Clase para mover el botón en modo chat === */
     .menu-toggle.in-chat-mode {
-        bottom: auto; /* Anulamos la posición inferior */
-        top: 20px; /* Lo posicionamos arriba */
+        bottom: auto;
+        top: 20px;
+    }
+    
+    /* === NUEVO: Estilo para el contenedor de publicidad === */
+    .ad-container {
+        position: absolute;
+        bottom: 25px;
+        left: 15px;
+        right: 15px;
+        height: 150px; /* Altura del banner, puedes ajustarla */
+        background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente */
+        border-radius: 20px;
+        z-index: 4; /* Encima del video, debajo de la cabecera */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+        backdrop-filter: blur(5px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     }
     
     /* --- Estilos para las Vistas de Contenido --- */
@@ -239,7 +258,8 @@
         
         <button id="menu-toggle" class="menu-toggle" onclick="returnToMainMenu()">≡</button>
 
-        <div id="chat-view" class="dialog-box">
+        <!-- === CAMBIO: El chat ahora está oculto por defecto === -->
+        <div id="chat-view" class="dialog-box" style="display: none;">
             <div class="chat-log" id="chat-log">
                 <div class="chat-message ia-message">¡Hola! Soy tu asistente digital. ¿En qué puedo ayudarte hoy?</div>
             </div>
@@ -251,6 +271,11 @@
                     <img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Enviar">
                 </button>
             </div>
+        </div>
+        
+        <!-- === NUEVO: Contenedor para la publicidad === -->
+        <div class="ad-container">
+            Publicidad
         </div>
         
         <div id="view-busqueda" class="content-view">
@@ -355,7 +380,8 @@
             menuToggle.classList.add('visible');
             
             assistantVideo.classList.add('hidden');
-            chatView.classList.add('hidden');
+            // Ocultamos también el nuevo banner de publicidad
+            document.querySelector('.ad-container').style.display = 'none';
             
             contentViews.forEach(v => v.classList.remove('visible'));
             
@@ -369,7 +395,6 @@
         function returnToMainMenu() {
             if (menuToggle.classList.contains('visible')) {
                 menuToggle.classList.remove('visible');
-                // Quitamos la clase de modo chat para que el botón vuelva a su posición original (abajo)
                 menuToggle.classList.remove('in-chat-mode'); 
                 
                 menuButtons.forEach(button => {
@@ -379,7 +404,8 @@
                 });
 
                 assistantVideo.classList.remove('hidden');
-                chatView.classList.remove('hidden');
+                // Mostramos de nuevo el banner de publicidad
+                document.querySelector('.ad-container').style.display = 'flex';
                 
                 assistantVideo.classList.remove('chat-mode-state');
                 assistantVideo.classList.add('side-state');
@@ -389,17 +415,12 @@
                 textInput.blur();
             }
         }
-
+        
+        // La función de modo chat ahora no tiene efecto visual porque el chat está oculto
         function enterChatMode() {
-            if (document.querySelector('.content-view.visible')) return;
-            
-            menuButtons.forEach(button => button.classList.add('hidden-by-chat'));
-            menuToggle.classList.add('visible');
-            // === CAMBIO: Añadimos la clase para reposicionar el botón ===
-            menuToggle.classList.add('in-chat-mode'); 
-            
-            assistantVideo.classList.remove('side-state');
-            assistantVideo.classList.add('chat-mode-state');
+            // Si en el futuro quieres reactivar el chat, solo quita el style="display: none;" del HTML
+            // y esta función volverá a tener efecto.
+            return; 
         }
 
         function handleSend() {
