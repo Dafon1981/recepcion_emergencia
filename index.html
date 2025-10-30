@@ -7,6 +7,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- PASO 1: AÑADIR LA LIBRERÍA DE SUPABASE -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
 <style>
     /* --- Estilos Generales --- */
     :root {
@@ -148,7 +152,7 @@
         top: 20px;
     }
     
-    /* === NUEVO: Estilo para el contenedor de publicidad === */
+    /* === Estilo para el contenedor de publicidad === */
     .ad-container {
         position: absolute;
         bottom: 25px;
@@ -240,6 +244,17 @@
 </head>
 <body>
 
+    <!-- PASO 2: CREAR EL CLIENTE DE SUPABASE -->
+    <script>
+        const supabaseUrl = 'https://esikpxyectbekxvajnw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzaWtscHh5ZWN0YmVreHZham53Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE2OTI1MjEsImV4cCI6MjA3NzI2ODUyMX0.mtQnqUrTmhmN1DQxOAUnGpizhYZobStHDH0cz_XfKGU';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey );
+
+        // Mensaje en la consola para confirmar que se ha inicializado
+        console.log('Cliente de Supabase inicializado:', supabase);
+    </script>
+
+
     <div class="mobile-container">
         <header id="main-header" class="header" onclick="returnToMainMenu()">
             <div class="header-title">Recepcion Emergencia</div>
@@ -258,7 +273,6 @@
         
         <button id="menu-toggle" class="menu-toggle" onclick="returnToMainMenu()">≡</button>
 
-        <!-- === CAMBIO: El chat ahora está oculto por defecto === -->
         <div id="chat-view" class="dialog-box" style="display: none;">
             <div class="chat-log" id="chat-log">
                 <div class="chat-message ia-message">¡Hola! Soy tu asistente digital. ¿En qué puedo ayudarte hoy?</div>
@@ -273,7 +287,6 @@
             </div>
         </div>
         
-        <!-- === NUEVO: Contenedor para la publicidad === -->
         <div class="ad-container">
             Publicidad
         </div>
@@ -349,6 +362,8 @@
     </div>
 
     <script>
+        // El script original de la aplicación se mantiene intacto aquí.
+        // La variable "supabase" creada arriba ahora está disponible globalmente para ser usada en estas funciones.
         const assistantVideo = document.getElementById('assistant-video');
         const chatView = document.getElementById('chat-view');
         const menuButtons = document.querySelectorAll('.menu-button');
@@ -380,7 +395,6 @@
             menuToggle.classList.add('visible');
             
             assistantVideo.classList.add('hidden');
-            // Ocultamos también el nuevo banner de publicidad
             document.querySelector('.ad-container').style.display = 'none';
             
             contentViews.forEach(v => v.classList.remove('visible'));
@@ -404,7 +418,6 @@
                 });
 
                 assistantVideo.classList.remove('hidden');
-                // Mostramos de nuevo el banner de publicidad
                 document.querySelector('.ad-container').style.display = 'flex';
                 
                 assistantVideo.classList.remove('chat-mode-state');
@@ -416,68 +429,14 @@
             }
         }
         
-        // La función de modo chat ahora no tiene efecto visual porque el chat está oculto
-        function enterChatMode() {
-            // Si en el futuro quieres reactivar el chat, solo quita el style="display: none;" del HTML
-            // y esta función volverá a tener efecto.
-            return; 
-        }
-
-        function handleSend() {
-            const message = textInput.value.trim();
-            if (!message) return;
-            addMessage(message, 'user-message');
-            textInput.value = '';
-            setTimeout(() => addMessage("Estoy procesando tu solicitud...", 'ia-message'), 800);
-        }
-
-        function addMessage(text, type) {
-            const div = document.createElement('div');
-            div.className = `chat-message ${type}`;
-            div.textContent = text;
-            chatLog.appendChild(div);
-            chatLog.scrollTop = chatLog.scrollHeight;
-        }
-
-        function openTab(evt, tabName) {
-            const tabContents = document.querySelectorAll('#view-administrar .tab-content');
-            tabContents.forEach(tc => tc.classList.remove('active'));
-
-            const tabButtons = document.querySelectorAll('#view-administrar .tab-button');
-            tabButtons.forEach(tb => tb.classList.remove('active'));
-
-            document.getElementById(tabName).classList.add('active');
-            evt.currentTarget.classList.add('active');
-        }
-
-        function addIngreso() {
-            const container = document.getElementById('ingresos-container');
-            const newIngreso = document.createElement('div');
-            newIngreso.className = 'ingreso-entry';
-            newIngreso.innerHTML = `
-                <div class="form-group">
-                    <label>NFUA o Episodio</label>
-                    <input type="text" name="nfua[]" required>
-                </div>
-                <div class="form-group">
-                    <label>Fecha</label>
-                    <input type="date" name="date[]" required>
-                </div>
-                <div class="form-group">
-                    <label>Observación</label>
-                    <textarea name="observation[]" rows="2" required></textarea>
-                </div>
-            `;
-            container.appendChild(newIngreso);
-        }
-
-        function removeIngreso() {
-            const container = document.getElementById('ingresos-container');
-            if (container.children.length > 1) {
-                container.removeChild(container.lastChild);
-            }
-        }
+        function enterChatMode() { return; }
+        function handleSend() { const message = textInput.value.trim(); if (!message) return; addMessage(message, 'user-message'); textInput.value = ''; setTimeout(() => addMessage("Estoy procesando tu solicitud...", 'ia-message'), 800); }
+        function addMessage(text, type) { const div = document.createElement('div'); div.className = `chat-message ${type}`; div.textContent = text; chatLog.appendChild(div); chatLog.scrollTop = chatLog.scrollHeight; }
+        function openTab(evt, tabName) { const tabContents = document.querySelectorAll('#view-administrar .tab-content'); tabContents.forEach(tc => tc.classList.remove('active')); const tabButtons = document.querySelectorAll('#view-administrar .tab-button'); tabButtons.forEach(tb => tb.classList.remove('active')); document.getElementById(tabName).classList.add('active'); evt.currentTarget.classList.add('active'); }
+        function addIngreso() { const container = document.getElementById('ingresos-container'); const newIngreso = document.createElement('div'); newIngreso.className = 'ingreso-entry'; newIngreso.innerHTML = ` <div class="form-group"> <label>NFUA o Episodio</label> <input type="text" name="nfua[]" required> </div> <div class="form-group"> <label>Fecha</label> <input type="date" name="date[]" required> </div> <div class="form-group"> <label>Observación</label> <textarea name="observation[]" rows="2" required></textarea> </div> `; container.appendChild(newIngreso); }
+        function removeIngreso() { const container = document.getElementById('ingresos-container'); if (container.children.length > 1) { container.removeChild(container.lastChild); } }
     </script>
 
 </body>
 </html>
+
