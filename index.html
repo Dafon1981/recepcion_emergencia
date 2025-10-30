@@ -81,7 +81,12 @@
     .search-button:hover { background: var(--hch-yellow); }
     .search-button img { width: 28px; height: 28px; filter: invert(1); }
     
-    .search-results-container { margin-top: 20px; overflow-y: auto; flex-grow: 1; }
+   .search-results-container {
+    margin-top: 20px;
+    overflow-y: auto; /* <-- ESTA ES LA LÍNEA QUE AÑADE EL SCROLL */
+    flex-grow: 1;
+}
+
     .result-item { padding: 15px; border-bottom: 1px solid #ddd; cursor: pointer; transition: background-color 0.2s; }
     .result-item:hover { background-color: #e2e8f0; }
     .result-item-name { font-weight: 600; font-size: 16px; color: #2d3748; }
@@ -302,6 +307,7 @@
 
 </body>
 </html>
+
 
 
 
