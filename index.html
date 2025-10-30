@@ -81,7 +81,6 @@
     .search-button:hover { background: var(--hch-yellow); }
     .search-button img { width: 28px; height: 28px; filter: invert(1); }
     
-    /* === NUEVO: Estilos para la lista de resultados y detalles === */
     .search-results-container { margin-top: 20px; overflow-y: auto; flex-grow: 1; }
     .result-item { padding: 15px; border-bottom: 1px solid #ddd; cursor: pointer; transition: background-color 0.2s; }
     .result-item:hover { background-color: #e2e8f0; }
@@ -116,13 +115,13 @@
 </head>
 <body>
 
-      <script>
-        const supabaseUrl = 'https://esikpxyectbekxvajnw.supabase.co';
+    <!-- === BLOQUE DE CONEXIÓN CORREGIDO === -->
+    <script>
+        const supabaseUrl = 'https://esiklpxyectbekxvajnw.supabase.co'; // URL Corregida
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzaWtscHh5ZWN0YmVreHZham53Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE2OTI1MjEsImV4cCI6MjA3NzI2ODUyMX0.mtQnqUrTmhmN1DQxOAUnGpizhYZobStHDH0cz_XfKGU';
         const supabase = supabase.createClient(supabaseUrl, supabaseKey );
         console.log('Cliente de Supabase inicializado:', supabase);
     </script>
-
 
     <div class="mobile-container">
         <header id="main-header" class="header" onclick="returnToMainMenu()">
@@ -144,11 +143,8 @@
         <div id="chat-view" class="dialog-box" style="display: none;"></div>
         <div class="ad-container">Publicidad</div>
         
-        <!-- === VISTA DE BÚSQUEDA (MODIFICADA) === -->
         <div id="view-busqueda" class="content-view">
             <h2>Búsqueda de Pacientes</h2>
-            
-            <!-- Contenedor principal para búsqueda y resultados -->
             <div id="search-main-view">
                 <p>Ingrese Paciente, NFUA o Episodio para buscar.</p>
                 <form class="search-form" onsubmit="event.preventDefault(); searchPatients();">
@@ -160,8 +156,6 @@
                 <div class="loading-spinner" id="loading">Buscando...</div>
                 <div class="search-results-container" id="results-container"></div>
             </div>
-
-            <!-- Contenedor para mostrar detalles del paciente -->
             <div id="patient-details-view">
                 <h3>Detalles del Paciente</h3>
                 <div id="details-content"></div>
@@ -170,9 +164,9 @@
         </div>
 
         <!-- El resto de las vistas no han cambiado -->
-        <div id="view-observados" class="content-view"> ... </div>
-        <div id="view-nosotros" class="content-view"> ... </div>
-        <div id="view-administrar" class="content-view"> ... </div>
+        <div id="view-observados" class="content-view"><h2>Observados</h2><p>Contenido de Observados...</p></div>
+        <div id="view-nosotros" class="content-view"><h2>Acerca de Nosotros</h2><p>Contenido de Nosotros...</p></div>
+        <div id="view-administrar" class="content-view"><h2>Administrar</h2><p>Contenido de Administrar...</p></div>
     </div>
 
     <script>
@@ -181,8 +175,6 @@
         const menuButtons = document.querySelectorAll('.menu-button');
         const menuToggle = document.getElementById('menu-toggle');
         const contentViews = document.querySelectorAll('.content-view');
-        
-        // Variables para almacenar los resultados de búsqueda
         let currentSearchResults = [];
 
         // --- LÓGICA DE LA APLICACIÓN ---
@@ -233,8 +225,7 @@
             }
         }
 
-        // === NUEVAS FUNCIONES PARA LA BÚSQUEDA ===
-
+        // === FUNCIÓN DE BÚSQUEDA CORREGIDA ===
         async function searchPatients() {
             const searchTerm = document.getElementById('search-input-field').value.trim();
             const resultsContainer = document.getElementById('results-container');
@@ -248,8 +239,7 @@
             loadingSpinner.style.display = 'block';
             resultsContainer.innerHTML = '';
 
-            // Usamos .or() para buscar en múltiples columnas
-            // Usamos .ilike para búsqueda insensible a mayúsculas/minúsculas con comodines (%)
+            // Se usa 'Episodio' con mayúscula para que coincida con la columna
             const { data, error } = await supabase
                 .from('registros')
                 .select()
@@ -263,7 +253,7 @@
                 return;
             }
 
-            currentSearchResults = data; // Guardamos los resultados completos
+            currentSearchResults = data; 
 
             if (data.length === 0) {
                 resultsContainer.innerHTML = '<p class="no-results">No se encontraron resultados.</p>';
@@ -282,12 +272,9 @@
             if (!patient) return;
 
             const detailsContent = document.getElementById('details-content');
-            
-            // Generamos dinámicamente los detalles para no tener que escribir cada campo a mano
             let detailsHTML = '';
             for (const key in patient) {
-                // Ignoramos campos internos o que no queremos mostrar
-                if (key !== 'id' && key !== 'created_at') {
+                if (Object.hasOwnProperty.call(patient, key) && key !== 'id') {
                     detailsHTML += `
                         <div class="detail-item">
                             <label>${key.replace(/_/g, ' ')}</label>
@@ -298,25 +285,17 @@
             }
             detailsContent.innerHTML = detailsHTML;
 
-            // Ocultamos la vista de búsqueda/resultados y mostramos la de detalles
             document.getElementById('search-main-view').style.display = 'none';
             document.getElementById('patient-details-view').style.display = 'flex';
         }
 
         function backToResults() {
-            // Ocultamos la vista de detalles y mostramos la de búsqueda/resultados
             document.getElementById('patient-details-view').style.display = 'none';
             document.getElementById('search-main-view').style.display = 'block';
         }
-        
-        // --- OTRAS FUNCIONES (sin cambios) ---
-        function openTab(evt, tabName) { /* ... */ }
-        function addIngreso() { /* ... */ }
-        function removeIngreso() { /* ... */ }
     </script>
 
 </body>
 </html>
-
 
 
