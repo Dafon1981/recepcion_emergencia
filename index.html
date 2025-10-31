@@ -61,33 +61,29 @@
     .loading-spinner, .no-results { text-align: center; padding: 20px; font-size: 16px; color: #718096; flex-shrink: 0; }
     .loading-spinner { display: none; }
     
-    /* === CAMBIOS CRÍTICOS PARA EL BOTÓN VOLVER === */
-    #patient-details-view {
-        display: none;
-        flex-direction: column;
-        height: 100%; /* Ocupa toda la altura disponible */
-        overflow: hidden; /* Evita desbordamientos */
-    }
-    #details-content {
-        flex-grow: 1; /* Hace que la lista de detalles ocupe el espacio sobrante */
-        overflow-y: auto; /* Le da su propio scroll */
-        padding-right: 10px; /* Espacio para que el scroll no se pegue al texto */
-    }
+    #patient-details-view { display: none; flex-direction: column; height: 100%; overflow: hidden; }
+    #details-content { flex-grow: 1; overflow-y: auto; padding-right: 10px; }
     .detail-item { margin-bottom: 12px; }
     .detail-item label { font-weight: bold; color: #4a5568; display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase;}
     .detail-item span { font-size: 16px; color: #1a202c; word-break: break-word; }
-    .back-button {
-        background: var(--hch-yellow);
-        color: var(--hch-blue);
-        padding: 12px;
-        border: none;
-        border-radius: 10px;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-        margin-top: 15px; /* Espacio entre la lista y el botón */
-        flex-shrink: 0; /* Evita que el botón se encoja */
-    }
+    .back-button { background: var(--hch-yellow); color: var(--hch-blue); padding: 12px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; flex-shrink: 0; }
+
+    /* Estilos para las pestañas y formularios de Administrar */
+    .tab-container { display: flex; border-bottom: 2px solid #ccc; margin-bottom: 20px; flex-shrink: 0; }
+    .tab-button { flex: 1; padding: 12px; border: none; background: none; cursor: pointer; font-size: 16px; font-weight: 600; color: #777; transition: all 0.3s ease; border-bottom: 3px solid transparent; }
+    .tab-button.active { color: var(--hch-blue); border-bottom-color: var(--hch-blue); }
+    .tab-content { display: none; flex-direction: column; flex-grow: 1; overflow: hidden; }
+    .tab-content.active { display: flex; }
+    #add-obs-content { overflow-y: auto; padding-right: 10px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group label { font-weight: 600; color: #555; font-size: 14px; }
+    .form-group input, .form-group textarea { width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+    .ingreso-entry { padding: 15px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
+    .observation-controls { display: flex; gap: 10px; margin-top: 10px; }
+    .control-button { width: 35px; height: 35px; border-radius: 50%; border: none; font-size: 20px; font-weight: bold; color: white; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+    .add-btn { background-color: #28a745; }
+    .remove-btn { background-color: #dc3545; }
+    .save-button { background: var(--hch-blue); color: white; padding: 15px; border: none; border-radius: 12px; font-size: 18px; cursor: pointer; margin-top: 15px; flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -118,7 +114,6 @@
         <div class="ad-container">Publicidad</div>
         
         <div id="view-busqueda" class="content-view">
-            <!-- La vista de búsqueda principal no cambia -->
             <div id="search-main-view">
                 <h2>Búsqueda de Pacientes</h2>
                 <p>Ingrese Paciente, NFUA o Episodio para buscar.</p>
@@ -131,20 +126,66 @@
                 <div class="loading-spinner" id="loading">Buscando...</div>
                 <div class="search-results-container" id="results-container"></div>
             </div>
-            
-            <!-- La vista de detalles SÍ cambia su estructura interna -->
             <div id="patient-details-view">
                 <h3>Detalles del Paciente</h3>
-                <div id="details-content">
-                    <!-- El contenido de los detalles se generará aquí -->
-                </div>
+                <div id="details-content"></div>
                 <button class="back-button" onclick="backToResults( )">Volver a la lista</button>
             </div>
         </div>
 
-        <div id="view-observados" class="content-view"><h2>Observados</h2><p>Contenido...</p></div>
-        <div id="view-nosotros" class="content-view"><h2>Acerca de Nosotros</h2><p>Contenido...</p></div>
-        <div id="view-administrar" class="content-view"><h2>Administrar</h2><p>Contenido...</p></div>
+        <div id="view-observados" class="content-view">
+            <h2>Observados</h2>
+            <p>Busque pacientes en observación por Nombre, NFUA o Episodio.</p>
+            <form class="search-form" onsubmit="event.preventDefault(); alert('Buscando en Observados');">
+                <input type="text" class="search-input" placeholder="Buscar en observados...">
+                <button type="submit" class="search-button">
+                    <img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar">
+                </button>
+            </form>
+        </div>
+
+        <div id="view-acerca-de-nosotros" class="content-view">
+            <h2>Acerca de Nosotros</h2>
+            <p>Somos un equipo dedicado a optimizar la gestión de emergencias en seguros, facilitando el acceso rápido y seguro a la información crítica de los pacientes.</p>
+        </div>
+
+        <div id="view-administrar" class="content-view">
+            <h2>Administrar</h2>
+            <div class="tab-container">
+                <button class="tab-button active" onclick="openTab(event, 'add-obs' )">Añadir Obs.</button>
+                <button class="tab-button" onclick="openTab(event, 'user-list')">Lista de Usuarios</button>
+            </div>
+
+            <div id="add-obs" class="tab-content active">
+                <div id="add-obs-content">
+                    <div id="ingresos-container">
+                        <div class="ingreso-entry">
+                            <div class="form-group">
+                                <label>NFUA o Episodio</label>
+                                <input type="text" placeholder="Ingrese NFUA o Episodio">
+                            </div>
+                            <div class="form-group">
+                                <label>Fecha</label>
+                                <input type="date">
+                            </div>
+                            <div class="form-group">
+                                <label>Observación</label>
+                                <textarea rows="2" placeholder="Detalles de la observación..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="observation-controls">
+                        <button class="control-button add-btn" onclick="addIngreso()">+</button>
+                        <button class="control-button remove-btn" onclick="removeIngreso()">-</button>
+                    </div>
+                </div>
+                <button class="save-button">Guardar</button>
+            </div>
+
+            <div id="user-list" class="tab-content">
+                <p>Aquí se mostrará la lista de usuarios del sistema.</p>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -178,7 +219,7 @@
             document.querySelector('.ad-container').style.display = 'none';
             contentViews.forEach(v => v.classList.remove('visible'));
             
-            let viewId = `view-${section.toLowerCase().replace(' ', '-')}`;
+            let viewId = `view-${section.toLowerCase().replace(/ /g, '-')}`;
             const viewToShow = document.getElementById(viewId);
             if (viewToShow) {
                 viewToShow.classList.add('visible');
@@ -261,6 +302,47 @@
         function backToResults() {
             document.getElementById('patient-details-view').style.display = 'none';
             document.getElementById('search-main-view').style.display = 'flex';
+        }
+
+        function openTab(evt, tabName) {
+            const tabcontent = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            const tablinks = document.getElementsByClassName("tab-button");
+            for (let i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
+        function addIngreso() {
+            const container = document.getElementById('ingresos-container');
+            const newIngreso = document.createElement('div');
+            newIngreso.className = 'ingreso-entry';
+            newIngreso.innerHTML = `
+                <div class="form-group">
+                    <label>NFUA o Episodio</label>
+                    <input type="text" placeholder="Ingrese NFUA o Episodio">
+                </div>
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date">
+                </div>
+                <div class="form-group">
+                    <label>Observación</label>
+                    <textarea rows="2" placeholder="Detalles de la observación..."></textarea>
+                </div>
+            `;
+            container.appendChild(newIngreso);
+        }
+
+        function removeIngreso() {
+            const container = document.getElementById('ingresos-container');
+            if (container.children.length > 1) {
+                container.removeChild(container.lastChild);
+            }
         }
     </script>
 </body>
