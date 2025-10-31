@@ -114,12 +114,27 @@ input:checked + .slider:before { transform: translateX(20px); }
     padding: 40px;
     box-sizing: border-box;
 }
-.auth-form { display: none; flex-direction: column; width: 100%; gap: 15px; }
+.auth-form {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    gap: 15px; /* Espacio entre elementos */
+}
 .auth-form.active { display: flex; }
 .auth-form h2 { color: var(--hch-blue); text-align: center; }
 .auth-form input { padding: 15px; border: 1px solid #ccc; border-radius: 10px; font-size: 16px; }
 .auth-form button[type="submit"] { background: var(--hch-blue); color: white; padding: 15px; border: none; border-radius: 10px; font-size: 18px; cursor: pointer; }
-.auth-form .secondary-button { background: var(--hch-yellow); color: var(--hch-blue); font-weight: bold; margin-top: 5px; }
+.auth-form .secondary-button {
+    background: var(--hch-yellow);
+    color: var(--hch-blue);
+    font-weight: bold;
+    /* Eliminamos el margen superior para que el 'gap' del contenedor lo gestione */
+    padding: 15px; /* Mismo padding que el botón principal */
+    border: none;
+    border-radius: 10px; /* Mismo borde que el botón principal */
+    font-size: 18px; /* Misma fuente que el botón principal */
+    cursor: pointer;
+}
 .auth-form .link-button { background: none; border: none; color: var(--hch-blue); cursor: pointer; text-align: center; margin-top: 10px; }
 #auth-error { color: red; text-align: center; margin-top: 10px; font-size: 14px; }
 
@@ -141,26 +156,31 @@ input:checked + .slider:before { transform: translateX(20px); }
 
 <div class="mobile-container">
     <!-- === VISTA DE AUTENTICACIÓN (LOGIN Y REGISTRO) === -->
-    <div id="auth-container">
-        <form id="login-form" class="auth-form active" onsubmit="event.preventDefault(); handleLogin();">
-            <h2>Iniciar Sesión</h2>
-            <input type="email" id="login-email" placeholder="Correo Electrónico" required>
-            <input type="password" id="login-password" placeholder="Contraseña" required>
-            <button type="submit">Ingresar</button>
-            <button type="button" class="secondary-button" onclick="toggleAuthForms()">Registrar</button>
-        </form>
+    <!-- === VISTA DE AUTENTICACIÓN (LOGIN Y REGISTRO) - CORREGIDA === -->
+<div id="auth-container">
+    <form id="login-form" class="auth-form active" onsubmit="event.preventDefault(); handleLogin();">
+        <h2>Iniciar Sesión</h2>
+        <!-- Cambiado a type="text" y placeholder="Usuario" -->
+        <input type="text" id="login-user" placeholder="Usuario" required>
+        <!-- Cambiado a type="text" para que la clave sea visible -->
+        <input type="text" id="login-password" placeholder="Clave" required>
+        <button type="submit">Ingresar</button>
+        <button type="button" class="secondary-button" onclick="toggleAuthForms()">Registrar</button>
+    </form>
 
-        <form id="register-form" class="auth-form" onsubmit="event.preventDefault(); handleRegister();">
-            <h2>Crear Cuenta</h2>
-            <input type="text" id="register-name" placeholder="Nombre de Usuario" required>
-            <input type="email" id="register-email" placeholder="Correo Electrónico" required>
-            <input type="password" id="register-password" placeholder="Contraseña" required>
-            <input type="tel" id="register-phone" placeholder="Teléfono" required>
-            <button type="submit">Crear Cuenta</button>
-            <button type="button" class="link-button" onclick="toggleAuthForms()">Ya tengo una cuenta</button>
-        </form>
-        <p id="auth-error" style="display:none;"></p>
-    </div>
+    <form id="register-form" class="auth-form" onsubmit="event.preventDefault(); handleRegister();">
+        <h2>Crear Cuenta</h2>
+        <input type="text" id="register-name" placeholder="Nombre de Usuario" required>
+        <input type="email" id="register-email" placeholder="Correo Electrónico" required>
+        <!-- Cambiado a type="text" para que la clave sea visible -->
+        <input type="text" id="register-password" placeholder="Clave" required>
+        <input type="tel" id="register-phone" placeholder="Teléfono" required>
+        <button type="submit">Crear Cuenta</button>
+        <button type="button" class="link-button" onclick="toggleAuthForms()">Ya tengo una cuenta</button>
+    </form>
+    <p id="auth-error" style="display:none;"></p>
+</div>
+
 
     <div id="main-content" style="display: none;">
         <header id="main-header" class="header">
@@ -272,83 +292,89 @@ function toggleAuthForms() {
 }
 
 async function handleLogin() {
-    const email = document.getElementById('login-email').value;
+    // Cambiado para usar 'login-user'
+    const user = document.getElementById('login-user').value;
     const password = document.getElementById('login-password').value;
     errorElement.style.display = 'none';
-    
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (authError) {
-        errorElement.textContent = 'Error: ' + authError.message;
+    // 1. Buscar el usuario en la tabla 'usuarios'
+    const { data: userData, error: userError } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('usuario', user)
+        .single();
+
+    if (userError || !userData) {
+        errorElement.textContent = 'Usuario o clave incorrectos.';
         errorElement.style.display = 'block';
         return;
     }
 
-    if (authData.user) {
-        const { data: userData, error: userError } = await supabase
-            .from('usuarios')
-            .select('*')
-            .eq('id', authData.user.id)
-            .single();
-        
-        if (userError) {
-            errorElement.textContent = 'Error al obtener datos del usuario.';
-            errorElement.style.display = 'block';
-            await supabase.auth.signOut();
-            return;
-        }
-
-        if (!userData.habilitado) {
-            errorElement.textContent = 'Este usuario está deshabilitado.';
-            errorElement.style.display = 'block';
-            await supabase.auth.signOut();
-            return;
-        }
-        
-        currentUserData = userData;
-        authContainer.style.opacity = '0';
-        setTimeout(() => {
-            authContainer.style.display = 'none';
-            showMainMenu();
-        }, 500);
+    // 2. Comparar la clave (en texto plano, como está en tu tabla)
+    if (userData.clave !== password) {
+        errorElement.textContent = 'Usuario o clave incorrectos.';
+        errorElement.style.display = 'block';
+        return;
     }
+
+    // 3. Verificar si el usuario está habilitado
+    if (!userData.habilitado) {
+        errorElement.textContent = 'Este usuario está deshabilitado.';
+        errorElement.style.display = 'block';
+        return;
+    }
+
+    // 4. Si todo es correcto, proceder
+    currentUserData = userData;
+    authContainer.style.opacity = '0';
+    setTimeout(() => {
+        authContainer.style.display = 'none';
+        showMainMenu();
+    }, 500);
 }
 
 async function handleRegister() {
     const name = document.getElementById('register-name').value;
     const email = document.getElementById('register-email').value;
+    // Usamos el campo de clave de registro
     const password = document.getElementById('register-password').value;
     const phone = document.getElementById('register-phone').value;
     errorElement.style.display = 'none';
 
-    const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
+    // Verificamos si el usuario ya existe para evitar duplicados
+    const { data: existingUser, error: existingUserError } = await supabase
+        .from('usuarios')
+        .select('usuario')
+        .eq('usuario', name)
+        .single();
 
-    if (authError) {
-        errorElement.textContent = 'Error: ' + authError.message;
+    if (existingUser) {
+        errorElement.textContent = 'El nombre de usuario ya existe.';
         errorElement.style.display = 'block';
         return;
     }
 
-    if (authData.user) {
-        const { error: insertError } = await supabase.from('usuarios').insert({
-            id: authData.user.id,
-            usuario: name,
-            email: email,
-            telefono: phone,
-            estatus: 'usuario',
-            habilitado: true
-        });
+    // Insertamos el nuevo usuario directamente en nuestra tabla
+    const { error: insertError } = await supabase.from('usuarios').insert({
+        usuario: name,
+        email: email,
+        clave: password, // Guardamos la clave en texto plano
+        telefono: phone,
+        estatus: 'usuario',
+        habilitado: true
+    });
 
-        if (insertError) {
-            errorElement.textContent = 'Error al guardar datos de usuario: ' + insertError.message;
-            errorElement.style.display = 'block';
-            return;
-        }
-        alert('¡Registro exitoso! Por favor, inicia sesión.');
-        toggleAuthForms();
+    if (insertError) {
+        errorElement.textContent = 'Error al crear la cuenta: ' + insertError.message;
+        errorElement.style.display = 'block';
+        return;
     }
+
+    alert('¡Registro exitoso! Por favor, inicia sesión.');
+    toggleAuthForms();
 }
 
+// === FIN DEL REEMPLAZO ===
 async function handleLogout() {
     await supabase.auth.signOut();
     currentUserData = null;
@@ -541,6 +567,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
