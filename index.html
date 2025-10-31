@@ -47,7 +47,7 @@
     .content-view h3 { color: var(--hch-blue); margin-top: 0; flex-shrink: 0; }
     .content-view p { color: #333; line-height: 1.6; text-align: center; margin-bottom: 20px; flex-shrink: 0; }
     
-    #search-main-view { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+    #search-main-view, #observados-main-view { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
     .search-form { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
     .search-input { flex-grow: 1; padding: 15px; border: 1px solid #ccc; border-radius: 25px; font-size: 16px; outline-color: var(--hch-blue); }
     .search-button { background: var(--hch-blue); border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
@@ -68,7 +68,6 @@
     .detail-item span { font-size: 16px; color: #1a202c; word-break: break-word; }
     .back-button { background: var(--hch-yellow); color: var(--hch-blue); padding: 12px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; flex-shrink: 0; }
 
-    /* Estilos para las pestañas y formularios de Administrar */
     .tab-container { display: flex; border-bottom: 2px solid #ccc; margin-bottom: 20px; flex-shrink: 0; }
     .tab-button { flex: 1; padding: 12px; border: none; background: none; cursor: pointer; font-size: 16px; font-weight: 600; color: #777; transition: all 0.3s ease; border-bottom: 3px solid transparent; }
     .tab-button.active { color: var(--hch-blue); border-bottom-color: var(--hch-blue); }
@@ -123,8 +122,8 @@
                         <img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar">
                     </button>
                 </form>
-                <div class="loading-spinner" id="loading">Buscando...</div>
-                <div class="search-results-container" id="results-container"></div>
+                <div class="loading-spinner" id="loading-busqueda">Buscando...</div>
+                <div class="search-results-container" id="results-container-busqueda"></div>
             </div>
             <div id="patient-details-view">
                 <h3>Detalles del Paciente</h3>
@@ -133,15 +132,20 @@
             </div>
         </div>
 
+        <!-- === VISTA DE OBSERVADOS (ACTUALIZADA) === -->
         <div id="view-observados" class="content-view">
-            <h2>Observados</h2>
-            <p>Busque pacientes en observación por Nombre, NFUA o Episodio.</p>
-            <form class="search-form" onsubmit="event.preventDefault(); alert('Buscando en Observados');">
-                <input type="text" class="search-input" placeholder="Buscar en observados...">
-                <button type="submit" class="search-button">
-                    <img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar">
-                </button>
-            </form>
+            <div id="observados-main-view">
+                <h2>Observados</h2>
+                <p>Busque pacientes en observación por Nombre, NFUA o Episodio.</p>
+                <form class="search-form" onsubmit="event.preventDefault(); searchObservados();">
+                    <input type="text" id="search-input-observados" class="search-input" placeholder="Buscar en observados...">
+                    <button type="submit" class="search-button">
+                        <img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar">
+                    </button>
+                </form>
+                <div class="loading-spinner" id="loading-observados">Buscando...</div>
+                <div class="search-results-container" id="results-container-observados"></div>
+            </div>
         </div>
 
         <div id="view-acerca-de-nosotros" class="content-view">
@@ -155,23 +159,13 @@
                 <button class="tab-button active" onclick="openTab(event, 'add-obs' )">Añadir Obs.</button>
                 <button class="tab-button" onclick="openTab(event, 'user-list')">Lista de Usuarios</button>
             </div>
-
             <div id="add-obs" class="tab-content active">
                 <div id="add-obs-content">
                     <div id="ingresos-container">
                         <div class="ingreso-entry">
-                            <div class="form-group">
-                                <label>NFUA o Episodio</label>
-                                <input type="text" placeholder="Ingrese NFUA o Episodio">
-                            </div>
-                            <div class="form-group">
-                                <label>Fecha</label>
-                                <input type="date">
-                            </div>
-                            <div class="form-group">
-                                <label>Observación</label>
-                                <textarea rows="2" placeholder="Detalles de la observación..."></textarea>
-                            </div>
+                            <div class="form-group"><label>NFUA o Episodio</label><input type="text" placeholder="Ingrese NFUA o Episodio"></div>
+                            <div class="form-group"><label>Fecha</label><input type="date"></div>
+                            <div class="form-group"><label>Observación</label><textarea rows="2" placeholder="Detalles de la observación..."></textarea></div>
                         </div>
                     </div>
                     <div class="observation-controls">
@@ -181,10 +175,7 @@
                 </div>
                 <button class="save-button">Guardar</button>
             </div>
-
-            <div id="user-list" class="tab-content">
-                <p>Aquí se mostrará la lista de usuarios del sistema.</p>
-            </div>
+            <div id="user-list" class="tab-content"><p>Aquí se mostrará la lista de usuarios del sistema.</p></div>
         </div>
     </div>
 
@@ -201,6 +192,8 @@
                 assistantVideo.classList.add('side-state');
                 menuButtons.forEach(button => button.classList.add('visible'));
             }, 3000);
+            // Cargar la lista de observados al iniciar la app
+            searchObservados(true);
         });
 
         function handleMenuClick(section, clickedButton) {
@@ -228,10 +221,7 @@
         
         function returnToMainMenu() {
             menuToggle.classList.remove('visible');
-            menuButtons.forEach(button => {
-                button.classList.remove('hidden-by-view', 'active');
-                button.classList.add('visible');
-            });
+            menuButtons.forEach(button => { button.classList.remove('hidden-by-view', 'active'); button.classList.add('visible'); });
             assistantVideo.classList.remove('hidden');
             document.querySelector('.ad-container').style.display = 'flex';
             contentViews.forEach(v => v.classList.remove('visible'));
@@ -239,62 +229,33 @@
 
         async function searchPatients() {
             const searchTerm = document.getElementById('search-input-field').value.trim();
-            const resultsContainer = document.getElementById('results-container');
-            const loadingSpinner = document.getElementById('loading');
+            const resultsContainer = document.getElementById('results-container-busqueda');
+            const loadingSpinner = document.getElementById('loading-busqueda');
 
-            if (!searchTerm) {
-                resultsContainer.innerHTML = '<p class="no-results">Por favor, ingrese un término de búsqueda.</p>';
-                return;
-            }
-
+            if (!searchTerm) { resultsContainer.innerHTML = '<p class="no-results">Por favor, ingrese un término de búsqueda.</p>'; return; }
             loadingSpinner.style.display = 'block';
             resultsContainer.innerHTML = '';
 
-            const { data, error } = await supabase
-                .from('registros')
-                .select()
-                .or(`PACIENTE.ilike.%${searchTerm}%,NFUA.ilike.%${searchTerm}%,Episodio.ilike.%${searchTerm}%`);
-
+            const { data, error } = await supabase.from('registros').select().or(`PACIENTE.ilike.%${searchTerm}%,NFUA.ilike.%${searchTerm}%,Episodio.ilike.%${searchTerm}%`);
             loadingSpinner.style.display = 'none';
 
-            if (error) {
-                console.error('Error en la búsqueda:', error);
-                resultsContainer.innerHTML = `<p class="no-results">Error al realizar la búsqueda: ${error.message}</p>`;
-                return;
-            }
-
+            if (error) { console.error('Error en la búsqueda:', error); resultsContainer.innerHTML = `<p class="no-results">Error: ${error.message}</p>`; return; }
             currentSearchResults = data; 
-
-            if (data.length === 0) {
-                resultsContainer.innerHTML = '<p class="no-results">No se encontraron resultados.</p>';
-            } else {
-                resultsContainer.innerHTML = data.map((patient, index) => `
-                    <div class="result-item" onclick="showPatientDetails(${index})">
-                        <div class="result-item-name">${patient.PACIENTE || 'Nombre no disponible'}</div>
-                        <div class="result-item-sub">DNI: ${patient.NroDocumento || 'N/A'}</div>
-                    </div>
-                `).join('');
-            }
+            if (data.length === 0) { resultsContainer.innerHTML = '<p class="no-results">No se encontraron resultados.</p>'; } 
+            else { resultsContainer.innerHTML = data.map((patient, index) => `<div class="result-item" onclick="showPatientDetails(${index})"><div class="result-item-name">${patient.PACIENTE || 'N/A'}</div><div class="result-item-sub">DNI: ${patient.NroDocumento || 'N/A'}</div></div>`).join(''); }
         }
 
         function showPatientDetails(index) {
             const patient = currentSearchResults[index];
             if (!patient) return;
-
             const detailsContent = document.getElementById('details-content');
             let detailsHTML = '';
             for (const key in patient) {
                 if (Object.hasOwnProperty.call(patient, key) && key !== 'id') {
-                    detailsHTML += `
-                        <div class="detail-item">
-                            <label>${key.replace(/_/g, ' ')}</label>
-                            <span>${patient[key] || 'No especificado'}</span>
-                        </div>
-                    `;
+                    detailsHTML += `<div class="detail-item"><label>${key.replace(/_/g, ' ')}</label><span>${patient[key] || 'No especificado'}</span></div>`;
                 }
             }
             detailsContent.innerHTML = detailsHTML;
-
             document.getElementById('search-main-view').style.display = 'none';
             document.getElementById('patient-details-view').style.display = 'flex';
         }
@@ -303,16 +264,35 @@
             document.getElementById('patient-details-view').style.display = 'none';
             document.getElementById('search-main-view').style.display = 'flex';
         }
+        
+        // === NUEVA FUNCIÓN PARA OBSERVADOS ===
+        async function searchObservados(initialLoad = false) {
+            const searchTerm = initialLoad ? '' : document.getElementById('search-input-observados').value.trim();
+            const resultsContainer = document.getElementById('results-container-observados');
+            const loadingSpinner = document.getElementById('loading-observados');
+
+            loadingSpinner.style.display = 'block';
+            resultsContainer.innerHTML = '';
+
+            let query = supabase.from('observados').select();
+            if (searchTerm) {
+                // Asumiendo que la tabla 'observados' tiene columnas 'numero' y 'observacion'
+                query = query.or(`numero.ilike.%${searchTerm}%,observacion.ilike.%${searchTerm}%`);
+            }
+            
+            const { data, error } = await query;
+            loadingSpinner.style.display = 'none';
+
+            if (error) { console.error('Error en búsqueda de observados:', error); resultsContainer.innerHTML = `<p class="no-results">Error: ${error.message}</p>`; return; }
+            if (data.length === 0) { resultsContainer.innerHTML = '<p class="no-results">No se encontraron pacientes en observación.</p>'; } 
+            else { resultsContainer.innerHTML = data.map(item => `<div class="result-item"><div class="result-item-name">NFUA/Episodio: ${item.numero}</div><div class="result-item-sub">Obs: ${item.observacion || 'Sin detalles'}</div></div>`).join(''); }
+        }
 
         function openTab(evt, tabName) {
             const tabcontent = document.getElementsByClassName("tab-content");
-            for (let i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].classList.remove("active");
-            }
+            for (let i = 0; i < tabcontent.length; i++) { tabcontent[i].classList.remove("active"); }
             const tablinks = document.getElementsByClassName("tab-button");
-            for (let i = 0; i < tablinks.length; i++) {
-                tablinks[i].classList.remove("active");
-            }
+            for (let i = 0; i < tablinks.length; i++) { tablinks[i].classList.remove("active"); }
             document.getElementById(tabName).classList.add("active");
             evt.currentTarget.classList.add("active");
         }
@@ -321,30 +301,17 @@
             const container = document.getElementById('ingresos-container');
             const newIngreso = document.createElement('div');
             newIngreso.className = 'ingreso-entry';
-            newIngreso.innerHTML = `
-                <div class="form-group">
-                    <label>NFUA o Episodio</label>
-                    <input type="text" placeholder="Ingrese NFUA o Episodio">
-                </div>
-                <div class="form-group">
-                    <label>Fecha</label>
-                    <input type="date">
-                </div>
-                <div class="form-group">
-                    <label>Observación</label>
-                    <textarea rows="2" placeholder="Detalles de la observación..."></textarea>
-                </div>
-            `;
+            newIngreso.innerHTML = `<div class="form-group"><label>NFUA o Episodio</label><input type="text" placeholder="Ingrese NFUA o Episodio"></div><div class="form-group"><label>Fecha</label><input type="date"></div><div class="form-group"><label>Observación</label><textarea rows="2" placeholder="Detalles de la observación..."></textarea></div>`;
             container.appendChild(newIngreso);
         }
 
         function removeIngreso() {
             const container = document.getElementById('ingresos-container');
-            if (container.children.length > 1) {
-                container.removeChild(container.lastChild);
-            }
+            if (container.children.length > 1) { container.removeChild(container.lastChild); }
         }
     </script>
 </body>
 </html>
+
+
 
