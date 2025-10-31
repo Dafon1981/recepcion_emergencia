@@ -41,46 +41,19 @@
     .menu-toggle.visible { display: flex; }
     .ad-container { position: absolute; bottom: 25px; left: 15px; right: 15px; height: 150px; background-color: rgba(0, 0, 0, 0.5); border-radius: 20px; z-index: 4; display: flex; justify-content: center; align-items: center; color: white; font-size: 24px; font-weight: bold; backdrop-filter: blur(5px); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
     
-    /* === CAMBIOS CRÍTICOS EN EL CSS PARA EL SCROLL === */
-    .content-view {
-        position: absolute;
-        top: 100px; left: 15px; right: 15px; bottom: 25px;
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(8px);
-        border-radius: 30px;
-        z-index: 11;
-        opacity: 0;
-        transform: translateY(30px);
-        pointer-events: none;
-        transition: all 0.5s ease-out;
-        padding: 20px;
-        box-sizing: border-box;
-        display: flex; /* Mantenemos flex */
-        flex-direction: column; /* Dirección de columna */
-        overflow: hidden; /* Evita que los hijos se desborden del contenedor padre */
-    }
+    .content-view { position: absolute; top: 100px; left: 15px; right: 15px; bottom: 25px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); border-radius: 30px; z-index: 11; opacity: 0; transform: translateY(30px); pointer-events: none; transition: all 0.5s ease-out; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; }
     .content-view.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
-    .content-view h2 { color: var(--hch-blue); text-align: center; margin-top: 10px; margin-bottom: 15px; flex-shrink: 0; /* Evita que el título se encoja */ }
+    .content-view h2 { color: var(--hch-blue); text-align: center; margin-top: 10px; margin-bottom: 15px; flex-shrink: 0; }
     .content-view h3 { color: var(--hch-blue); margin-top: 0; flex-shrink: 0; }
     .content-view p { color: #333; line-height: 1.6; text-align: center; margin-bottom: 20px; flex-shrink: 0; }
     
-    #search-main-view {
-        display: flex;
-        flex-direction: column;
-        height: 100%; /* Ocupa toda la altura disponible */
-        overflow: hidden; /* Controla el desbordamiento interno */
-    }
-
+    #search-main-view { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
     .search-form { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
     .search-input { flex-grow: 1; padding: 15px; border: 1px solid #ccc; border-radius: 25px; font-size: 16px; outline-color: var(--hch-blue); }
     .search-button { background: var(--hch-blue); border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     .search-button img { width: 28px; height: 28px; filter: invert(1); }
     
-    .search-results-container {
-        margin-top: 20px;
-        flex-grow: 1; /* Permite que este contenedor crezca y ocupe el espacio sobrante */
-        overflow-y: auto; /* APLICA EL SCROLL VERTICAL CUANDO SEA NECESARIO */
-    }
+    .search-results-container { margin-top: 20px; flex-grow: 1; overflow-y: auto; }
     .result-item { padding: 15px; border-bottom: 1px solid #ddd; cursor: pointer; transition: background-color 0.2s; }
     .result-item:hover { background-color: #e2e8f0; }
     .result-item-name { font-weight: 600; font-size: 16px; color: #2d3748; }
@@ -88,12 +61,33 @@
     .loading-spinner, .no-results { text-align: center; padding: 20px; font-size: 16px; color: #718096; flex-shrink: 0; }
     .loading-spinner { display: none; }
     
-    #patient-details-view { display: none; flex-direction: column; height: 100%; }
-    #details-content { flex-grow: 1; overflow-y: auto; } /* Scroll también para los detalles */
+    /* === CAMBIOS CRÍTICOS PARA EL BOTÓN VOLVER === */
+    #patient-details-view {
+        display: none;
+        flex-direction: column;
+        height: 100%; /* Ocupa toda la altura disponible */
+        overflow: hidden; /* Evita desbordamientos */
+    }
+    #details-content {
+        flex-grow: 1; /* Hace que la lista de detalles ocupe el espacio sobrante */
+        overflow-y: auto; /* Le da su propio scroll */
+        padding-right: 10px; /* Espacio para que el scroll no se pegue al texto */
+    }
     .detail-item { margin-bottom: 12px; }
     .detail-item label { font-weight: bold; color: #4a5568; display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase;}
-    .detail-item span { font-size: 16px; color: #1a202c; }
-    .back-button { background: var(--hch-yellow); color: var(--hch-blue); padding: 12px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; flex-shrink: 0; }
+    .detail-item span { font-size: 16px; color: #1a202c; word-break: break-word; }
+    .back-button {
+        background: var(--hch-yellow);
+        color: var(--hch-blue);
+        padding: 12px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 15px; /* Espacio entre la lista y el botón */
+        flex-shrink: 0; /* Evita que el botón se encoja */
+    }
 </style>
 </head>
 <body>
@@ -124,8 +118,9 @@
         <div class="ad-container">Publicidad</div>
         
         <div id="view-busqueda" class="content-view">
-            <h2>Búsqueda de Pacientes</h2>
+            <!-- La vista de búsqueda principal no cambia -->
             <div id="search-main-view">
+                <h2>Búsqueda de Pacientes</h2>
                 <p>Ingrese Paciente, NFUA o Episodio para buscar.</p>
                 <form class="search-form" onsubmit="event.preventDefault(); searchPatients();">
                     <input type="text" id="search-input-field" class="search-input" placeholder="Buscar...">
@@ -136,9 +131,13 @@
                 <div class="loading-spinner" id="loading">Buscando...</div>
                 <div class="search-results-container" id="results-container"></div>
             </div>
+            
+            <!-- La vista de detalles SÍ cambia su estructura interna -->
             <div id="patient-details-view">
                 <h3>Detalles del Paciente</h3>
-                <div id="details-content"></div>
+                <div id="details-content">
+                    <!-- El contenido de los detalles se generará aquí -->
+                </div>
                 <button class="back-button" onclick="backToResults( )">Volver a la lista</button>
             </div>
         </div>
@@ -266,3 +265,4 @@
     </script>
 </body>
 </html>
+
