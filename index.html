@@ -83,6 +83,24 @@
     .add-btn { background-color: #28a745; }
     .remove-btn { background-color: #dc3545; }
     .save-button { background: var(--hch-blue); color: white; padding: 15px; border: none; border-radius: 12px; font-size: 18px; cursor: pointer; margin-top: 15px; flex-shrink: 0; }
+
+    /* === NUEVOS ESTILOS PARA LA LISTA DE USUARIOS === */
+    #user-list-container { flex-grow: 1; overflow-y: auto; }
+    .user-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 5px; border-bottom: 1px solid #ddd; gap: 10px; }
+    .user-info { flex-grow: 1; }
+    .user-name { font-weight: 600; }
+    .user-email { font-size: 12px; color: #666; }
+    .user-status { font-size: 12px; font-weight: bold; padding: 3px 6px; border-radius: 5px; color: white; }
+    .status-admin { background-color: #28a745; }
+    .status-usuario { background-color: #6c757d; }
+    .user-actions { display: flex; align-items: center; gap: 15px; }
+    .delete-button { background: #dc3545; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; }
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--hch-blue); }
+    input:checked + .slider:before { transform: translateX(20px); }
 </style>
 </head>
 <body>
@@ -118,9 +136,7 @@
                 <p>Ingrese Paciente, NFUA o Episodio para buscar.</p>
                 <form class="search-form" onsubmit="event.preventDefault(); searchPatients();">
                     <input type="text" id="search-input-field" class="search-input" placeholder="Buscar...">
-                    <button type="submit" class="search-button">
-                        <img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar">
-                    </button>
+                    <button type="submit" class="search-button"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar"></button>
                 </form>
                 <div class="loading-spinner" id="loading-busqueda">Buscando...</div>
                 <div class="search-results-container" id="results-container-busqueda"></div>
@@ -132,16 +148,13 @@
             </div>
         </div>
 
-        <!-- === VISTA DE OBSERVADOS (ACTUALIZADA) === -->
         <div id="view-observados" class="content-view">
             <div id="observados-main-view">
                 <h2>Observados</h2>
-                <p>Busque pacientes en observación por Nombre, NFUA o Episodio.</p>
+                <p>Busque pacientes en observación.</p>
                 <form class="search-form" onsubmit="event.preventDefault(); searchObservados();">
                     <input type="text" id="search-input-observados" class="search-input" placeholder="Buscar en observados...">
-                    <button type="submit" class="search-button">
-                        <img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar">
-                    </button>
+                    <button type="submit" class="search-button"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar"></button>
                 </form>
                 <div class="loading-spinner" id="loading-observados">Buscando...</div>
                 <div class="search-results-container" id="results-container-observados"></div>
@@ -157,7 +170,7 @@
             <h2>Administrar</h2>
             <div class="tab-container">
                 <button class="tab-button active" onclick="openTab(event, 'add-obs' )">Añadir Obs.</button>
-                <button class="tab-button" onclick="openTab(event, 'user-list')">Lista de Usuarios</button>
+                <button class="tab-button" onclick="openTab(event, 'user-list'); loadUsers();">Lista de Usuarios</button>
             </div>
             <div id="add-obs" class="tab-content active">
                 <div id="add-obs-content">
@@ -165,7 +178,7 @@
                         <div class="ingreso-entry">
                             <div class="form-group"><label>NFUA o Episodio</label><input type="text" placeholder="Ingrese NFUA o Episodio"></div>
                             <div class="form-group"><label>Fecha</label><input type="date"></div>
-                            <div class="form-group"><label>Observación</label><textarea rows="2" placeholder="Detalles de la observación..."></textarea></div>
+                            <div class="form-group"><label>Observación</label><textarea rows="2" placeholder="Detalles..."></textarea></div>
                         </div>
                     </div>
                     <div class="observation-controls">
@@ -175,7 +188,11 @@
                 </div>
                 <button class="save-button">Guardar</button>
             </div>
-            <div id="user-list" class="tab-content"><p>Aquí se mostrará la lista de usuarios del sistema.</p></div>
+            <!-- === CONTENIDO DE LISTA DE USUARIOS (ACTUALIZADO) === -->
+            <div id="user-list" class="tab-content">
+                <div class="loading-spinner" id="loading-users">Cargando usuarios...</div>
+                <div id="user-list-container"></div>
+            </div>
         </div>
     </div>
 
@@ -192,31 +209,21 @@
                 assistantVideo.classList.add('side-state');
                 menuButtons.forEach(button => button.classList.add('visible'));
             }, 3000);
-            // Cargar la lista de observados al iniciar la app
             searchObservados(true);
         });
 
         function handleMenuClick(section, clickedButton) {
             menuButtons.forEach(button => button.classList.remove('active'));
             if(clickedButton) clickedButton.classList.add('active');
-
-            if (section === 'Contacto') {
-                window.open('https://wa.me/51967188120', '_blank' );
-                setTimeout(() => { if(clickedButton) clickedButton.classList.remove('active'); }, 500);
-                return;
-            }
-            
+            if (section === 'Contacto') { window.open('https://wa.me/51967188120', '_blank' ); setTimeout(() => { if(clickedButton) clickedButton.classList.remove('active'); }, 500); return; }
             menuButtons.forEach(button => button.classList.add('hidden-by-view'));
             menuToggle.classList.add('visible');
             assistantVideo.classList.add('hidden');
             document.querySelector('.ad-container').style.display = 'none';
             contentViews.forEach(v => v.classList.remove('visible'));
-            
             let viewId = `view-${section.toLowerCase().replace(/ /g, '-')}`;
             const viewToShow = document.getElementById(viewId);
-            if (viewToShow) {
-                viewToShow.classList.add('visible');
-            }
+            if (viewToShow) { viewToShow.classList.add('visible'); }
         }
         
         function returnToMainMenu() {
@@ -231,15 +238,12 @@
             const searchTerm = document.getElementById('search-input-field').value.trim();
             const resultsContainer = document.getElementById('results-container-busqueda');
             const loadingSpinner = document.getElementById('loading-busqueda');
-
-            if (!searchTerm) { resultsContainer.innerHTML = '<p class="no-results">Por favor, ingrese un término de búsqueda.</p>'; return; }
+            if (!searchTerm) { resultsContainer.innerHTML = '<p class="no-results">Ingrese un término de búsqueda.</p>'; return; }
             loadingSpinner.style.display = 'block';
             resultsContainer.innerHTML = '';
-
             const { data, error } = await supabase.from('registros').select().or(`PACIENTE.ilike.%${searchTerm}%,NFUA.ilike.%${searchTerm}%,Episodio.ilike.%${searchTerm}%`);
             loadingSpinner.style.display = 'none';
-
-            if (error) { console.error('Error en la búsqueda:', error); resultsContainer.innerHTML = `<p class="no-results">Error: ${error.message}</p>`; return; }
+            if (error) { console.error('Error:', error); resultsContainer.innerHTML = `<p class="no-results">Error: ${error.message}</p>`; return; }
             currentSearchResults = data; 
             if (data.length === 0) { resultsContainer.innerHTML = '<p class="no-results">No se encontraron resultados.</p>'; } 
             else { resultsContainer.innerHTML = data.map((patient, index) => `<div class="result-item" onclick="showPatientDetails(${index})"><div class="result-item-name">${patient.PACIENTE || 'N/A'}</div><div class="result-item-sub">DNI: ${patient.NroDocumento || 'N/A'}</div></div>`).join(''); }
@@ -265,26 +269,18 @@
             document.getElementById('search-main-view').style.display = 'flex';
         }
         
-        // === NUEVA FUNCIÓN PARA OBSERVADOS ===
         async function searchObservados(initialLoad = false) {
             const searchTerm = initialLoad ? '' : document.getElementById('search-input-observados').value.trim();
             const resultsContainer = document.getElementById('results-container-observados');
             const loadingSpinner = document.getElementById('loading-observados');
-
             loadingSpinner.style.display = 'block';
             resultsContainer.innerHTML = '';
-
             let query = supabase.from('observados').select();
-            if (searchTerm) {
-                // Asumiendo que la tabla 'observados' tiene columnas 'numero' y 'observacion'
-                query = query.or(`numero.ilike.%${searchTerm}%,observacion.ilike.%${searchTerm}%`);
-            }
-            
+            if (searchTerm) { query = query.or(`numero.ilike.%${searchTerm}%,observacion.ilike.%${searchTerm}%`); }
             const { data, error } = await query;
             loadingSpinner.style.display = 'none';
-
-            if (error) { console.error('Error en búsqueda de observados:', error); resultsContainer.innerHTML = `<p class="no-results">Error: ${error.message}</p>`; return; }
-            if (data.length === 0) { resultsContainer.innerHTML = '<p class="no-results">No se encontraron pacientes en observación.</p>'; } 
+            if (error) { console.error('Error:', error); resultsContainer.innerHTML = `<p class="no-results">Error: ${error.message}</p>`; return; }
+            if (data.length === 0) { resultsContainer.innerHTML = '<p class="no-results">No hay pacientes en observación.</p>'; } 
             else { resultsContainer.innerHTML = data.map(item => `<div class="result-item"><div class="result-item-name">NFUA/Episodio: ${item.numero}</div><div class="result-item-sub">Obs: ${item.observacion || 'Sin detalles'}</div></div>`).join(''); }
         }
 
@@ -301,7 +297,7 @@
             const container = document.getElementById('ingresos-container');
             const newIngreso = document.createElement('div');
             newIngreso.className = 'ingreso-entry';
-            newIngreso.innerHTML = `<div class="form-group"><label>NFUA o Episodio</label><input type="text" placeholder="Ingrese NFUA o Episodio"></div><div class="form-group"><label>Fecha</label><input type="date"></div><div class="form-group"><label>Observación</label><textarea rows="2" placeholder="Detalles de la observación..."></textarea></div>`;
+            newIngreso.innerHTML = `<div class="form-group"><label>NFUA o Episodio</label><input type="text"></div><div class="form-group"><label>Fecha</label><input type="date"></div><div class="form-group"><label>Observación</label><textarea rows="2"></textarea></div>`;
             container.appendChild(newIngreso);
         }
 
@@ -309,9 +305,53 @@
             const container = document.getElementById('ingresos-container');
             if (container.children.length > 1) { container.removeChild(container.lastChild); }
         }
+
+        // === NUEVA FUNCIÓN PARA CARGAR USUARIOS ===
+        async function loadUsers() {
+            const usersContainer = document.getElementById('user-list-container');
+            const loadingSpinner = document.getElementById('loading-users');
+            
+            loadingSpinner.style.display = 'block';
+            usersContainer.innerHTML = '';
+
+            // NOTA: Esto fallará si no has iniciado sesión como admin.
+            // Necesitaremos implementar el login para que funcione.
+            const { data, error } = await supabase.from('usuarios').select();
+            
+            loadingSpinner.style.display = 'none';
+
+            if (error) {
+                console.error('Error cargando usuarios:', error);
+                usersContainer.innerHTML = `<p class="no-results">Error al cargar usuarios: ${error.message}.   
+  
+ (Probablemente necesitas iniciar sesión como admin).</p>`;
+                return;
+            }
+
+            if (data.length === 0) {
+                usersContainer.innerHTML = '<p class="no-results">No se encontraron usuarios.</p>';
+            } else {
+                usersContainer.innerHTML = data.map(user => `
+                    <div class="user-item">
+                        <div class="user-info">
+                            <div class="user-name">${user.usuario} <span class="user-status status-${user.estatus}">${user.estatus}</span></div>
+                            <div class="user-email">${user.email}</div>
+                        </div>
+                        <div class="user-actions">
+                            <label class="switch">
+                                <input type="checkbox" ${user.habilitado ? 'checked' : ''}>
+                                <span class="slider"></span>
+                            </label>
+                            <button class="delete-button" onclick="alert('Eliminar usuario ${user.id}')">X</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
     </script>
 </body>
 </html>
+
 
 
 
