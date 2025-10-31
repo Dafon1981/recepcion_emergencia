@@ -11,346 +11,537 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
 <style>
-    :root {
-        --header-primary-start: #667eea;
-        --header-primary-end: #764ba2;
-        --hch-blue: #1A4A8A;
-        --hch-yellow: #F2C744;
-        --background-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%  );
-    }
-    body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background-gradient); display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
-    .mobile-container { width: 390px; height: 700px; position: relative; overflow: hidden; border-radius: 45px; box-shadow: 0 15px 40px rgba(0,0,0,0.25); background: #ffffff; border: 12px solid #fff; }
-    #assistant-video { position: absolute; bottom: 30px; height: 85%; z-index: 1; transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); object-fit: cover; object-position: center top; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1)); }
-    #assistant-video.initial-state { right: 50%; transform: translateX(50%); height: 90%; }
-    #assistant-video.side-state { right: -40px; transform: translateX(0); }
-    #assistant-video.hidden { opacity: 0; pointer-events: none; }
-    .header { position: absolute; top: 0; left: 0; right: 0; height: 90px; background: linear-gradient(135deg, var(--header-primary-start) 0%, var(--header-primary-end) 100%); z-index: 5; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transform: translateY(-100%); animation: slide-down 0.8s ease-out 0.5s forwards; }
-    .header-title { color: white; font-size: 28px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); opacity: 0; animation: fade-in 1s ease-out 1.3s forwards; cursor: pointer; }
-    @keyframes slide-down { to { transform: translateY(0); } }
-    @keyframes fade-in { to { opacity: 1; } }
-    .menu-button { position: absolute; left: 25px; z-index: 10; background: var(--hch-blue); border: 2px solid var(--hch-blue); border-radius: 30px; padding: 15px 25px; font-size: 16px; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 6px 15px rgba(26, 74, 138, 0.4); transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1); min-width: 180px; opacity: 0; transform: translateX(-30px); pointer-events: none; }
-    .menu-button.visible { opacity: 1; transform: translateX(0); pointer-events: auto; }
-    .menu-button.hidden-by-view { opacity: 0; transform: translateX(-30px); pointer-events: none; }
-    #btn-servicios { top: 120px; transition-delay: 0.2s; }
-    #btn-portafolio { top: 190px; transition-delay: 0.3s; }
-    #btn-nosotros { top: 260px; transition-delay: 0.4s; }
-    #btn-contacto { top: 330px; transition-delay: 0.5s; }
-    #btn-administrar { top: 400px; transition-delay: 0.6s; }
-    .menu-button.active { background: var(--hch-yellow); color: var(--hch-blue); border-color: var(--hch-yellow); font-weight: bold; }
-    .menu-toggle { display: none; position: absolute; right: 25px; bottom: 35px; background: var(--hch-blue); width: 50px; height: 50px; border-radius: 50%; border: none; color: white; font-size: 24px; cursor: pointer; z-index: 12; box-shadow: 0 4px 10px rgba(0,0,0,0.2); justify-content: center; align-items: center; }
-    .menu-toggle.visible { display: flex; }
-    .ad-container { position: absolute; bottom: 25px; left: 15px; right: 15px; height: 150px; background-color: rgba(0, 0, 0, 0.5); border-radius: 20px; z-index: 4; display: flex; justify-content: center; align-items: center; color: white; font-size: 24px; font-weight: bold; backdrop-filter: blur(5px); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-    
-    .content-view { position: absolute; top: 100px; left: 15px; right: 15px; bottom: 25px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); border-radius: 30px; z-index: 11; opacity: 0; transform: translateY(30px); pointer-events: none; transition: all 0.5s ease-out; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; }
-    .content-view.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
-    .content-view h2 { color: var(--hch-blue); text-align: center; margin-top: 10px; margin-bottom: 15px; flex-shrink: 0; }
-    .content-view h3 { color: var(--hch-blue); margin-top: 0; flex-shrink: 0; }
-    .content-view p { color: #333; line-height: 1.6; text-align: center; margin-bottom: 20px; flex-shrink: 0; }
-    
-    #search-main-view, #observados-main-view { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
-    .search-form { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
-    .search-input { flex-grow: 1; padding: 15px; border: 1px solid #ccc; border-radius: 25px; font-size: 16px; outline-color: var(--hch-blue); }
-    .search-button { background: var(--hch-blue); border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
-    .search-button img { width: 28px; height: 28px; filter: invert(1); }
-    
-    .search-results-container { margin-top: 20px; flex-grow: 1; overflow-y: auto; }
-    .result-item { padding: 15px; border-bottom: 1px solid #ddd; cursor: pointer; transition: background-color 0.2s; }
-    .result-item:hover { background-color: #e2e8f0; }
-    .result-item-name { font-weight: 600; font-size: 16px; color: #2d3748; }
-    .result-item-sub { font-size: 14px; color: #718096; }
-    .loading-spinner, .no-results { text-align: center; padding: 20px; font-size: 16px; color: #718096; flex-shrink: 0; }
-    .loading-spinner { display: none; }
-    
-    #patient-details-view { display: none; flex-direction: column; height: 100%; overflow: hidden; }
-    #details-content { flex-grow: 1; overflow-y: auto; padding-right: 10px; }
-    .detail-item { margin-bottom: 12px; }
-    .detail-item label { font-weight: bold; color: #4a5568; display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase;}
-    .detail-item span { font-size: 16px; color: #1a202c; word-break: break-word; }
-    .back-button { background: var(--hch-yellow); color: var(--hch-blue); padding: 12px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; flex-shrink: 0; }
+  /* --- INICIO DEL CÓDIGO CSS --- */
 
-    .tab-container { display: flex; border-bottom: 2px solid #ccc; margin-bottom: 20px; flex-shrink: 0; }
-    .tab-button { flex: 1; padding: 12px; border: none; background: none; cursor: pointer; font-size: 16px; font-weight: 600; color: #777; transition: all 0.3s ease; border-bottom: 3px solid transparent; }
-    .tab-button.active { color: var(--hch-blue); border-bottom-color: var(--hch-blue); }
-    .tab-content { display: none; flex-direction: column; flex-grow: 1; overflow: hidden; }
-    .tab-content.active { display: flex; }
-    #add-obs-content { overflow-y: auto; padding-right: 10px; }
-    .form-group { display: flex; flex-direction: column; gap: 5px; }
-    .form-group label { font-weight: 600; color: #555; font-size: 14px; }
-    .form-group input, .form-group textarea { width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-    .ingreso-entry { padding: 15px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
-    .observation-controls { display: flex; gap: 10px; margin-top: 10px; }
-    .control-button { width: 35px; height: 35px; border-radius: 50%; border: none; font-size: 20px; font-weight: bold; color: white; cursor: pointer; display: flex; justify-content: center; align-items: center; }
-    .add-btn { background-color: #28a745; }
-    .remove-btn { background-color: #dc3545; }
-    .save-button { background: var(--hch-blue); color: white; padding: 15px; border: none; border-radius: 12px; font-size: 18px; cursor: pointer; margin-top: 15px; flex-shrink: 0; }
+:root {
+    --header-primary-start: #667eea;
+    --header-primary-end: #764ba2;
+    --hch-blue: #1A4A8A;
+    --hch-yellow: #F2C744;
+    --background-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100% );
+}
+body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background-gradient); display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
+.mobile-container { width: 390px; height: 700px; position: relative; overflow: hidden; border-radius: 45px; box-shadow: 0 15px 40px rgba(0,0,0,0.25); background: #ffffff; border: 12px solid #fff; }
+#assistant-video { position: absolute; bottom: 30px; height: 85%; z-index: 1; transition: all 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); object-fit: cover; object-position: center top; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1)); }
+#assistant-video.initial-state { right: 50%; transform: translateX(50%); height: 90%; }
+#assistant-video.side-state { right: -40px; transform: translateX(0); }
+#assistant-video.hidden { opacity: 0; pointer-events: none; }
+.header { position: absolute; top: 0; left: 0; right: 0; height: 90px; background: linear-gradient(135deg, var(--header-primary-start) 0%, var(--header-primary-end) 100%); z-index: 5; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 0 25px; box-sizing: border-box; }
+.header-title { color: white; font-size: 24px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); cursor: pointer; }
+.logout-button { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+.menu-button { position: absolute; left: 25px; z-index: 10; background: var(--hch-blue); border: 2px solid var(--hch-blue); border-radius: 30px; padding: 15px 25px; font-size: 16px; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 6px 15px rgba(26, 74, 138, 0.4); transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1); min-width: 180px; opacity: 0; transform: translateX(-30px); pointer-events: none; }
+.menu-button.visible { opacity: 1; transform: translateX(0); pointer-events: auto; }
+.menu-button.hidden-by-view { opacity: 0; transform: translateX(-30px); pointer-events: none; }
+#btn-servicios { top: 120px; transition-delay: 0.2s; }
+#btn-portafolio { top: 190px; transition-delay: 0.3s; }
+#btn-nosotros { top: 260px; transition-delay: 0.4s; }
+#btn-contacto { top: 330px; transition-delay: 0.5s; }
+#btn-administrar { top: 400px; transition-delay: 0.6s; }
+.menu-button.active { background: var(--hch-yellow); color: var(--hch-blue); border-color: var(--hch-yellow); font-weight: bold; }
+.menu-toggle { display: none; position: absolute; right: 25px; bottom: 35px; background: var(--hch-blue); width: 50px; height: 50px; border-radius: 50%; border: none; color: white; font-size: 24px; cursor: pointer; z-index: 12; box-shadow: 0 4px 10px rgba(0,0,0,0.2); justify-content: center; align-items: center; }
+.menu-toggle.visible { display: flex; }
+.ad-container { position: absolute; bottom: 25px; left: 15px; right: 15px; height: 150px; background-color: rgba(0, 0, 0, 0.5); border-radius: 20px; z-index: 4; display: flex; justify-content: center; align-items: center; color: white; font-size: 24px; font-weight: bold; backdrop-filter: blur(5px); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
 
-    /* === NUEVOS ESTILOS PARA LA LISTA DE USUARIOS === */
-    #user-list-container { flex-grow: 1; overflow-y: auto; }
-    .user-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 5px; border-bottom: 1px solid #ddd; gap: 10px; }
-    .user-info { flex-grow: 1; }
-    .user-name { font-weight: 600; }
-    .user-email { font-size: 12px; color: #666; }
-    .user-status { font-size: 12px; font-weight: bold; padding: 3px 6px; border-radius: 5px; color: white; }
-    .status-admin { background-color: #28a745; }
-    .status-usuario { background-color: #6c757d; }
-    .user-actions { display: flex; align-items: center; gap: 15px; }
-    .delete-button { background: #dc3545; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; }
-    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
-    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-    input:checked + .slider { background-color: var(--hch-blue); }
-    input:checked + .slider:before { transform: translateX(20px); }
+.content-view { position: absolute; top: 100px; left: 15px; right: 15px; bottom: 25px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); border-radius: 30px; z-index: 11; opacity: 0; transform: translateY(30px); pointer-events: none; transition: all 0.5s ease-out; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; }
+.content-view.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.content-view h2 { color: var(--hch-blue); text-align: center; margin-top: 10px; margin-bottom: 15px; flex-shrink: 0; }
+.content-view h3 { color: var(--hch-blue); margin-top: 0; flex-shrink: 0; }
+.content-view p { color: #333; line-height: 1.6; text-align: center; margin-bottom: 20px; flex-shrink: 0; }
+
+#search-main-view, #observados-main-view { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+.search-form { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+.search-input { flex-grow: 1; padding: 15px; border: 1px solid #ccc; border-radius: 25px; font-size: 16px; outline-color: var(--hch-blue); }
+.search-button { background: var(--hch-blue); border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+.search-button img { width: 28px; height: 28px; filter: invert(1); }
+
+.search-results-container { margin-top: 20px; flex-grow: 1; overflow-y: auto; }
+.result-item { padding: 15px; border-bottom: 1px solid #ddd; cursor: pointer; transition: background-color 0.2s; }
+.result-item:hover { background-color: #e2e8f0; }
+.result-item-name { font-weight: 600; font-size: 16px; color: #2d3748; }
+.result-item-sub { font-size: 14px; color: #718096; }
+.loading-spinner, .no-results { text-align: center; padding: 20px; font-size: 16px; color: #718096; flex-shrink: 0; }
+.loading-spinner { display: none; }
+
+#patient-details-view { display: none; flex-direction: column; height: 100%; overflow: hidden; }
+#details-content { flex-grow: 1; overflow-y: auto; padding-right: 10px; }
+.detail-item { margin-bottom: 12px; }
+.detail-item label { font-weight: bold; color: #4a5568; display: block; margin-bottom: 4px; font-size: 12px; text-transform: uppercase;}
+.detail-item span { font-size: 16px; color: #1a202c; word-break: break-word; }
+.back-button { background: var(--hch-yellow); color: var(--hch-blue); padding: 12px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; flex-shrink: 0; }
+
+.tab-container { display: flex; border-bottom: 2px solid #ccc; margin-bottom: 20px; flex-shrink: 0; }
+.tab-button { flex: 1; padding: 12px; border: none; background: none; cursor: pointer; font-size: 16px; font-weight: 600; color: #777; transition: all 0.3s ease; border-bottom: 3px solid transparent; }
+.tab-button.active { color: var(--hch-blue); border-bottom-color: var(--hch-blue); }
+.tab-content { display: none; flex-direction: column; flex-grow: 1; overflow: hidden; }
+.tab-content.active { display: flex; }
+#add-obs-content { overflow-y: auto; padding-right: 10px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label { font-weight: 600; color: #555; font-size: 14px; }
+.form-group input, .form-group textarea { width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+.ingreso-entry { padding: 15px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
+.observation-controls { display: flex; gap: 10px; margin-top: 10px; }
+.control-button { width: 35px; height: 35px; border-radius: 50%; border: none; font-size: 20px; font-weight: bold; color: white; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+.add-btn { background-color: #28a745; }
+.remove-btn { background-color: #dc3545; }
+.save-button { background: var(--hch-blue); color: white; padding: 15px; border: none; border-radius: 12px; font-size: 18px; cursor: pointer; margin-top: 15px; flex-shrink: 0; }
+
+#user-list-container { flex-grow: 1; overflow-y: auto; }
+.user-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 5px; border-bottom: 1px solid #ddd; gap: 10px; }
+.user-info { flex-grow: 1; }
+.user-name { font-weight: 600; }
+.user-email { font-size: 12px; color: #666; }
+.user-status { font-size: 12px; font-weight: bold; padding: 3px 6px; border-radius: 5px; color: white; }
+.status-admin { background-color: #28a745; }
+.status-usuario { background-color: #6c757d; }
+.user-actions { display: flex; align-items: center; gap: 15px; }
+.delete-button { background: #dc3545; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; }
+.switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: var(--hch-blue); }
+input:checked + .slider:before { transform: translateX(20px); }
+
+/* === ESTILOS PARA LOGIN Y REGISTRO === */
+#auth-container {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--background-gradient);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    box-sizing: border-box;
+}
+.auth-form { display: none; flex-direction: column; width: 100%; gap: 15px; }
+.auth-form.active { display: flex; }
+.auth-form h2 { color: var(--hch-blue); text-align: center; }
+.auth-form input { padding: 15px; border: 1px solid #ccc; border-radius: 10px; font-size: 16px; }
+.auth-form button[type="submit"] { background: var(--hch-blue); color: white; padding: 15px; border: none; border-radius: 10px; font-size: 18px; cursor: pointer; }
+.auth-form .secondary-button { background: var(--hch-yellow); color: var(--hch-blue); font-weight: bold; margin-top: 5px; }
+.auth-form .link-button { background: none; border: none; color: var(--hch-blue); cursor: pointer; text-align: center; margin-top: 10px; }
+#auth-error { color: red; text-align: center; margin-top: 10px; font-size: 14px; }
+
+/* --- FIN DEL CÓDIGO CSS --- */
+
 </style>
 </head>
 <body>
-
+ <!-- === INICIO DEL CÓDIGO HTML === -->
     <script>
         const supabaseUrl = 'https://esiklpxyectbekxvajnw.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzaWtscHh5ZWN0YmVreHZham53Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE2OTI1MjEsImV4cCI6MjA3NzI2ODUyMX0.mtQnqUrTmhmN1DQxOAUnGpizhYZobStHDH0cz_XfKGU';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey );
     </script>
 
-    <div class="mobile-container">
-        <header id="main-header" class="header" onclick="returnToMainMenu()">
-            <div class="header-title">Recepcion Emergencia</div>
-        </header>
-        
-        <video id="assistant-video" class="initial-state" autoplay muted loop playsinline>
-            <source src="https://github.com/Dafon1981/recepcion/blob/main/eee.mp4?raw=true" type="video/mp4"> Tu navegador no soporta el vídeo.
-        </video>
+  
 
+
+
+<div class="mobile-container">
+    <!-- === VISTA DE AUTENTICACIÓN (LOGIN Y REGISTRO) === -->
+    <div id="auth-container">
+        <form id="login-form" class="auth-form active" onsubmit="event.preventDefault(); handleLogin();">
+            <h2>Iniciar Sesión</h2>
+            <input type="email" id="login-email" placeholder="Correo Electrónico" required>
+            <input type="password" id="login-password" placeholder="Contraseña" required>
+            <button type="submit">Ingresar</button>
+            <button type="button" class="secondary-button" onclick="toggleAuthForms()">Registrar</button>
+        </form>
+
+        <form id="register-form" class="auth-form" onsubmit="event.preventDefault(); handleRegister();">
+            <h2>Crear Cuenta</h2>
+            <input type="text" id="register-name" placeholder="Nombre de Usuario" required>
+            <input type="email" id="register-email" placeholder="Correo Electrónico" required>
+            <input type="password" id="register-password" placeholder="Contraseña" required>
+            <input type="tel" id="register-phone" placeholder="Teléfono" required>
+            <button type="submit">Crear Cuenta</button>
+            <button type="button" class="link-button" onclick="toggleAuthForms()">Ya tengo una cuenta</button>
+        </form>
+        <p id="auth-error" style="display:none;"></p>
+    </div>
+
+    <div id="main-content" style="display: none;">
+        <header id="main-header" class="header">
+            <div class="header-title" onclick="returnToMainMenu()">Recepcion Emergencia</div>
+            <button class="logout-button" onclick="handleLogout()">&#x27A4;</button> <!-- Icono de Salir -->
+        </header>
+        <video id="assistant-video" class="initial-state" autoplay muted loop playsinline>
+            <source src="https://github.com/Dafon1981/recepcion/blob/main/eee.mp4?raw=true" type="video/mp4">
+        </video>
         <button id="btn-servicios" class="menu-button" onclick="handleMenuClick('Busqueda', this )">Busqueda</button>
         <button id="btn-portafolio" class="menu-button" onclick="handleMenuClick('Observados', this)">Observados</button>
         <button id="btn-nosotros" class="menu-button" onclick="handleMenuClick('Nosotros', this)">Acerca de nosotros</button>
         <button id="btn-contacto" class="menu-button" onclick="handleMenuClick('Contacto', this)">Contacto</button>
         <button id="btn-administrar" class="menu-button" onclick="handleMenuClick('Administrar', this)">Administrar</button>
-        
         <button id="menu-toggle" class="menu-toggle" onclick="returnToMainMenu()">≡</button>
-
         <div class="ad-container">Publicidad</div>
-        
-        <div id="view-busqueda" class="content-view">
-            <div id="search-main-view">
-                <h2>Búsqueda de Pacientes</h2>
-                <p>Ingrese Paciente, NFUA o Episodio para buscar.</p>
-                <form class="search-form" onsubmit="event.preventDefault(); searchPatients();">
-                    <input type="text" id="search-input-field" class="search-input" placeholder="Buscar...">
-                    <button type="submit" class="search-button"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar"></button>
-                </form>
-                <div class="loading-spinner" id="loading-busqueda">Buscando...</div>
-                <div class="search-results-container" id="results-container-busqueda"></div>
-            </div>
-            <div id="patient-details-view">
-                <h3>Detalles del Paciente</h3>
-                <div id="details-content"></div>
-                <button class="back-button" onclick="backToResults( )">Volver a la lista</button>
-            </div>
+    </div>
+    
+    <div id="view-busqueda" class="content-view">
+        <div id="search-main-view">
+            <h2>Búsqueda de Pacientes</h2>
+            <p>Ingrese Paciente, NFUA o Episodio para buscar.</p>
+            <form class="search-form" onsubmit="event.preventDefault(); searchPatients();">
+                <input type="text" id="search-input-field" class="search-input" placeholder="Buscar...">
+                <button type="submit" class="search-button"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar"></button>
+            </form>
+            <div class="loading-spinner" id="loading-busqueda">Buscando...</div>
+            <div class="search-results-container" id="results-container-busqueda"></div>
         </div>
-
-        <div id="view-observados" class="content-view">
-            <div id="observados-main-view">
-                <h2>Observados</h2>
-                <p>Busque pacientes en observación.</p>
-                <form class="search-form" onsubmit="event.preventDefault(); searchObservados();">
-                    <input type="text" id="search-input-observados" class="search-input" placeholder="Buscar en observados...">
-                    <button type="submit" class="search-button"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar"></button>
-                </form>
-                <div class="loading-spinner" id="loading-observados">Buscando...</div>
-                <div class="search-results-container" id="results-container-observados"></div>
-            </div>
-        </div>
-
-        <div id="view-acerca-de-nosotros" class="content-view">
-            <h2>Acerca de Nosotros</h2>
-            <p>Somos un equipo dedicado a optimizar la gestión de emergencias en seguros, facilitando el acceso rápido y seguro a la información crítica de los pacientes.</p>
-        </div>
-
-        <div id="view-administrar" class="content-view">
-            <h2>Administrar</h2>
-            <div class="tab-container">
-                <button class="tab-button active" onclick="openTab(event, 'add-obs' )">Añadir Obs.</button>
-                <button class="tab-button" onclick="openTab(event, 'user-list'); loadUsers();">Lista de Usuarios</button>
-            </div>
-            <div id="add-obs" class="tab-content active">
-                <div id="add-obs-content">
-                    <div id="ingresos-container">
-                        <div class="ingreso-entry">
-                            <div class="form-group"><label>NFUA o Episodio</label><input type="text" placeholder="Ingrese NFUA o Episodio"></div>
-                            <div class="form-group"><label>Fecha</label><input type="date"></div>
-                            <div class="form-group"><label>Observación</label><textarea rows="2" placeholder="Detalles..."></textarea></div>
-                        </div>
-                    </div>
-                    <div class="observation-controls">
-                        <button class="control-button add-btn" onclick="addIngreso()">+</button>
-                        <button class="control-button remove-btn" onclick="removeIngreso()">-</button>
-                    </div>
-                </div>
-                <button class="save-button">Guardar</button>
-            </div>
-            <!-- === CONTENIDO DE LISTA DE USUARIOS (ACTUALIZADO) === -->
-            <div id="user-list" class="tab-content">
-                <div class="loading-spinner" id="loading-users">Cargando usuarios...</div>
-                <div id="user-list-container"></div>
-            </div>
+        <div id="patient-details-view">
+            <h3>Detalles del Paciente</h3>
+            <div id="details-content"></div>
+            <button class="back-button" onclick="backToResults( )">Volver a la lista</button>
         </div>
     </div>
 
-    <script>
-        const assistantVideo = document.getElementById('assistant-video');
-        const menuButtons = document.querySelectorAll('.menu-button');
-        const menuToggle = document.getElementById('menu-toggle');
-        const contentViews = document.querySelectorAll('.content-view');
-        let currentSearchResults = [];
+    <div id="view-observados" class="content-view">
+        <div id="observados-main-view">
+            <h2>Observados</h2>
+            <p>Busque pacientes en observación.</p>
+            <form class="search-form" onsubmit="event.preventDefault(); searchObservados();">
+                <input type="text" id="search-input-observados" class="search-input" placeholder="Buscar en observados...">
+                <button type="submit" class="search-button"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar"></button>
+            </form>
+            <div class="loading-spinner" id="loading-observados">Buscando...</div>
+            <div class="search-results-container" id="results-container-observados"></div>
+        </div>
+    </div>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                assistantVideo.classList.remove('initial-state');
-                assistantVideo.classList.add('side-state');
-                menuButtons.forEach(button => button.classList.add('visible'));
-            }, 3000);
-            searchObservados(true);
+    <div id="view-acerca-de-nosotros" class="content-view">
+        <h2>Acerca de Nosotros</h2>
+        <p>Somos un equipo dedicado a optimizar la gestión de emergencias en seguros, facilitando el acceso rápido y seguro a la información crítica de los pacientes.</p>
+    </div>
+
+    <div id="view-administrar" class="content-view">
+        <h2>Administrar</h2>
+        <div class="tab-container">
+            <button class="tab-button active" onclick="openTab(event, 'add-obs' )">Añadir Obs.</button>
+            <button class="tab-button" onclick="openTab(event, 'user-list'); loadUsers();">Lista de Usuarios</button>
+        </div>
+        <div id="add-obs" class="tab-content active">
+            <div id="add-obs-content">
+                <div id="ingresos-container">
+                    <div class="ingreso-entry">
+                        <div class="form-group"><label>NFUA o Episodio</label><input type="text"></div>
+                        <div class="form-group"><label>Fecha</label><input type="date"></div>
+                        <div class="form-group"><label>Observación</label><textarea rows="2"></textarea></div>
+                    </div>
+                </div>
+                <div class="observation-controls">
+                    <button class="control-button add-btn" onclick="addIngreso()">+</button>
+                    <button class="control-button remove-btn" onclick="removeIngreso()">-</button>
+                </div>
+            </div>
+            <button class="save-button">Guardar</button>
+        </div>
+        <div id="user-list" class="tab-content">
+            <div class="loading-spinner" id="loading-users">Cargando usuarios...</div>
+            <div id="user-list-container"></div>
+        </div>
+    </div>
+</div>
+
+<!-- === FIN DEL CÓDIGO HTML === -->
+
+
+    <script>
+       // === INICIO DEL CÓDIGO JAVASCRIPT ===
+
+const assistantVideo = document.getElementById('assistant-video');
+const menuButtons = document.querySelectorAll('.menu-button');
+const menuToggle = document.getElementById('menu-toggle');
+const contentViews = document.querySelectorAll('.content-view');
+const mainContent = document.getElementById('main-content');
+const authContainer = document.getElementById('auth-container');
+const errorElement = document.getElementById('auth-error');
+let currentSearchResults = [];
+let currentUserData = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    mainContent.style.display = 'none';
+    assistantVideo.classList.add('hidden');
+});
+
+function toggleAuthForms() {
+    document.getElementById('login-form').classList.toggle('active');
+    document.getElementById('register-form').classList.toggle('active');
+    errorElement.style.display = 'none';
+}
+
+async function handleLogin() {
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    errorElement.style.display = 'none';
+    
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (authError) {
+        errorElement.textContent = 'Error: ' + authError.message;
+        errorElement.style.display = 'block';
+        return;
+    }
+
+    if (authData.user) {
+        const { data: userData, error: userError } = await supabase
+            .from('usuarios')
+            .select('*')
+            .eq('id', authData.user.id)
+            .single();
+        
+        if (userError) {
+            errorElement.textContent = 'Error al obtener datos del usuario.';
+            errorElement.style.display = 'block';
+            await supabase.auth.signOut();
+            return;
+        }
+
+        if (!userData.habilitado) {
+            errorElement.textContent = 'Este usuario está deshabilitado.';
+            errorElement.style.display = 'block';
+            await supabase.auth.signOut();
+            return;
+        }
+        
+        currentUserData = userData;
+        authContainer.style.opacity = '0';
+        setTimeout(() => {
+            authContainer.style.display = 'none';
+            showMainMenu();
+        }, 500);
+    }
+}
+
+async function handleRegister() {
+    const name = document.getElementById('register-name').value;
+    const email = document.getElementById('register-email').value;
+    const password = document.getElementById('register-password').value;
+    const phone = document.getElementById('register-phone').value;
+    errorElement.style.display = 'none';
+
+    const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
+
+    if (authError) {
+        errorElement.textContent = 'Error: ' + authError.message;
+        errorElement.style.display = 'block';
+        return;
+    }
+
+    if (authData.user) {
+        const { error: insertError } = await supabase.from('usuarios').insert({
+            id: authData.user.id,
+            usuario: name,
+            email: email,
+            telefono: phone,
+            estatus: 'usuario',
+            habilitado: true
         });
 
-        function handleMenuClick(section, clickedButton) {
-            menuButtons.forEach(button => button.classList.remove('active'));
-            if(clickedButton) clickedButton.classList.add('active');
-            if (section === 'Contacto') { window.open('https://wa.me/51967188120', '_blank' ); setTimeout(() => { if(clickedButton) clickedButton.classList.remove('active'); }, 500); return; }
-            menuButtons.forEach(button => button.classList.add('hidden-by-view'));
-            menuToggle.classList.add('visible');
-            assistantVideo.classList.add('hidden');
-            document.querySelector('.ad-container').style.display = 'none';
-            contentViews.forEach(v => v.classList.remove('visible'));
-            let viewId = `view-${section.toLowerCase().replace(/ /g, '-')}`;
-            const viewToShow = document.getElementById(viewId);
-            if (viewToShow) { viewToShow.classList.add('visible'); }
+        if (insertError) {
+            errorElement.textContent = 'Error al guardar datos de usuario: ' + insertError.message;
+            errorElement.style.display = 'block';
+            return;
         }
-        
-        function returnToMainMenu() {
-            menuToggle.classList.remove('visible');
-            menuButtons.forEach(button => { button.classList.remove('hidden-by-view', 'active'); button.classList.add('visible'); });
-            assistantVideo.classList.remove('hidden');
-            document.querySelector('.ad-container').style.display = 'flex';
-            contentViews.forEach(v => v.classList.remove('visible'));
+        alert('¡Registro exitoso! Por favor, inicia sesión.');
+        toggleAuthForms();
+    }
+}
+
+async function handleLogout() {
+    await supabase.auth.signOut();
+    currentUserData = null;
+    authContainer.style.display = 'flex';
+    setTimeout(() => { authContainer.style.opacity = '1'; }, 10);
+    mainContent.style.display = 'none';
+    returnToMainMenu();
+}
+
+function showMainMenu() {
+    mainContent.style.display = 'block';
+    document.getElementById('btn-administrar').style.display = (currentUserData && currentUserData.estatus === 'admin') ? 'block' : 'none';
+    
+    assistantVideo.classList.remove('hidden');
+    assistantVideo.classList.add('initial-state');
+    document.querySelector('.ad-container').style.display = 'flex';
+    setTimeout(() => {
+        assistantVideo.classList.remove('initial-state');
+        assistantVideo.classList.add('side-state');
+        document.querySelectorAll('.menu-button').forEach(button => button.classList.add('visible'));
+    }, 500);
+    searchObservados(true);
+}
+
+function handleMenuClick(section, clickedButton) {
+    menuButtons.forEach(button => button.classList.remove('active'));
+    if(clickedButton) clickedButton.classList.add('active');
+    if (section === 'Contacto') { window.open('https://wa.me/51967188120', '_blank' ); setTimeout(() => { if(clickedButton) clickedButton.classList.remove('active'); }, 500); return; }
+    menuButtons.forEach(button => button.classList.add('hidden-by-view'));
+    menuToggle.classList.add('visible');
+    assistantVideo.classList.add('hidden');
+    document.querySelector('.ad-container').style.display = 'none';
+    contentViews.forEach(v => v.classList.remove('visible'));
+    let viewId = `view-${section.toLowerCase().replace(/ /g, '-')}`;
+    const viewToShow = document.getElementById(viewId);
+    if (viewToShow) { viewToShow.classList.add('visible'); }
+}
+
+function returnToMainMenu() {
+    menuToggle.classList.remove('visible');
+    menuButtons.forEach(button => { button.classList.remove('hidden-by-view', 'active'); button.classList.add('visible'); });
+    assistantVideo.classList.remove('hidden');
+    document.querySelector('.ad-container').style.display = 'flex';
+    contentViews.forEach(v => v.classList.remove('visible'));
+}
+
+async function searchPatients() {
+    const searchTerm = document.getElementById('search-input-field').value.trim();
+    const resultsContainer = document.getElementById('results-container-busqueda');
+    const loadingSpinner = document.getElementById('loading-busqueda');
+    if (!searchTerm) { resultsContainer.innerHTML = '<p class="no-results">Ingrese un término de búsqueda.</p>'; return; }
+    loadingSpinner.style.display = 'block';
+    resultsContainer.innerHTML = '';
+    const { data, error } = await supabase.from('registros').select().or(`PACIENTE.ilike.%${searchTerm}%,NFUA.ilike.%${searchTerm}%,Episodio.ilike.%${searchTerm}%`);
+    loadingSpinner.style.display = 'none';
+    if (error) { console.error('Error:', error); resultsContainer.innerHTML = `<p class="no-results">Error: ${error.message}</p>`; return; }
+    currentSearchResults = data; 
+    if (data.length === 0) { resultsContainer.innerHTML = '<p class="no-results">No se encontraron resultados.</p>'; } 
+    else { resultsContainer.innerHTML = data.map((patient, index) => `<div class="result-item" onclick="showPatientDetails(${index})"><div class="result-item-name">${patient.PACIENTE || 'N/A'}</div><div class="result-item-sub">DNI: ${patient.NroDocumento || 'N/A'}</div></div>`).join(''); }
+}
+
+function showPatientDetails(index) {
+    const patient = currentSearchResults[index];
+    if (!patient) return;
+    const detailsContent = document.getElementById('details-content');
+    let detailsHTML = '';
+    for (const key in patient) {
+        if (Object.hasOwnProperty.call(patient, key) && key !== 'id') {
+            detailsHTML += `<div class="detail-item"><label>${key.replace(/_/g, ' ')}</label><span>${patient[key] || 'No especificado'}</span></div>`;
         }
+    }
+    detailsContent.innerHTML = detailsHTML;
+    document.getElementById('search-main-view').style.display = 'none';
+    document.getElementById('patient-details-view').style.display = 'flex';
+}
 
-        async function searchPatients() {
-            const searchTerm = document.getElementById('search-input-field').value.trim();
-            const resultsContainer = document.getElementById('results-container-busqueda');
-            const loadingSpinner = document.getElementById('loading-busqueda');
-            if (!searchTerm) { resultsContainer.innerHTML = '<p class="no-results">Ingrese un término de búsqueda.</p>'; return; }
-            loadingSpinner.style.display = 'block';
-            resultsContainer.innerHTML = '';
-            const { data, error } = await supabase.from('registros').select().or(`PACIENTE.ilike.%${searchTerm}%,NFUA.ilike.%${searchTerm}%,Episodio.ilike.%${searchTerm}%`);
-            loadingSpinner.style.display = 'none';
-            if (error) { console.error('Error:', error); resultsContainer.innerHTML = `<p class="no-results">Error: ${error.message}</p>`; return; }
-            currentSearchResults = data; 
-            if (data.length === 0) { resultsContainer.innerHTML = '<p class="no-results">No se encontraron resultados.</p>'; } 
-            else { resultsContainer.innerHTML = data.map((patient, index) => `<div class="result-item" onclick="showPatientDetails(${index})"><div class="result-item-name">${patient.PACIENTE || 'N/A'}</div><div class="result-item-sub">DNI: ${patient.NroDocumento || 'N/A'}</div></div>`).join(''); }
-        }
+function backToResults() {
+    document.getElementById('patient-details-view').style.display = 'none';
+    document.getElementById('search-main-view').style.display = 'flex';
+}
 
-        function showPatientDetails(index) {
-            const patient = currentSearchResults[index];
-            if (!patient) return;
-            const detailsContent = document.getElementById('details-content');
-            let detailsHTML = '';
-            for (const key in patient) {
-                if (Object.hasOwnProperty.call(patient, key) && key !== 'id') {
-                    detailsHTML += `<div class="detail-item"><label>${key.replace(/_/g, ' ')}</label><span>${patient[key] || 'No especificado'}</span></div>`;
-                }
-            }
-            detailsContent.innerHTML = detailsHTML;
-            document.getElementById('search-main-view').style.display = 'none';
-            document.getElementById('patient-details-view').style.display = 'flex';
-        }
+async function searchObservados(initialLoad = false) {
+    const searchTerm = initialLoad ? '' : document.getElementById('search-input-observados').value.trim();
+    const resultsContainer = document.getElementById('results-container-observados');
+    const loadingSpinner = document.getElementById('loading-observados');
+    loadingSpinner.style.display = 'block';
+    resultsContainer.innerHTML = '';
+    let query = supabase.from('observados').select();
+    if (searchTerm) { query = query.or(`numero.ilike.%${searchTerm}%,observacion.ilike.%${searchTerm}%`); }
+    const { data, error } = await query;
+    loadingSpinner.style.display = 'none';
+    if (error) { console.error('Error:', error); resultsContainer.innerHTML = `<p class="no-results">Error: ${error.message}</p>`; return; }
+    if (data.length === 0) { resultsContainer.innerHTML = '<p class="no-results">No hay pacientes en observación.</p>'; } 
+    else { resultsContainer.innerHTML = data.map(item => `<div class="result-item"><div class="result-item-name">NFUA/Episodio: ${item.numero}</div><div class="result-item-sub">Obs: ${item.observacion || 'Sin detalles'}</div></div>`).join(''); }
+}
 
-        function backToResults() {
-            document.getElementById('patient-details-view').style.display = 'none';
-            document.getElementById('search-main-view').style.display = 'flex';
-        }
-        
-        async function searchObservados(initialLoad = false) {
-            const searchTerm = initialLoad ? '' : document.getElementById('search-input-observados').value.trim();
-            const resultsContainer = document.getElementById('results-container-observados');
-            const loadingSpinner = document.getElementById('loading-observados');
-            loadingSpinner.style.display = 'block';
-            resultsContainer.innerHTML = '';
-            let query = supabase.from('observados').select();
-            if (searchTerm) { query = query.or(`numero.ilike.%${searchTerm}%,observacion.ilike.%${searchTerm}%`); }
-            const { data, error } = await query;
-            loadingSpinner.style.display = 'none';
-            if (error) { console.error('Error:', error); resultsContainer.innerHTML = `<p class="no-results">Error: ${error.message}</p>`; return; }
-            if (data.length === 0) { resultsContainer.innerHTML = '<p class="no-results">No hay pacientes en observación.</p>'; } 
-            else { resultsContainer.innerHTML = data.map(item => `<div class="result-item"><div class="result-item-name">NFUA/Episodio: ${item.numero}</div><div class="result-item-sub">Obs: ${item.observacion || 'Sin detalles'}</div></div>`).join(''); }
-        }
+function openTab(evt, tabName) {
+    const tabcontent = document.getElementsByClassName("tab-content");
+    for (let i = 0; i < tabcontent.length; i++) { tabcontent[i].classList.remove("active"); }
+    const tablinks = document.getElementsByClassName("tab-button");
+    for (let i = 0; i < tablinks.length; i++) { tablinks[i].classList.remove("active"); }
+    document.getElementById(tabName).classList.add("active");
+    evt.currentTarget.classList.add("active");
+}
 
-        function openTab(evt, tabName) {
-            const tabcontent = document.getElementsByClassName("tab-content");
-            for (let i = 0; i < tabcontent.length; i++) { tabcontent[i].classList.remove("active"); }
-            const tablinks = document.getElementsByClassName("tab-button");
-            for (let i = 0; i < tablinks.length; i++) { tablinks[i].classList.remove("active"); }
-            document.getElementById(tabName).classList.add("active");
-            evt.currentTarget.classList.add("active");
-        }
+function addIngreso() {
+    const container = document.getElementById('ingresos-container');
+    const newIngreso = document.createElement('div');
+    newIngreso.className = 'ingreso-entry';
+    newIngreso.innerHTML = `<div class="form-group"><label>NFUA o Episodio</label><input type="text"></div><div class="form-group"><label>Fecha</label><input type="date"></div><div class="form-group"><label>Observación</label><textarea rows="2"></textarea></div>`;
+    container.appendChild(newIngreso);
+}
 
-        function addIngreso() {
-            const container = document.getElementById('ingresos-container');
-            const newIngreso = document.createElement('div');
-            newIngreso.className = 'ingreso-entry';
-            newIngreso.innerHTML = `<div class="form-group"><label>NFUA o Episodio</label><input type="text"></div><div class="form-group"><label>Fecha</label><input type="date"></div><div class="form-group"><label>Observación</label><textarea rows="2"></textarea></div>`;
-            container.appendChild(newIngreso);
-        }
+function removeIngreso() {
+    const container = document.getElementById('ingresos-container');
+    if (container.children.length > 1) { container.removeChild(container.lastChild); }
+}
 
-        function removeIngreso() {
-            const container = document.getElementById('ingresos-container');
-            if (container.children.length > 1) { container.removeChild(container.lastChild); }
-        }
+async function loadUsers() {
+    const usersContainer = document.getElementById('user-list-container');
+    const loadingSpinner = document.getElementById('loading-users');
+    loadingSpinner.style.display = 'block';
+    usersContainer.innerHTML = '';
 
-        // === NUEVA FUNCIÓN PARA CARGAR USUARIOS ===
-        async function loadUsers() {
-            const usersContainer = document.getElementById('user-list-container');
-            const loadingSpinner = document.getElementById('loading-users');
-            
-            loadingSpinner.style.display = 'block';
-            usersContainer.innerHTML = '';
+    const { data, error } = await supabase.from('usuarios').select();
+    loadingSpinner.style.display = 'none';
 
-            // NOTA: Esto fallará si no has iniciado sesión como admin.
-            // Necesitaremos implementar el login para que funcione.
-            const { data, error } = await supabase.from('usuarios').select();
-            
-            loadingSpinner.style.display = 'none';
+    if (error) {
+        console.error('Error cargando usuarios:', error);
+        usersContainer.innerHTML = `<p class="no-results">Error al cargar usuarios: ${error.message}.</p>`;
+        return;
+    }
 
-            if (error) {
-                console.error('Error cargando usuarios:', error);
-                usersContainer.innerHTML = `<p class="no-results">Error al cargar usuarios: ${error.message}.   
-  
- (Probablemente necesitas iniciar sesión como admin).</p>`;
-                return;
-            }
+    if (data.length === 0) {
+        usersContainer.innerHTML = '<p class="no-results">No se encontraron usuarios.</p>';
+    } else {
+        usersContainer.innerHTML = data.map(user => `
+            <div class="user-item">
+                <div class="user-info">
+                    <div class="user-name">${user.usuario} <span class="user-status status-${user.estatus}">${user.estatus}</span></div>
+                    <div class="user-email">${user.email}</div>
+                </div>
+                <div class="user-actions">
+                    <label class="switch">
+                        <input type="checkbox" ${user.habilitado ? 'checked' : ''} onchange="toggleUserStatus('${user.id}', this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                    <button class="delete-button" onclick="deleteUser('${user.id}')">X</button>
+                </div>
+            </div>
+        `).join('');
+    }
+}
 
-            if (data.length === 0) {
-                usersContainer.innerHTML = '<p class="no-results">No se encontraron usuarios.</p>';
-            } else {
-                usersContainer.innerHTML = data.map(user => `
-                    <div class="user-item">
-                        <div class="user-info">
-                            <div class="user-name">${user.usuario} <span class="user-status status-${user.estatus}">${user.estatus}</span></div>
-                            <div class="user-email">${user.email}</div>
-                        </div>
-                        <div class="user-actions">
-                            <label class="switch">
-                                <input type="checkbox" ${user.habilitado ? 'checked' : ''}>
-                                <span class="slider"></span>
-                            </label>
-                            <button class="delete-button" onclick="alert('Eliminar usuario ${user.id}')">X</button>
-                        </div>
-                    </div>
-                `).join('');
-            }
-        }
+async function toggleUserStatus(userId, newStatus) {
+    const { error } = await supabase
+        .from('usuarios')
+        .update({ habilitado: newStatus })
+        .eq('id', userId);
+    
+    if (error) {
+        alert('Error al actualizar el estado del usuario: ' + error.message);
+        loadUsers(); // Recargar para revertir el cambio visual
+    }
+}
+
+async function deleteUser(userId) {
+    if (!confirm('¿Estás seguro de que quieres eliminar a este usuario? Esta acción no se puede deshacer.')) {
+        return;
+    }
+
+    // En Supabase, para borrar un usuario, debes hacerlo desde el lado del servidor
+    // por seguridad. La forma más fácil es llamar a una "Edge Function".
+    // Por ahora, solo mostraremos una alerta.
+    alert(`FUNCIONALIDAD PENDIENTE: Llamar a una Edge Function para borrar el usuario con ID: ${userId}. Esto requiere configuración adicional en Supabase.`);
+    
+    // Si quisiéramos borrarlo solo de la tabla 'usuarios' (no recomendado, dejaría el login huérfano):
+    /*
+    const { error } = await supabase.from('usuarios').delete().eq('id', userId);
+    if (error) {
+        alert('Error al borrar el usuario: ' + error.message);
+    } else {
+        loadUsers(); // Recargar la lista
+    }
+    */
+}
+
+// === FIN DEL CÓDIGO JAVASCRIPT ===
+
     </script>
 </body>
 </html>
+
 
 
 
