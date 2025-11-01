@@ -429,19 +429,54 @@ function returnToMainMenu() {
     contentViews.forEach(v => v.classList.remove('visible'));
 }
 
+// Reemplaza la función existente con esta
 async function searchPatients() {
-    const searchTerm = document.getElementById('search-input-field').value.trim();
+    let searchTerm = document.getElementById('search-input-field').value.trim();
     const resultsContainer = document.getElementById('results-container-busqueda');
     const loadingSpinner = document.getElementById('loading-busqueda');
-    if (!searchTerm) { resultsContainer.innerHTML = '<p class="no-results">Ingrese un término de búsqueda.</p>'; return; }
+
+    if (!searchTerm) {
+        resultsContainer.innerHTML = '<p class="no-results">Ingrese un término de búsqueda.</p>';
+        return;
+    }
+
+    // --- INICIO DE LA MODIFICACIÓN INTELIGENTE ---
+    
+    // 1. Detectar si el término de búsqueda es puramente numérico (puede contener ceros).
+    const isNumeric = /^\d+$/.test(searchTerm);
+    let normalizedSearchTerm = searchTerm;
+
+    // 2. Si es numérico, quitar los ceros de la izquierda.
+    if (isNumeric) {
+        normalizedSearchTerm = parseInt(searchTerm, 10).toString();
+    }
+    
+    // --- FIN DE LA MODIFICACIÓN INTELIGENTE ---
+
     loadingSpinner.style.display = 'block';
     resultsContainer.innerHTML = '';
-    const { data, error } = await supabase.from('registros').select().or(`PACIENTE.ilike.%${searchTerm}%,NFUA.ilike.%${searchTerm}%,Episodio.ilike.%${searchTerm}%`);
+
+    // 3. Usar el término normalizado en la consulta para NFUA y Episodio.
+    //    Para PACIENTE, seguimos usando el término original.
+    const { data, error } = await supabase
+        .from('registros')
+        .select()
+        .or(`PACIENTE.ilike.%${searchTerm}%,NFUA.ilike.%${normalizedSearchTerm}%,Episodio.ilike.%${normalizedSearchTerm}%`);
+
     loadingSpinner.style.display = 'none';
-    if (error) { console.error('Error:', error); resultsContainer.innerHTML = `<p class="no-results">Error: ${error.message}</p>`; return; }
+
+    if (error) {
+        console.error('Error:', error);
+        resultsContainer.innerHTML = `<p class="no-results">Error: ${error.message}</p>`;
+        return;
+    }
+
     currentSearchResults = data; 
-    if (data.length === 0) { resultsContainer.innerHTML = '<p class="no-results">No se encontraron resultados.</p>'; } 
-    else { resultsContainer.innerHTML = data.map((patient, index) => `<div class="result-item" onclick="showPatientDetails(${index})"><div class="result-item-name">${patient.PACIENTE || 'N/A'}</div><div class="result-item-sub">DNI: ${patient.NroDocumento || 'N/A'}</div></div>`).join(''); }
+    if (data.length === 0) {
+        resultsContainer.innerHTML = '<p class="no-results">No se encontraron resultados.</p>';
+    } else {
+        resultsContainer.innerHTML = data.map((patient, index) => `<div class="result-item" onclick="showPatientDetails(${index})"><div class="result-item-name">${patient.PACIENTE || 'N/A'}</div><div class="result-item-sub">DNI: ${patient.NroDocumento || 'N/A'}</div></div>`).join('');
+    }
 }
 
 function showPatientDetails(index) {
@@ -643,6 +678,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
