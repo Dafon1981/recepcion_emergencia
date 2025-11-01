@@ -573,6 +573,7 @@ function backToResults() {
 }
 
 // Reemplaza la función existente con esta
+// Reemplaza la función existente con esta
 async function searchObservados(initialLoad = false) {
     const searchTerm = initialLoad ? '' : document.getElementById('search-input-observados').value.trim();
     const resultsContainer = document.getElementById('results-container-observados');
@@ -581,10 +582,8 @@ async function searchObservados(initialLoad = false) {
     loadingSpinner.style.display = 'block';
     resultsContainer.innerHTML = '';
 
-    // La consulta a la base de datos no cambia, sigue siendo correcta.
     let query = supabase.from('observados').select();
     if (searchTerm) { 
-        // Corregimos la búsqueda para que use la columna correcta
         query = query.or(`numero_fua_episodio.ilike.%${searchTerm}%,observacion.ilike.%${searchTerm}%`); 
     }
     const { data, error } = await query;
@@ -600,18 +599,49 @@ async function searchObservados(initialLoad = false) {
     if (data.length === 0) { 
         resultsContainer.innerHTML = '<p class="no-results">No hay pacientes en observación.</p>'; 
     } else { 
-        // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
-        // Ahora construimos la lista usando los nombres de columna correctos y añadiendo la fecha.
-        resultsContainer.innerHTML = data.map(item => `
-            <div class="result-item">
-                <div class="result-item-name">NFUA/Episodio: ${item.numero_fua_episodio}</div>
-                <div class="result-item-sub">
-                    Fecha: ${item.fecha || 'No especificada'}   
+        resultsContainer.innerHTML = data.map(item => {
+            // --- LÓGICA PARA UBICACIÓN PROBABLE (NUEVO PARA OBSERVADOS) ---
+            let ubicacionHTML = '';
+            if (item.fecha) {
+                const fechaAtencion = new Date(item.fecha);
+                const hoy = new Date();
+                fechaAtencion.setHours(0, 0, 0, 0);
+                hoy.setHours(0, 0, 0, 0);
+                
+                const diffTiempo = hoy.getTime() - fechaAtencion.getTime();
+                const diffDias = Math.ceil(diffTiempo / (1000 * 3600 * 24));
 
-                    Obs: ${item.observacion || 'Sin detalles'}
+                let ubicacion = '';
+                // Aplicamos la nueva línea de tiempo para observados
+                if (diffDias <= 19) { // Hasta 19 días -> Auditoría
+                    ubicacion = 'Auditoría';
+                } else if (diffDias <= 30) { // Hasta 30 días -> Archivo Digitación
+                    ubicacion = 'Archivo Digitación';
+                } else if (diffDias <= 32) { // Hasta 32 días -> Archivo Seguros
+                    ubicacion = 'Archivo Seguros';
+                } else { // Más de 32 días -> Archivo Central
+                    ubicacion = 'Archivo Central';
+                }
+                ubicacionHTML = `<span class="ubicacion-probable">Ubicación Probable: ${ubicacion}</span>`;
+            }
+
+            // Formatear la fecha para mostrarla
+            const fechaFormateada = item.fecha ? new Date(item.fecha).toLocaleDateString('es-ES') : 'No especificada';
+
+            // --- PLANTILLA HTML ACTUALIZADA ---
+            return `
+                <div class="result-item">
+                    <div class="result-item-name">NFUA/Episodio: ${item.numero_fua_episodio}</div>
+                    <div class="result-item-sub">
+                        Fecha: ${fechaFormateada}   
+
+                        Obs: ${item.observacion || 'Sin detalles'}   
+
+                        ${ubicacionHTML}
+                    </div>
                 </div>
-            </div>
-        `).join(''); 
+            `;
+        }).join(''); 
     }
 }
 
@@ -776,6 +806,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
