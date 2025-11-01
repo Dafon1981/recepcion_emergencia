@@ -66,6 +66,23 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background
     color: #1A4A8A; /* Usamos el azul del hospital para que destaque */
 }
 
+
+    /* --- AÑADE ESTAS REGLAS CSS --- */
+
+/* Estilo para el contenedor de publicidad */
+.ad-container {
+    /* ... (los estilos que ya tenías) ... */
+    padding: 0; /* Quitamos el padding para que el video ocupe todo el espacio */
+    overflow: hidden; /* Asegura que el video no se salga de los bordes redondeados */
+}
+
+/* Estilo para el video dentro del contenedor */
+.ad-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Hace que el video cubra todo el espacio sin deformarse */
+}
+
     
 .content-view { position: absolute; top: 100px; left: 15px; right: 15px; bottom: 25px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); border-radius: 30px; z-index: 11; opacity: 0; transform: translateY(30px); pointer-events: none; transition: all 0.5s ease-out; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; }
 .content-view.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
@@ -230,7 +247,14 @@ input:checked + .slider:before { transform: translateX(20px); }
         <button id="btn-contacto" class="menu-button" onclick="handleMenuClick('Contacto', this)">Contacto</button>
         <button id="btn-administrar" class="menu-button" onclick="handleMenuClick('Administrar', this)">Administrar</button>
         <button id="menu-toggle" class="menu-toggle" onclick="returnToMainMenu()">≡</button>
-        <div class="ad-container">Publicidad</div>
+        <!-- Contenedor de publicidad ahora con un video -->
+<div class="ad-container">
+    <video class="ad-video" autoplay muted loop playsinline>
+        <source src="https://github.com/Dafon1981/recepcion_emergencia/blob/main/modelopublicidad1.mp4?raw=true" type="video/mp4">
+        Tu navegador no soporta el vídeo.
+    </video>
+</div>
+
     </div>
     
     <div id="view-busqueda" class="content-view">
@@ -806,6 +830,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
