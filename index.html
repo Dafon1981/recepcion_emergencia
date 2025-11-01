@@ -501,20 +501,49 @@ function backToResults() {
     document.getElementById('search-main-view').style.display = 'flex';
 }
 
+// Reemplaza la función existente con esta
 async function searchObservados(initialLoad = false) {
     const searchTerm = initialLoad ? '' : document.getElementById('search-input-observados').value.trim();
     const resultsContainer = document.getElementById('results-container-observados');
     const loadingSpinner = document.getElementById('loading-observados');
+    
     loadingSpinner.style.display = 'block';
     resultsContainer.innerHTML = '';
+
+    // La consulta a la base de datos no cambia, sigue siendo correcta.
     let query = supabase.from('observados').select();
-    if (searchTerm) { query = query.or(`numero.ilike.%${searchTerm}%,observacion.ilike.%${searchTerm}%`); }
+    if (searchTerm) { 
+        // Corregimos la búsqueda para que use la columna correcta
+        query = query.or(`numero_fua_episodio.ilike.%${searchTerm}%,observacion.ilike.%${searchTerm}%`); 
+    }
     const { data, error } = await query;
+    
     loadingSpinner.style.display = 'none';
-    if (error) { console.error('Error:', error); resultsContainer.innerHTML = `<p class="no-results">Error: ${error.message}</p>`; return; }
-    if (data.length === 0) { resultsContainer.innerHTML = '<p class="no-results">No hay pacientes en observación.</p>'; } 
-    else { resultsContainer.innerHTML = data.map(item => `<div class="result-item"><div class="result-item-name">NFUA/Episodio: ${item.numero}</div><div class="result-item-sub">Obs: ${item.observacion || 'Sin detalles'}</div></div>`).join(''); }
+
+    if (error) { 
+        console.error('Error:', error); 
+        resultsContainer.innerHTML = `<p class="no-results">Error: ${error.message}</p>`; 
+        return; 
+    }
+
+    if (data.length === 0) { 
+        resultsContainer.innerHTML = '<p class="no-results">No hay pacientes en observación.</p>'; 
+    } else { 
+        // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
+        // Ahora construimos la lista usando los nombres de columna correctos y añadiendo la fecha.
+        resultsContainer.innerHTML = data.map(item => `
+            <div class="result-item">
+                <div class="result-item-name">NFUA/Episodio: ${item.numero_fua_episodio}</div>
+                <div class="result-item-sub">
+                    Fecha: ${item.fecha || 'No especificada'}   
+
+                    Obs: ${item.observacion || 'Sin detalles'}
+                </div>
+            </div>
+        `).join(''); 
+    }
 }
+
 
 function openTab(evt, tabName) {
     const tabcontent = document.getElementsByClassName("tab-content");
@@ -676,6 +705,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
