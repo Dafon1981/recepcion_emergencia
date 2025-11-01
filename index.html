@@ -459,6 +459,7 @@ function returnToMainMenu() {
 // Reemplaza la función existente con esta
 // Reemplaza la función existente con esta
 // Reemplaza la función existente con esta
+// Reemplaza la función existente con esta
 async function searchPatients() {
     let searchTerm = document.getElementById('search-input-field').value.trim();
     const resultsContainer = document.getElementById('results-container-busqueda');
@@ -496,12 +497,10 @@ async function searchPatients() {
         resultsContainer.innerHTML = '<p class="no-results">No se encontraron resultados.</p>';
     } else {
         resultsContainer.innerHTML = data.map((patient, index) => {
-            // --- LÓGICA PARA UBICACIÓN PROBABLE (NUEVO) ---
             let ubicacionHTML = '';
             if (patient.FechaRegistro) {
                 const fechaRegistro = new Date(patient.FechaRegistro);
                 const hoy = new Date();
-                // Normalizamos las fechas a medianoche para contar días completos
                 fechaRegistro.setHours(0, 0, 0, 0);
                 hoy.setHours(0, 0, 0, 0);
                 
@@ -511,9 +510,9 @@ async function searchPatients() {
                 let ubicacion = '';
                 if (diffDias <= 1) {
                     ubicacion = 'Recepción / Asignación';
-                } else if (diffDias <= 4) { // 1 día de asignación + 3 días
+                } else if (diffDias <= 4) {
                     ubicacion = 'Archivo Digitación';
-                } else if (diffDias <= 7) { // 4 días anteriores + 3 días
+                } else if (diffDias <= 7) {
                     ubicacion = 'Archivo Seguros';
                 } else {
                     ubicacion = 'Archivo Central';
@@ -521,7 +520,6 @@ async function searchPatients() {
                 ubicacionHTML = `<span class="ubicacion-probable">Ubicación Probable: ${ubicacion}</span>`;
             }
 
-            // Lógica para el estado del consumo (existente)
             const costo = parseFloat(patient.CostoTotal);
             let consumoStatusHTML = '';
             if (costo > 0) {
@@ -530,7 +528,6 @@ async function searchPatients() {
                 consumoStatusHTML = '<span class="consumo-status sin-consumo">Sin Consumo</span>';
             }
 
-            // Formato de Fecha de Atención (existente)
             const fechaAtencion = patient.FecAte ? new Date(patient.FecAte).toLocaleDateString('es-ES') : 'N/A';
 
             // --- PLANTILLA HTML ACTUALIZADA ---
@@ -543,7 +540,7 @@ async function searchPatients() {
 
                         ${consumoStatusHTML}
                           
-
+  <!-- === ¡AQUÍ ESTÁ EL CAMBIO! === -->
                         ${ubicacionHTML}
                     </div>
                 </div>
@@ -551,6 +548,7 @@ async function searchPatients() {
         }).join('');
     }
 }
+
 
 
 
@@ -778,6 +776,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
