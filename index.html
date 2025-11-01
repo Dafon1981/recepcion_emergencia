@@ -184,9 +184,11 @@ input:checked + .slider:before { transform: translateX(20px); }
 
     <div id="main-content" style="display: none;">
         <header id="main-header" class="header">
-            <div class="header-title" onclick="returnToMainMenu()">Recepcion Emergencia</div>
-            <button class="logout-button" onclick="handleLogout()">&#x27A4;</button> <!-- Icono de Salir -->
-        </header>
+    <div class="header-title" onclick="returnToMainMenu()">Recepcion Emergencia</div>
+    <!-- Esta línea ahora llama a la función de volver al menú principal -->
+    <button class="logout-button" onclick="returnToMainMenu()">&#x27A4;</button> 
+</header>
+
         <video id="assistant-video" class="initial-state" autoplay muted loop playsinline>
             <source src="https://github.com/Dafon1981/recepcion/blob/main/eee.mp4?raw=true" type="video/mp4">
         </video>
@@ -567,6 +569,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
