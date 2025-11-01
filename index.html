@@ -257,7 +257,8 @@ input:checked + .slider:before { transform: translateX(20px); }
                     <button class="control-button remove-btn" onclick="removeIngreso()">-</button>
                 </div>
             </div>
-            <button class="save-button">Guardar</button>
+          <button class="save-button" onclick="saveObservations()">Guardar</button>
+
         </div>
         <div id="user-list" class="tab-content">
             <div class="loading-spinner" id="loading-users">Cargando usuarios...</div>
@@ -495,6 +496,59 @@ function removeIngreso() {
     if (container.children.length > 1) { container.removeChild(container.lastChild); }
 }
 
+// Añade esta nueva función a tu script
+
+async function saveObservations() {
+    const ingresosContainer = document.getElementById('ingresos-container');
+    const entries = ingresosContainer.getElementsByClassName('ingreso-entry');
+    const observationsToInsert = [];
+
+    // 1. Recorrer cada bloque de ingreso en el formulario
+    for (const entry of entries) {
+        const numero = entry.querySelector('input[type="text"]').value.trim();
+        const fecha = entry.querySelector('input[type="date"]').value;
+        const observacion = entry.querySelector('textarea').value.trim();
+
+        // Validar que al menos el campo NFUA/Episodio no esté vacío
+        if (numero) {
+            observationsToInsert.push({
+                numero: numero,
+                fecha: fecha || null, // Si la fecha está vacía, envía null a Supabase
+                observacion: observacion
+            });
+        }
+    }
+
+    // 2. Verificar si hay algo que insertar
+    if (observationsToInsert.length === 0) {
+        alert('No hay observaciones válidas para guardar. Por favor, complete al menos el campo NFUA/Episodio.');
+        return;
+    }
+
+    // 3. Insertar todos los registros en Supabase de una sola vez
+    const { error } = await supabase
+        .from('observados')
+        .insert(observationsToInsert);
+
+    // 4. Mostrar el resultado al usuario
+    if (error) {
+        alert('Error al guardar las observaciones: ' + error.message);
+    } else {
+        alert(`¡${observationsToInsert.length} registro(s) guardado(s) con éxito!`);
+        // Limpiar el formulario para el siguiente ingreso
+        ingresosContainer.innerHTML = `
+            <div class="ingreso-entry">
+                <div class="form-group"><label>NFUA o Episodio</label><input type="text"></div>
+                <div class="form-group"><label>Fecha</label><input type="date"></div>
+                <div class="form-group"><label>Observación</label><textarea rows="2"></textarea></div>
+            </div>
+        `;
+        // Opcional: Actualizar la lista de observados en la otra vista
+        searchObservados(true);
+    }
+}
+
+        
 // Reemplaza la función existente con esta
 async function loadUsers() {
     const usersContainer = document.getElementById('user-list-container');
@@ -584,6 +638,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
