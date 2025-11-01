@@ -199,6 +199,33 @@ input:checked + .slider:before { transform: translateX(20px); }
     font-size: 18px; /* Misma fuente que el botón principal */
     cursor: pointer;
 }
+
+/* --- AÑADE ESTAS REGLAS CSS --- */
+
+#splash-next-button {
+    position: absolute;
+    bottom: 40px; /* Lo posiciona en la parte inferior */
+    left: 50%;
+    transform: translateX(-50%); /* Lo centra horizontalmente */
+    padding: 12px 40px;
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--hch-blue); /* Letras azules */
+    background-color: var(--hch-yellow); /* Fondo amarillo */
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    z-index: 31; /* Asegura que esté por encima del video */
+}
+
+#splash-next-button:hover {
+    transform: translateX(-50%) scale(1.05); /* Pequeño efecto al pasar el mouse */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+    
 .auth-form .link-button { background: none; border: none; color: var(--hch-blue); cursor: pointer; text-align: center; margin-top: 10px; }
 #auth-error { color: red; text-align: center; margin-top: 10px; font-size: 14px; }
 
@@ -227,6 +254,7 @@ input:checked + .slider:before { transform: translateX(20px); }
     <video id="splash-video" autoplay muted loop playsinline> <!-- Añadido 'loop' por si el video es corto -->
         <source src="https://github.com/Dafon1981/recepcion_emergencia/blob/main/modelo2.mp4?raw=true" type="video/mp4">
     </video>
+             <button id="splash-next-button" onclick="goToLogin()">Siguiente</button>
 </div>
 
     
@@ -355,7 +383,8 @@ input:checked + .slider:before { transform: translateX(20px); }
     <script>
        // === INICIO DEL CÓDIGO JAVASCRIPT ===
 
-const assistantVideo = document.getElementById('assistant-video');
+
+        const assistantVideo = document.getElementById('assistant-video');
 const menuButtons = document.querySelectorAll('.menu-button');
 const menuToggle = document.getElementById('menu-toggle');
 const contentViews = document.querySelectorAll('.content-view');
@@ -368,42 +397,36 @@ let currentUserData = null;
         
 
 
-// --- LÓGICA DE INICIO DE LA APP (UNIFICADA) ---
-// Este bloque ahora controla toda la secuencia de inicio.
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Ocultamos todo lo que no debe verse al principio.
     authContainer.style.display = 'none';
     mainContent.style.display = 'none';
     assistantVideo.classList.add('hidden');
+});
 
-    // 2. Iniciamos el temporizador para la transición.
+// --- FUNCIÓN PARA LA TRANSICIÓN (NUEVA) ---
+function goToLogin() {
+    // 1. Hacemos que el video de introducción se desvanezca
+    splashContainer.style.opacity = '0';
+    
+    // 2. Mostramos la pantalla de login
+    authContainer.style.display = 'flex';
     setTimeout(() => {
-        // Hacemos que el video de introducción se desvanezca.
-        splashContainer.style.opacity = '0';
-        
-        // Mostramos la pantalla de login.
-        authContainer.style.display = 'flex';
-        setTimeout(() => {
-            authContainer.style.opacity = '1';
-        }, 100);
+        authContainer.style.opacity = '1';
+    }, 100);
 
-        // Después de la animación, ocultamos el contenedor del video.
-        setTimeout(() => {
-            splashContainer.style.display = 'none';
-        }, 800);
-    }, 2000); // 2000 milisegundos = 2 segundos
-});
+    // 3. Después de la animación, ocultamos el contenedor del video
+    setTimeout(() => {
+        splashContainer.style.display = 'none';
+    }, 800); // Coincide con la duración de la transición en el CSS
+}
 
 
 
 
-        
-const assistantVideo = document.getElementById('assistant-video');
-        
-document.addEventListener('DOMContentLoaded', () => {
-    mainContent.style.display = 'none';
-    assistantVideo.classList.add('hidden');
-});
+//document.addEventListener('DOMContentLoaded', () => {
+  //  mainContent.style.display = 'none';
+  //  assistantVideo.classList.add('hidden');
+//});
 
 function toggleAuthForms() {
     document.getElementById('login-form').classList.toggle('active');
@@ -891,6 +914,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
