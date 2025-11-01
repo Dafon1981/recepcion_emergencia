@@ -495,6 +495,7 @@ function removeIngreso() {
     if (container.children.length > 1) { container.removeChild(container.lastChild); }
 }
 
+// Reemplaza la función existente con esta
 async function loadUsers() {
     const usersContainer = document.getElementById('user-list-container');
     const loadingSpinner = document.getElementById('loading-users');
@@ -516,7 +517,8 @@ async function loadUsers() {
         usersContainer.innerHTML = data.map(user => `
             <div class="user-item">
                 <div class="user-info">
-                    <div class="user-name">${user.usuario} <span class="user-status status-${user.estatus}">${user.estatus}</span></div>
+                    <!-- MODIFICACIÓN: Añadida la clave del usuario -->
+                    <div class="user-name">${user.usuario} (${user.clave || 'N/A'}) <span class="user-status status-${user.estatus}">${user.estatus}</span></div>
                     <div class="user-email">${user.email}</div>
                 </div>
                 <div class="user-actions">
@@ -530,6 +532,7 @@ async function loadUsers() {
         `).join('');
     }
 }
+
 
 // Reemplaza la función existente con esta
 async function toggleUserStatus(userId, newStatus) {
@@ -581,6 +584,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
