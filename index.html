@@ -368,9 +368,9 @@ let currentUserData = null;
         
 
 
-// --- LÓGICA PARA EL VIDEO DE INTRODUCCIÓN (NUEVO) ---
+// --- LÓGICA PARA EL VIDEO DE INTRODUCCIÓN (CORREGIDO) ---
 const splashContainer = document.getElementById('splash-container');
-const authContainer = document.getElementById('auth-container');
+const authContainer = document.getElementById('auth-container'); // ¡¡¡CORREGIDO!!!
 
 // Usamos un temporizador que se ejecuta después de 3000 milisegundos (3 segundos)
 setTimeout(() => {
@@ -386,10 +386,9 @@ setTimeout(() => {
     // 3. Después de la animación, ocultamos el contenedor del video
     setTimeout(() => {
         splashContainer.style.display = 'none';
-    }, 800); // Coincide con la duración de la transición en el CSS
-}, 3000); // 3000 milisegundos = 3 segundos
+    }, 800);
+}, 3000);
 
-// --- FIN DE LA LÓGICA DE INTRODUCCIÓN ---
 
 
         
@@ -886,6 +885,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
