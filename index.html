@@ -368,26 +368,32 @@ let currentUserData = null;
         
 
 
-// --- LÓGICA PARA EL VIDEO DE INTRODUCCIÓN (CORREGIDO) ---
-const splashContainer = document.getElementById('splash-container');
-const authContainer = document.getElementById('auth-container'); // ¡¡¡CORREGIDO!!!
+// --- LÓGICA DE INICIO DE LA APP (UNIFICADA) ---
+// Este bloque ahora controla toda la secuencia de inicio.
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Ocultamos todo lo que no debe verse al principio.
+    authContainer.style.display = 'none';
+    mainContent.style.display = 'none';
+    assistantVideo.classList.add('hidden');
 
-// Usamos un temporizador que se ejecuta después de 3000 milisegundos (3 segundos)
-setTimeout(() => {
-    // 1. Hacemos que el video de introducción se desvanezca
-    splashContainer.style.opacity = '0';
-    
-    // 2. Mostramos la pantalla de login
-    authContainer.style.display = 'flex';
+    // 2. Iniciamos el temporizador para la transición.
     setTimeout(() => {
-        authContainer.style.opacity = '1';
-    }, 100);
+        // Hacemos que el video de introducción se desvanezca.
+        splashContainer.style.opacity = '0';
+        
+        // Mostramos la pantalla de login.
+        authContainer.style.display = 'flex';
+        setTimeout(() => {
+            authContainer.style.opacity = '1';
+        }, 100);
 
-    // 3. Después de la animación, ocultamos el contenedor del video
-    setTimeout(() => {
-        splashContainer.style.display = 'none';
-    }, 800);
-}, 3000);
+        // Después de la animación, ocultamos el contenedor del video.
+        setTimeout(() => {
+            splashContainer.style.display = 'none';
+        }, 800);
+    }, 2000); // 2000 milisegundos = 2 segundos
+});
+
 
 
 
@@ -885,6 +891,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
