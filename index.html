@@ -194,9 +194,11 @@ input:checked + .slider:before { transform: translateX(20px); }
     <button class="logout-button" onclick="returnToMainMenu()">&#x27A4;</button> 
 </header>
 
-        <video id="assistant-video" class="initial-state" autoplay muted loop playsinline>
-            <source src="https://github.com/Dafon1981/recepcion/blob/main/eee.mp4?raw=true" type="video/mp4">
-        </video>
+       <video id="assistant-video" class="initial-state" autoplay muted loop playsinline>
+    <!-- === VIDEO ACTUALIZADO === -->
+    <source src="https://github.com/Dafon1981/recepcion/blob/main/cayetanologo.mp4?raw=true" type="video/mp4">
+</video>
+
         <button id="btn-servicios" class="menu-button" onclick="handleMenuClick('Busqueda', this )">Busqueda</button>
         <button id="btn-portafolio" class="menu-button" onclick="handleMenuClick('Observados', this)">Observados</button>
         <button id="btn-nosotros" class="menu-button" onclick="handleMenuClick('Nosotros', this)">Acerca de nosotros</button>
@@ -674,6 +676,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
