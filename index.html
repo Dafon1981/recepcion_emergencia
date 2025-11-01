@@ -531,7 +531,15 @@ async function loadUsers() {
     }
 }
 
+// Reemplaza la función existente con esta
 async function toggleUserStatus(userId, newStatus) {
+    // Evitar que un administrador se deshabilite a sí mismo
+    if (currentUserData && currentUserData.id === userId && !newStatus) {
+        alert('No puedes deshabilitarte a ti mismo.');
+        loadUsers(); // Recarga la lista para revertir el cambio visual del switch
+        return;
+    }
+
     const { error } = await supabase
         .from('usuarios')
         .update({ habilitado: newStatus })
@@ -539,9 +547,13 @@ async function toggleUserStatus(userId, newStatus) {
     
     if (error) {
         alert('Error al actualizar el estado del usuario: ' + error.message);
-        loadUsers(); // Recargar para revertir el cambio visual
+        loadUsers(); // Si hay un error, recarga la lista para asegurar que la UI sea consistente
+    } else {
+        // Opcional: Mostrar una confirmación de que el cambio fue exitoso
+        console.log(`Usuario ${userId} actualizado a habilitado: ${newStatus}`);
     }
 }
+
 
 async function deleteUser(userId) {
     if (!confirm('¿Estás seguro de que quieres eliminar a este usuario? Esta acción no se puede deshacer.')) {
@@ -569,6 +581,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
