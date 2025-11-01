@@ -42,6 +42,22 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background
 .menu-toggle.visible { display: flex; }
 .ad-container { position: absolute; bottom: 25px; left: 15px; right: 15px; height: 150px; background-color: rgba(0, 0, 0, 0.5); border-radius: 20px; z-index: 4; display: flex; justify-content: center; align-items: center; color: white; font-size: 24px; font-weight: bold; backdrop-filter: blur(5px); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
 
+/* --- AÑADE ESTAS REGLAS CSS --- */
+
+.consumo-status {
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.con-consumo {
+    color: #28a745; /* Verde */
+}
+
+.sin-consumo {
+    color: #dc3545; /* Rojo */
+}
+
+    
 .content-view { position: absolute; top: 100px; left: 15px; right: 15px; bottom: 25px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); border-radius: 30px; z-index: 11; opacity: 0; transform: translateY(30px); pointer-events: none; transition: all 0.5s ease-out; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; }
 .content-view.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
 .content-view h2 { color: var(--hch-blue); text-align: center; margin-top: 10px; margin-bottom: 15px; flex-shrink: 0; }
@@ -432,6 +448,7 @@ function returnToMainMenu() {
 }
 
 // Reemplaza la función existente con esta
+// Reemplaza la función existente con esta
 async function searchPatients() {
     let searchTerm = document.getElementById('search-input-field').value.trim();
     const resultsContainer = document.getElementById('results-container-busqueda');
@@ -442,24 +459,15 @@ async function searchPatients() {
         return;
     }
 
-    // --- INICIO DE LA MODIFICACIÓN INTELIGENTE ---
-    
-    // 1. Detectar si el término de búsqueda es puramente numérico (puede contener ceros).
     const isNumeric = /^\d+$/.test(searchTerm);
     let normalizedSearchTerm = searchTerm;
-
-    // 2. Si es numérico, quitar los ceros de la izquierda.
     if (isNumeric) {
         normalizedSearchTerm = parseInt(searchTerm, 10).toString();
     }
     
-    // --- FIN DE LA MODIFICACIÓN INTELIGENTE ---
-
     loadingSpinner.style.display = 'block';
     resultsContainer.innerHTML = '';
 
-    // 3. Usar el término normalizado en la consulta para NFUA y Episodio.
-    //    Para PACIENTE, seguimos usando el término original.
     const { data, error } = await supabase
         .from('registros')
         .select()
@@ -477,9 +485,36 @@ async function searchPatients() {
     if (data.length === 0) {
         resultsContainer.innerHTML = '<p class="no-results">No se encontraron resultados.</p>';
     } else {
-        resultsContainer.innerHTML = data.map((patient, index) => `<div class="result-item" onclick="showPatientDetails(${index})"><div class="result-item-name">${patient.PACIENTE || 'N/A'}</div><div class="result-item-sub">DNI: ${patient.NroDocumento || 'N/A'}</div></div>`).join('');
+        // --- ¡AQUÍ ESTÁ LA MODIFICACIÓN! ---
+        resultsContainer.innerHTML = data.map((patient, index) => {
+            // Lógica para el estado del consumo
+            const costo = parseFloat(patient.CostoTotal);
+            let consumoStatusHTML = '';
+            if (costo > 0) {
+                consumoStatusHTML = '<span class="consumo-status con-consumo">Con Consumo</span>';
+            } else {
+                consumoStatusHTML = '<span class="consumo-status sin-consumo">Sin Consumo</span>';
+            }
+
+            // Formatear la fecha (opcional pero recomendado)
+            const fechaAtencion = patient.FecAte ? new Date(patient.FecAte).toLocaleDateString('es-ES') : 'N/A';
+
+            // Plantilla HTML actualizada
+            return `
+                <div class="result-item" onclick="showPatientDetails(${index})">
+                    <div class="result-item-name">${patient.PACIENTE || 'N/A'}</div>
+                    <div class="result-item-sub">
+                        DNI: ${patient.NroDocumento || 'N/A'} | F. Atención: ${fechaAtencion}
+                          
+
+                        ${consumoStatusHTML}
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 }
+
 
 function showPatientDetails(index) {
     const patient = currentSearchResults[index];
@@ -705,6 +740,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
