@@ -83,6 +83,22 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background
     object-fit: cover; /* Hace que el video cubra todo el espacio sin deformarse */
 }
 
+/* --- AÑADE ESTAS REGLAS CSS --- */
+
+#splash-container {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #fff; /* Color de fondo mientras carga el video */
+    z-index: 30; /* Por encima de todo lo demás */
+    transition: opacity 0.8s ease-out; /* Para la animación de desvanecimiento */
+}
+
+#splash-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Cubre toda la pantalla sin deformarse */
+}
+
     
 .content-view { position: absolute; top: 100px; left: 15px; right: 15px; bottom: 25px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); border-radius: 30px; z-index: 11; opacity: 0; transform: translateY(30px); pointer-events: none; transition: all 0.5s ease-out; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; }
 .content-view.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
@@ -204,6 +220,14 @@ input:checked + .slider:before { transform: translateX(20px); }
 <div class="mobile-container">
     <!-- === VISTA DE AUTENTICACIÓN (LOGIN Y REGISTRO) === -->
     <!-- === VISTA DE AUTENTICACIÓN (LOGIN Y REGISTRO) - CORREGIDA === -->
+
+<!-- === VIDEO DE INTRODUCCIÓN (NUEVO) === -->
+        <div id="splash-container">
+            <video id="splash-video" autoplay muted playsinline>
+                <source src="https://github.com/Dafon1981/recepcion_emergencia/blob/main/modelo1.mp4?raw=true" type="video/mp4">
+            </video>
+        </div>
+    
 <div id="auth-container">
     <form id="login-form" class="auth-form active" onsubmit="event.preventDefault(); handleLogin();">
         <h2>Iniciar Sesión</h2>
@@ -339,6 +363,32 @@ const errorElement = document.getElementById('auth-error');
 let currentSearchResults = [];
 let currentUserData = null;
 
+        const splashContainer = document.getElementById('splash-container');
+const splashVideo = document.getElementById('splash-video');
+const authContainer = document.getElementById('auth-container'); // Ya deberías tener esta constante
+
+// Escuchamos el evento 'ended' que se dispara cuando el video termina
+splashVideo.onended = function() {
+    // 1. Hacemos que el video de introducción se desvanezca
+    splashContainer.style.opacity = '0';
+    
+    // 2. Mostramos la pantalla de login
+    authContainer.style.display = 'flex';
+    setTimeout(() => {
+        authContainer.style.opacity = '1';
+    }, 100); // Un pequeño retardo para que la transición sea suave
+
+    // 3. Después de la animación, ocultamos el contenedor del video para que no interfiera
+    setTimeout(() => {
+        splashContainer.style.display = 'none';
+    }, 800); // Debe coincidir con la duración de la transición en el CSS
+};
+
+// --- FIN DE LA LÓGICA DE INTRODUCCIÓN ---
+
+        
+const assistantVideo = document.getElementById('assistant-video');
+        
 document.addEventListener('DOMContentLoaded', () => {
     mainContent.style.display = 'none';
     assistantVideo.classList.add('hidden');
@@ -830,6 +880,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
