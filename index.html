@@ -223,10 +223,11 @@ input:checked + .slider:before { transform: translateX(20px); }
 
 <!-- === VIDEO DE INTRODUCCIÓN (NUEVO) === -->
         <div id="splash-container">
-            <video id="splash-video" autoplay muted playsinline>
-                <source src="https://github.com/Dafon1981/recepcion_emergencia/blob/main/modelo1.mp4?raw=true" type="video/mp4">
-            </video>
-        </div>
+    <video id="splash-video" autoplay muted loop playsinline> <!-- Añadido 'loop' por si el video es corto -->
+        <source src="https://github.com/Dafon1981/recepcion_emergencia/blob/main/modelo2.mp4?raw=true" type="video/mp4">
+    </video>
+</div>
+
     
 <div id="auth-container">
     <form id="login-form" class="auth-form active" onsubmit="event.preventDefault(); handleLogin();">
@@ -363,12 +364,15 @@ const errorElement = document.getElementById('auth-error');
 let currentSearchResults = [];
 let currentUserData = null;
 
-        const splashContainer = document.getElementById('splash-container');
-const splashVideo = document.getElementById('splash-video');
-const authContainer = document.getElementById('auth-container'); // Ya deberías tener esta constante
+        
 
-// Escuchamos el evento 'ended' que se dispara cuando el video termina
-splashVideo.onended = function() {
+
+// --- LÓGICA PARA EL VIDEO DE INTRODUCCIÓN (NUEVO) ---
+const splashContainer = document.getElementById('splash-container');
+const authContainer = document.getElementById('auth-container');
+
+// Usamos un temporizador que se ejecuta después de 3000 milisegundos (3 segundos)
+setTimeout(() => {
     // 1. Hacemos que el video de introducción se desvanezca
     splashContainer.style.opacity = '0';
     
@@ -376,15 +380,16 @@ splashVideo.onended = function() {
     authContainer.style.display = 'flex';
     setTimeout(() => {
         authContainer.style.opacity = '1';
-    }, 100); // Un pequeño retardo para que la transición sea suave
+    }, 100);
 
-    // 3. Después de la animación, ocultamos el contenedor del video para que no interfiera
+    // 3. Después de la animación, ocultamos el contenedor del video
     setTimeout(() => {
         splashContainer.style.display = 'none';
-    }, 800); // Debe coincidir con la duración de la transición en el CSS
-};
+    }, 800); // Coincide con la duración de la transición en el CSS
+}, 3000); // 3000 milisegundos = 3 segundos
 
 // --- FIN DE LA LÓGICA DE INTRODUCCIÓN ---
+
 
         
 const assistantVideo = document.getElementById('assistant-video');
@@ -880,6 +885,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
