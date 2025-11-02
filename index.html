@@ -337,7 +337,7 @@ input:checked + .slider:before { transform: translateX(20px); }
         </div>
     </div>
 
-    <div id="view-acerca-de-nosotros" class="content-view">
+    <div id="view-nosotros" class="content-view">
         <h2>Acerca de Nosotros</h2>
         <p>Somos un equipo dedicado a optimizar la gestión de emergencias en seguros, facilitando el acceso rápido y seguro a la información crítica de los pacientes.</p>
     </div>
@@ -384,8 +384,9 @@ input:checked + .slider:before { transform: translateX(20px); }
 // Primero, declaramos todas las constantes que apuntan a elementos del HTML.
 // Esto se hace una sola vez.
 const supabaseUrl = 'https://esiklpxyectbekxvajnw.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzaWtscHh5ZWN0YmVreHZham53Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE2OTI1MjEsImV4cCI6MjA3NzI2ODUyMX0.mtQnqUrTmhmN1DQxOAUnGpizhYZobStHDH0cz_XfKGU';
-const supabase = supabase.createClient(supabaseUrl, supabaseKey );
+       const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzaWtscHh5ZWN0YmVreHZham53Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE2OTI1MjEsImV4cCI6MjA3NzI2ODUyMX0.mtQnqUrTmhmN1DQxOAUnGpizhYZobStHDH0cz_XfKGU';
+      const supabase = window.supabase.createClient(supabaseUrl, supabaseKey); // <-- Sin espacio extra
+
 
 const splashContainer = document.getElementById('splash-container');
 const authContainer = document.getElementById('auth-container');
@@ -835,6 +836,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
