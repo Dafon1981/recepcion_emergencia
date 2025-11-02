@@ -235,11 +235,6 @@ input:checked + .slider:before { transform: translateX(20px); }
 </head>
 <body>
  <!-- === INICIO DEL CÓDIGO HTML === -->
-    <script>
-        const supabaseUrl = 'https://esiklpxyectbekxvajnw.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzaWtscHh5ZWN0YmVreHZham53Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE2OTI1MjEsImV4cCI6MjA3NzI2ODUyMX0.mtQnqUrTmhmN1DQxOAUnGpizhYZobStHDH0cz_XfKGU';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey );
-    </script>
 
   
 
@@ -383,91 +378,84 @@ input:checked + .slider:before { transform: translateX(20px); }
     <script>
        // === INICIO DEL CÓDIGO JAVASCRIPT ===
 
+// === INICIO DEL CÓDIGO JAVASCRIPT (ORDENADO Y CORREGIDO) ===
 
-        const assistantVideo = document.getElementById('assistant-video');
+// --- 1. CONSTANTES GLOBALES ---
+// Primero, declaramos todas las constantes que apuntan a elementos del HTML.
+// Esto se hace una sola vez.
+const supabaseUrl = 'https://esiklpxyectbekxvajnw.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzaWtscHh5ZWN0YmVreHZham53Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE2OTI1MjEsImV4cCI6MjA3NzI2ODUyMX0.mtQnqUrTmhmN1DQxOAUnGpizhYZobStHDH0cz_XfKGU';
+const supabase = supabase.createClient(supabaseUrl, supabaseKey );
+
+const splashContainer = document.getElementById('splash-container');
+const authContainer = document.getElementById('auth-container');
+const mainContent = document.getElementById('main-content');
+const assistantVideo = document.getElementById('assistant-video');
 const menuButtons = document.querySelectorAll('.menu-button');
 const menuToggle = document.getElementById('menu-toggle');
 const contentViews = document.querySelectorAll('.content-view');
-const mainContent = document.getElementById('main-content');
-//const authContainer = document.getElementById('auth-container');
 const errorElement = document.getElementById('auth-error');
+
+// --- 2. VARIABLES GLOBALES ---
+// Variables que cambiarán durante el uso de la app.
 let currentSearchResults = [];
 let currentUserData = null;
 
-        
-
-
+// --- 3. LÓGICA DE INICIO DE LA APP ---
+// Este es el único 'DOMContentLoaded'. Se ejecuta cuando la página carga.
 document.addEventListener('DOMContentLoaded', () => {
+    // Ocultamos las secciones principales al inicio.
     authContainer.style.display = 'none';
     mainContent.style.display = 'none';
     assistantVideo.classList.add('hidden');
 });
 
-// --- FUNCIÓN PARA LA TRANSICIÓN (NUEVA) ---
+// --- 4. FUNCIONES PRINCIPALES ---
+// Aquí van todas las funciones que la aplicación usará.
+
+// Función para la transición del video al login
 function goToLogin() {
-    // 1. Hacemos que el video de introducción se desvanezca
     splashContainer.style.opacity = '0';
-    
-    // 2. Mostramos la pantalla de login
     authContainer.style.display = 'flex';
     setTimeout(() => {
         authContainer.style.opacity = '1';
     }, 100);
-
-    // 3. Después de la animación, ocultamos el contenedor del video
     setTimeout(() => {
         splashContainer.style.display = 'none';
-    }, 800); // Coincide con la duración de la transición en el CSS
+    }, 800);
 }
 
-
-
-
-//document.addEventListener('DOMContentLoaded', () => {
-  //  mainContent.style.display = 'none';
-  //  assistantVideo.classList.add('hidden');
-//});
-
+// Función para cambiar entre login y registro
 function toggleAuthForms() {
     document.getElementById('login-form').classList.toggle('active');
     document.getElementById('register-form').classList.toggle('active');
     errorElement.style.display = 'none';
 }
 
+// Función para manejar el inicio de sesión
 async function handleLogin() {
-    // Cambiado para usar 'login-user'
     const user = document.getElementById('login-user').value;
     const password = document.getElementById('login-password').value;
     errorElement.style.display = 'none';
 
-    // 1. Buscar el usuario en la tabla 'usuarios'
     const { data: userData, error: userError } = await supabase
         .from('usuarios')
         .select('*')
         .eq('usuario', user)
         .single();
 
-    if (userError || !userData) {
+    if (userError || !userData || userData.clave !== password) {
         errorElement.textContent = 'Usuario o clave incorrectos.';
         errorElement.style.display = 'block';
         return;
     }
 
-    // 2. Comparar la clave (en texto plano, como está en tu tabla)
-    if (userData.clave !== password) {
-        errorElement.textContent = 'Usuario o clave incorrectos.';
-        errorElement.style.display = 'block';
-        return;
-    }
-
-    // 3. Verificar si el usuario está habilitado
     if (!userData.habilitado) {
         errorElement.textContent = 'Este usuario está deshabilitado.';
         errorElement.style.display = 'block';
         return;
     }
 
-    // 4. Si todo es correcto, proceder
     currentUserData = userData;
     authContainer.style.opacity = '0';
     setTimeout(() => {
@@ -476,16 +464,15 @@ async function handleLogin() {
     }, 500);
 }
 
+// Función para manejar el registro de nuevos usuarios
 async function handleRegister() {
     const name = document.getElementById('register-name').value;
     const email = document.getElementById('register-email').value;
-    // Usamos el campo de clave de registro
     const password = document.getElementById('register-password').value;
     const phone = document.getElementById('register-phone').value;
     errorElement.style.display = 'none';
 
-    // Verificamos si el usuario ya existe para evitar duplicados
-    const { data: existingUser, error: existingUserError } = await supabase
+    const { data: existingUser } = await supabase
         .from('usuarios')
         .select('usuario')
         .eq('usuario', name)
@@ -497,11 +484,10 @@ async function handleRegister() {
         return;
     }
 
-    // Insertamos el nuevo usuario directamente en nuestra tabla
     const { error: insertError } = await supabase.from('usuarios').insert({
         usuario: name,
         email: email,
-        clave: password, // Guardamos la clave en texto plano
+        clave: password,
         telefono: phone,
         estatus: 'usuario',
         habilitado: true
@@ -517,16 +503,7 @@ async function handleRegister() {
     toggleAuthForms();
 }
 
-// === FIN DEL REEMPLAZO ===
-async function handleLogout() {
-    await supabase.auth.signOut();
-    currentUserData = null;
-    authContainer.style.display = 'flex';
-    setTimeout(() => { authContainer.style.opacity = '1'; }, 10);
-    mainContent.style.display = 'none';
-    returnToMainMenu();
-}
-
+// Función para mostrar el menú principal después del login
 function showMainMenu() {
     mainContent.style.display = 'block';
     document.getElementById('btn-administrar').style.display = (currentUserData && currentUserData.estatus === 'admin') ? 'block' : 'none';
@@ -542,10 +519,11 @@ function showMainMenu() {
     searchObservados(true);
 }
 
+// Función para manejar los clics en los botones del menú
 function handleMenuClick(section, clickedButton) {
     menuButtons.forEach(button => button.classList.remove('active'));
     if(clickedButton) clickedButton.classList.add('active');
-    if (section === 'Contacto') { window.open('https://wa.me/51967188120', '_blank' ); setTimeout(() => { if(clickedButton) clickedButton.classList.remove('active'); }, 500); return; }
+    if (section === 'Contacto') { window.open('https://wa.me/51967188120', '_blank'  ); setTimeout(() => { if(clickedButton) clickedButton.classList.remove('active'); }, 500); return; }
     menuButtons.forEach(button => button.classList.add('hidden-by-view'));
     menuToggle.classList.add('visible');
     assistantVideo.classList.add('hidden');
@@ -554,8 +532,10 @@ function handleMenuClick(section, clickedButton) {
     let viewId = `view-${section.toLowerCase().replace(/ /g, '-')}`;
     const viewToShow = document.getElementById(viewId);
     if (viewToShow) { viewToShow.classList.add('visible'); }
+    if (section === 'Administrar') { loadUsers(); }
 }
 
+// Función para volver al menú principal desde una vista
 function returnToMainMenu() {
     menuToggle.classList.remove('visible');
     menuButtons.forEach(button => { button.classList.remove('hidden-by-view', 'active'); button.classList.add('visible'); });
@@ -564,10 +544,7 @@ function returnToMainMenu() {
     contentViews.forEach(v => v.classList.remove('visible'));
 }
 
-// Reemplaza la función existente con esta
-// Reemplaza la función existente con esta
-// Reemplaza la función existente con esta
-// Reemplaza la función existente con esta
+// Función para buscar pacientes
 async function searchPatients() {
     let searchTerm = document.getElementById('search-input-field').value.trim();
     const resultsContainer = document.getElementById('results-container-busqueda');
@@ -616,39 +593,25 @@ async function searchPatients() {
                 const diffDias = Math.ceil(diffTiempo / (1000 * 3600 * 24));
 
                 let ubicacion = '';
-                if (diffDias <= 1) {
-                    ubicacion = 'Recepción / Asignación';
-                } else if (diffDias <= 4) {
-                    ubicacion = 'Archivo Digitación';
-                } else if (diffDias <= 7) {
-                    ubicacion = 'Archivo Seguros';
-                } else {
-                    ubicacion = 'Archivo Central';
-                }
+                if (diffDias <= 1) { ubicacion = 'Recepción / Asignación'; } 
+                else if (diffDias <= 4) { ubicacion = 'Archivo Digitación'; } 
+                else if (diffDias <= 7) { ubicacion = 'Archivo Seguros'; } 
+                else { ubicacion = 'Archivo Central'; }
                 ubicacionHTML = `<span class="ubicacion-probable">Ubicación Probable: ${ubicacion}</span>`;
             }
 
             const costo = parseFloat(patient.CostoTotal);
-            let consumoStatusHTML = '';
-            if (costo > 0) {
-                consumoStatusHTML = '<span class="consumo-status con-consumo">Con Consumo</span>';
-            } else {
-                consumoStatusHTML = '<span class="consumo-status sin-consumo">Sin Consumo</span>';
-            }
-
+            let consumoStatusHTML = (costo > 0) ? '<span class="consumo-status con-consumo">Con Consumo</span>' : '<span class="consumo-status sin-consumo">Sin Consumo</span>';
             const fechaAtencion = patient.FecAte ? new Date(patient.FecAte).toLocaleDateString('es-ES') : 'N/A';
 
-            // --- PLANTILLA HTML ACTUALIZADA ---
             return `
                 <div class="result-item" onclick="showPatientDetails(${index})">
                     <div class="result-item-name">${patient.PACIENTE || 'N/A'}</div>
                     <div class="result-item-sub">
-                        DNI: ${patient.NroDocumento || 'N/A'} | F. Atención: ${fechaAtencion}
-                          
+                        DNI: ${patient.NroDocumento || 'N/A'} | F. Atención: ${fechaAtencion}   
 
-                        ${consumoStatusHTML}
-                          
-  <!-- === ¡AQUÍ ESTÁ EL CAMBIO! === -->
+                        ${consumoStatusHTML}   
+
                         ${ubicacionHTML}
                     </div>
                 </div>
@@ -657,9 +620,7 @@ async function searchPatients() {
     }
 }
 
-
-
-
+// Función para mostrar los detalles de un paciente
 function showPatientDetails(index) {
     const patient = currentSearchResults[index];
     if (!patient) return;
@@ -675,13 +636,13 @@ function showPatientDetails(index) {
     document.getElementById('patient-details-view').style.display = 'flex';
 }
 
+// Función para volver a los resultados de búsqueda
 function backToResults() {
     document.getElementById('patient-details-view').style.display = 'none';
     document.getElementById('search-main-view').style.display = 'flex';
 }
 
-// Reemplaza la función existente con esta
-// Reemplaza la función existente con esta
+// Función para buscar en observados
 async function searchObservados(initialLoad = false) {
     const searchTerm = initialLoad ? '' : document.getElementById('search-input-observados').value.trim();
     const resultsContainer = document.getElementById('results-container-observados');
@@ -708,7 +669,6 @@ async function searchObservados(initialLoad = false) {
         resultsContainer.innerHTML = '<p class="no-results">No hay pacientes en observación.</p>'; 
     } else { 
         resultsContainer.innerHTML = data.map(item => {
-            // --- LÓGICA PARA UBICACIÓN PROBABLE (NUEVO PARA OBSERVADOS) ---
             let ubicacionHTML = '';
             if (item.fecha) {
                 const fechaAtencion = new Date(item.fecha);
@@ -720,23 +680,15 @@ async function searchObservados(initialLoad = false) {
                 const diffDias = Math.ceil(diffTiempo / (1000 * 3600 * 24));
 
                 let ubicacion = '';
-                // Aplicamos la nueva línea de tiempo para observados
-                if (diffDias <= 19) { // Hasta 19 días -> Auditoría
-                    ubicacion = 'Auditoría';
-                } else if (diffDias <= 30) { // Hasta 30 días -> Archivo Digitación
-                    ubicacion = 'Archivo Digitación';
-                } else if (diffDias <= 32) { // Hasta 32 días -> Archivo Seguros
-                    ubicacion = 'Archivo Seguros';
-                } else { // Más de 32 días -> Archivo Central
-                    ubicacion = 'Archivo Central';
-                }
+                if (diffDias <= 19) { ubicacion = 'Auditoría'; } 
+                else if (diffDias <= 30) { ubicacion = 'Archivo Digitación'; } 
+                else if (diffDias <= 32) { ubicacion = 'Archivo Seguros'; } 
+                else { ubicacion = 'Archivo Central'; }
                 ubicacionHTML = `<span class="ubicacion-probable">Ubicación Probable: ${ubicacion}</span>`;
             }
 
-            // Formatear la fecha para mostrarla
             const fechaFormateada = item.fecha ? new Date(item.fecha).toLocaleDateString('es-ES') : 'No especificada';
 
-            // --- PLANTILLA HTML ACTUALIZADA ---
             return `
                 <div class="result-item">
                     <div class="result-item-name">NFUA/Episodio: ${item.numero_fua_episodio}</div>
@@ -753,7 +705,7 @@ async function searchObservados(initialLoad = false) {
     }
 }
 
-
+// Función para cambiar de pestaña en 'Administrar'
 function openTab(evt, tabName) {
     const tabcontent = document.getElementsByClassName("tab-content");
     for (let i = 0; i < tabcontent.length; i++) { tabcontent[i].classList.remove("active"); }
@@ -763,6 +715,7 @@ function openTab(evt, tabName) {
     evt.currentTarget.classList.add("active");
 }
 
+// Funciones para añadir/quitar ingresos en 'Añadir Obs.'
 function addIngreso() {
     const container = document.getElementById('ingresos-container');
     const newIngreso = document.createElement('div');
@@ -776,9 +729,7 @@ function removeIngreso() {
     if (container.children.length > 1) { container.removeChild(container.lastChild); }
 }
 
-// Añade esta nueva función a tu script
-
-// Reemplaza la función existente con esta
+// Función para guardar observaciones
 async function saveObservations() {
     const ingresosContainer = document.getElementById('ingresos-container');
     const entries = ingresosContainer.getElementsByClassName('ingreso-entry');
@@ -790,8 +741,6 @@ async function saveObservations() {
         const observacion = entry.querySelector('textarea').value.trim();
 
         if (numero) {
-            // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
-            // Cambiamos 'numero' por 'numero_fua_episodio' para que coincida con tu tabla.
             observationsToInsert.push({
                 numero_fua_episodio: numero, 
                 fecha: fecha || null,
@@ -805,27 +754,18 @@ async function saveObservations() {
         return;
     }
 
-    const { error } = await supabase
-        .from('observados')
-        .insert(observationsToInsert);
+    const { error } = await supabase.from('observados').insert(observationsToInsert);
 
     if (error) {
         alert('Error al guardar las observaciones: ' + error.message);
     } else {
         alert(`¡${observationsToInsert.length} registro(s) guardado(s) con éxito!`);
-        ingresosContainer.innerHTML = `
-            <div class="ingreso-entry">
-                <div class="form-group"><label>NFUA o Episodio</label><input type="text"></div>
-                <div class="form-group"><label>Fecha</label><input type="date"></div>
-                <div class="form-group"><label>Observación</label><textarea rows="2"></textarea></div>
-            </div>
-        `;
+        ingresosContainer.innerHTML = `<div class="ingreso-entry"><div class="form-group"><label>NFUA o Episodio</label><input type="text"></div><div class="form-group"><label>Fecha</label><input type="date"></div><div class="form-group"><label>Observación</label><textarea rows="2"></textarea></div></div>`;
         searchObservados(true);
     }
 }
 
-        
-// Reemplaza la función existente con esta
+// Función para cargar la lista de usuarios
 async function loadUsers() {
     const usersContainer = document.getElementById('user-list-container');
     const loadingSpinner = document.getElementById('loading-users');
@@ -847,14 +787,13 @@ async function loadUsers() {
         usersContainer.innerHTML = data.map(user => `
             <div class="user-item">
                 <div class="user-info">
-                    <!-- MODIFICACIÓN: Añadida la clave del usuario -->
                     <div class="user-name">${user.usuario} (${user.clave || 'N/A'}) <span class="user-status status-${user.estatus}">${user.estatus}</span></div>
                     <div class="user-email">${user.email}</div>
                 </div>
                 <div class="user-actions">
                     <label class="switch">
                         <input type="checkbox" ${user.habilitado ? 'checked' : ''} onchange="toggleUserStatus('${user.id}', this.checked)">
-                        <span class="slider"></span>
+                        <span class="slider ${user.habilitado ? '' : 'disabled'}"></span>
                     </label>
                     <button class="delete-button" onclick="deleteUser('${user.id}')">X</button>
                 </div>
@@ -863,13 +802,11 @@ async function loadUsers() {
     }
 }
 
-
-// Reemplaza la función existente con esta
+// Función para cambiar el estado de un usuario
 async function toggleUserStatus(userId, newStatus) {
-    // Evitar que un administrador se deshabilite a sí mismo
     if (currentUserData && currentUserData.id === userId && !newStatus) {
         alert('No puedes deshabilitarte a ti mismo.');
-        loadUsers(); // Recarga la lista para revertir el cambio visual del switch
+        loadUsers();
         return;
     }
 
@@ -880,40 +817,25 @@ async function toggleUserStatus(userId, newStatus) {
     
     if (error) {
         alert('Error al actualizar el estado del usuario: ' + error.message);
-        loadUsers(); // Si hay un error, recarga la lista para asegurar que la UI sea consistente
-    } else {
-        // Opcional: Mostrar una confirmación de que el cambio fue exitoso
-        console.log(`Usuario ${userId} actualizado a habilitado: ${newStatus}`);
     }
+    loadUsers(); // Recargamos la lista para que el color del switch se actualice
 }
 
-
+// Función para eliminar un usuario (pendiente de implementación segura)
 async function deleteUser(userId) {
     if (!confirm('¿Estás seguro de que quieres eliminar a este usuario? Esta acción no se puede deshacer.')) {
         return;
     }
-
-    // En Supabase, para borrar un usuario, debes hacerlo desde el lado del servidor
-    // por seguridad. La forma más fácil es llamar a una "Edge Function".
-    // Por ahora, solo mostraremos una alerta.
-    alert(`FUNCIONALIDAD PENDIENTE: Llamar a una Edge Function para borrar el usuario con ID: ${userId}. Esto requiere configuración adicional en Supabase.`);
-    
-    // Si quisiéramos borrarlo solo de la tabla 'usuarios' (no recomendado, dejaría el login huérfano):
-    /*
-    const { error } = await supabase.from('usuarios').delete().eq('id', userId);
-    if (error) {
-        alert('Error al borrar el usuario: ' + error.message);
-    } else {
-        loadUsers(); // Recargar la lista
-    }
-    */
+    alert(`FUNCIONALIDAD PENDIENTE: Llamar a una Edge Function para borrar el usuario con ID: ${userId}.`);
 }
 
 // === FIN DEL CÓDIGO JAVASCRIPT ===
 
+
     </script>
 </body>
 </html>
+
 
 
 
