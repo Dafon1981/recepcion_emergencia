@@ -434,11 +434,16 @@ function toggleAuthForms() {
 }
 
 // Función para manejar el inicio de sesión
+// Reemplaza la función existente con esta
 async function handleLogin() {
-    const user = document.getElementById('login-user').value;
-    const password = document.getElementById('login-password').value;
+    // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
+    // Usamos .trim() para eliminar espacios al inicio y al final.
+    const user = document.getElementById('login-user').value.trim();
+    const password = document.getElementById('login-password').value.trim();
+    
     errorElement.style.display = 'none';
 
+    // El resto de la función no necesita cambios, ya que ahora trabaja con los datos limpios.
     const { data: userData, error: userError } = await supabase
         .from('usuarios')
         .select('*')
@@ -836,6 +841,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
