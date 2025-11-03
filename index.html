@@ -101,6 +101,23 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background
 
 
 
+/* === ESTILO PARA EL BOTÓN DE ELIMINAR USUARIO === */
+.delete-user-btn {
+    background-color: #e74c3c; /* Rojo para indicar peligro/eliminar */
+    color: white;
+    border: none;
+    border-radius: 50%; /* Lo hace circular */
+    width: 30px;
+    height: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: background-color 0.2s;
+}
+
+.delete-user-btn:hover {
+    background-color: #c0392b; /* Rojo más oscuro al pasar el mouse */
+}
 
     
 
@@ -920,9 +937,14 @@ async function deleteUser(userId) {
 // === FIN DEL CÓDIGO JAVASCRIPT ===
 
 
+// Temporizador para ir al login automáticamente después de 6 segundos.
+setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
+        
+
     </script>
 </body>
 </html>
+
 
 
 
