@@ -32,59 +32,58 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background
 
 
     
- /* === INICIO DEL NUEVO DISEÑO DE BOTONES === */
+/* === INICIO DEL NUEVO DISEÑO DE BOTONES (IZQUIERDA Y MÁS ALTOS) === */
 
 .menu-button {
     position: absolute;
-    left: 50%; /* Centra el punto de inicio del botón */
-    transform: translateX(-50%); /* Mueve el botón a la izquierda por la mitad de su propio ancho para centrarlo perfectamente */
-    
+    left: 25px; /* Volvemos a alinear a la izquierda */
     z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center; /* Centra el texto dentro del botón */
     
-    width: 65%; /* Ancho relativo a la pantalla del móvil */
-    max-width: 280px; /* Ancho máximo para que no sea demasiado grande */
+    /* Ajustamos el ancho para que no sea demasiado grande */
+    width: 180px; 
     
-    padding: 15px 20px;
-    background: var(--hch-blue); /* Usa el color azul que ya definimos */
+    /* --- ¡AQUÍ ESTÁ EL CAMBIO PRINCIPAL! --- */
+    padding: 18px 25px; /* Aumentamos el padding vertical de 15px a 18px para hacerlos más altos */
+    
+    background: var(--hch-blue);
     color: white;
     border: none;
-    border-radius: 15px; /* Bordes menos redondeados, más modernos */
+    border-radius: 30px; /* Volvemos a los bordes más redondeados */
     
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     
     box-shadow: 0 6px 15px rgba(26, 74, 138, 0.2);
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
     
-    /* Animación de entrada */
+    /* Animación de entrada desde la izquierda */
     opacity: 0;
-    transform: translateX(-50%) translateY(20px); /* Empieza un poco abajo para la animación */
+    transform: translateX(-30px);
     pointer-events: none;
 }
 
 /* Controla la visibilidad y la animación de entrada */
 .menu-button.visible {
     opacity: 1;
-    transform: translateX(-50%) translateY(0); /* Vuelve a su posición original */
+    transform: translateX(0);
     pointer-events: auto;
 }
 
 /* Oculta los botones cuando se abre una vista */
 .menu-button.hidden-by-view {
     opacity: 0;
+    transform: translateX(-30px);
     pointer-events: none;
 }
 
-/* Posicionamiento vertical de cada botón */
+/* --- ¡AQUÍ ESTÁ EL OTRO CAMBIO IMPORTANTE! --- */
+/* Aumentamos la separación vertical entre los botones */
 #btn-servicios { top: 120px; transition-delay: 0.2s; }
-#btn-portafolio { top: 190px; transition-delay: 0.3s; }
-#btn-nosotros { top: 260px; transition-delay: 0.4s; }
-#btn-contacto { top: 330px; transition-delay: 0.5s; }
-#btn-administrar { top: 400px; transition-delay: 0.6s; }
+#btn-portafolio { top: 200px; transition-delay: 0.3s; } /* +10px */
+#btn-nosotros { top: 280px; transition-delay: 0.4s; }  /* +20px */
+#btn-contacto { top: 360px; transition-delay: 0.5s; }  /* +30px */
+#btn-administrar { top: 440px; transition-delay: 0.6s; } /* +40px */
 
 /* Estilo para el botón activo (cuando está seleccionado) */
 .menu-button.active {
@@ -94,16 +93,17 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background
 
 /* Efecto al pasar el mouse o presionar */
 .menu-button:hover {
-    transform: translateX(-50%) translateY(-3px); /* Se eleva un poco */
+    transform: translateY(-3px); /* Se eleva un poco */
     box-shadow: 0 10px 25px rgba(26, 74, 138, 0.3);
 }
 
 .menu-button:active {
-    transform: translateX(-50%) translateY(-1px);
+    transform: translateY(-1px);
     box-shadow: 0 4px 10px rgba(26, 74, 138, 0.2);
 }
 
 /* === FIN DEL NUEVO DISEÑO DE BOTONES === */
+
 
     
 
@@ -922,6 +922,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
