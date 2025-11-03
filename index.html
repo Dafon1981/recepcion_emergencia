@@ -510,6 +510,26 @@ document.addEventListener('DOMContentLoaded', () => {
     assistantVideo.classList.add('hidden');
 });
 
+
+/**
+ * Normaliza un texto: lo convierte a minúsculas y le quita las tildes.
+ * Ejemplo: "Pérez García" -> "perez garcia"
+ * @param {string} text El texto a normalizar.
+ * @returns {string} El texto normalizado.
+ */
+function normalizeText(text) {
+    if (!text) return '';
+    return text
+        .toLowerCase() // 1. Convierte todo a minúsculas
+        .normalize("NFD") // 2. Descompone los caracteres (ej: "é" en "e" y "´")
+        .replace(/[\u0300-\u036f]/g, ""); // 3. Elimina los acentos diacríticos
+}
+
+
+
+
+
+        
 // --- 4. FUNCIONES PRINCIPALES ---
 // Aquí van todas las funciones que la aplicación usará.
 
@@ -649,81 +669,51 @@ function returnToMainMenu() {
     contentViews.forEach(v => v.classList.remove('visible'));
 }
 
-// Función para buscar pacientes
-async function searchPatients() {
-    let searchTerm = document.getElementById('search-input-field').value.trim();
-    const resultsContainer = document.getElementById('results-container-busqueda');
-    const loadingSpinner = document.getElementById('loading-busqueda');
-
-    if (!searchTerm) {
-        resultsContainer.innerHTML = '<p class="no-results">Ingrese un término de búsqueda.</p>';
-        return;
-    }
-
-    const isNumeric = /^\d+$/.test(searchTerm);
-    let normalizedSearchTerm = searchTerm;
-    if (isNumeric) {
-        normalizedSearchTerm = parseInt(searchTerm, 10).toString();
-    }
+async function searchPatient() {
+    const searchTerm = document.getElementById('search-input').value.trim();
     
-    loadingSpinner.style.display = 'block';
-    resultsContainer.innerHTML = '';
-
-    const { data, error } = await supabase
-        .from('registros')
-        .select()
-        .or(`PACIENTE.ilike.%${searchTerm}%,NFUA.ilike.%${normalizedSearchTerm}%,Episodio.ilike.%${normalizedSearchTerm}%`);
-
-    loadingSpinner.style.display = 'none';
-
-    if (error) {
-        console.error('Error:', error);
-        resultsContainer.innerHTML = `<p class="no-results">Error: ${error.message}</p>`;
+    if (!searchTerm) {
+        displayResults([]); // Muestra la lista vacía si no hay nada que buscar
         return;
     }
 
-    currentSearchResults = data; 
-    if (data.length === 0) {
-        resultsContainer.innerHTML = '<p class="no-results">No se encontraron resultados.</p>';
-    } else {
-        resultsContainer.innerHTML = data.map((patient, index) => {
-            let ubicacionHTML = '';
-            if (patient.FechaRegistro) {
-                const fechaRegistro = new Date(patient.FechaRegistro);
-                const hoy = new Date();
-                fechaRegistro.setHours(0, 0, 0, 0);
-                hoy.setHours(0, 0, 0, 0);
-                
-                const diffTiempo = hoy.getTime() - fechaRegistro.getTime();
-                const diffDias = Math.ceil(diffTiempo / (1000 * 3600 * 24));
+    showLoader('search-loader');
 
-                let ubicacion = '';
-                if (diffDias <= 1) { ubicacion = 'Recepción / Asignación'; } 
-                else if (diffDias <= 4) { ubicacion = 'Archivo Digitación'; } 
-                else if (diffDias <= 7) { ubicacion = 'Archivo Seguros'; } 
-                else { ubicacion = 'Archivo Central'; }
-                ubicacionHTML = `<span class="ubicacion-probable">Ubicación Probable: ${ubicacion}</span>`;
-            }
+    // --- ¡AQUÍ ESTÁ EL CAMBIO PRINCIPAL! ---
+    // Normalizamos el término de búsqueda del usuario.
+    const normalizedSearchTerm = normalizeText(searchTerm);
 
-            const costo = parseFloat(patient.CostoTotal);
-            let consumoStatusHTML = (costo > 0) ? '<span class="consumo-status con-consumo">Con Consumo</span>' : '<span class="consumo-status sin-consumo">Sin Consumo</span>';
-            const fechaAtencion = patient.FecAte ? new Date(patient.FecAte).toLocaleDateString('es-ES') : 'N/A';
+    try {
+        // Obtenemos TODOS los registros. La búsqueda se hará en el lado del cliente.
+        let { data: allRecords, error } = await supabase
+            .from('registros')
+            .select('*');
 
-            return `
-                <div class="result-item" onclick="showPatientDetails(${index})">
-                    <div class="result-item-name">${patient.PACIENTE || 'N/A'}</div>
-                    <div class="result-item-sub">
-                        DNI: ${patient.NroDocumento || 'N/A'} | F. Atención: ${fechaAtencion}   
+        if (error) throw error;
 
-                        ${consumoStatusHTML}   
+        // Filtramos los resultados usando el texto normalizado.
+        const results = allRecords.filter(record => {
+            const normalizedPatientName = normalizeText(record.nombre_paciente);
+            
+            // Comprobamos si el nombre normalizado incluye el término de búsqueda normalizado.
+            // También mantenemos la búsqueda por DNI, FUA y Episodio.
+            return normalizedPatientName.includes(normalizedSearchTerm) ||
+                   record.dni == searchTerm ||
+                   record.n_fua == searchTerm ||
+                   record.n_episodio == searchTerm;
+        });
 
-                        ${ubicacionHTML}
-                    </div>
-                </div>
-            `;
-        }).join('');
+        displayResults(results);
+
+    } catch (error) {
+        console.error('Error en la búsqueda:', error.message);
+        displayResults([]); // Muestra vacío en caso de error
+        alert('Error al realizar la búsqueda: ' + error.message);
+    } finally {
+        hideLoader('search-loader');
     }
 }
+
 
 // Función para mostrar los detalles de un paciente
 function showPatientDetails(index) {
@@ -944,6 +934,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
