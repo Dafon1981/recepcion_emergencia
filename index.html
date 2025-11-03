@@ -409,7 +409,8 @@ input:checked + .slider:before { transform: translateX(20px); }
         <div id="search-main-view">
             <h2>Búsqueda de Pacientes</h2>
             <p>Ingrese Paciente, NFUA o Episodio para buscar.</p>
-            <form class="search-form" onsubmit="event.preventDefault(); searchPatients();">
+            <form class="search-form" onsubmit="event.preventDefault(); searchPatient();">
+
                 <input type="text" id="search-input-field" class="search-input" placeholder="Buscar...">
                 <button type="submit" class="search-button"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar"></button>
             </form>
@@ -670,7 +671,7 @@ function returnToMainMenu() {
 }
 
 async function searchPatient() {
-    const searchTerm = document.getElementById('search-input').value.trim();
+   const searchTerm = document.getElementById('search-input-field').value.trim();
     
     if (!searchTerm) {
         displayResults([]); // Muestra la lista vacía si no hay nada que buscar
@@ -917,12 +918,60 @@ async function toggleUserStatus(userId, newStatus) {
 }
 
 // Función para eliminar un usuario (pendiente de implementación segura)
+/**
+ * Elimina un usuario de la base de datos de Supabase después de una confirmación.
+ * IMPORTANTE: Esto requiere que el borrado esté permitido en las políticas de RLS de Supabase.
+ * @param {string} userId El ID del usuario a eliminar.
+ */
 async function deleteUser(userId) {
-    if (!confirm('¿Estás seguro de que quieres eliminar a este usuario? Esta acción no se puede deshacer.')) {
+    // 1. Obtenemos el nombre del usuario para mostrarlo en el mensaje de confirmación.
+    const userToDelete = document.querySelector(`.delete-button[onclick="deleteUser('${userId}')"]`)
+                                .closest('.user-item')
+                                .querySelector('.user-name').innerText.split('(')[0].trim();
+
+    // 2. Mostramos un cuadro de diálogo de confirmación claro y específico.
+    const isConfirmed = confirm(`¿Estás seguro de que quieres eliminar permanentemente al usuario "${userToDelete}"?\n\nEsta acción es irreversible.`);
+
+    // 3. Si el administrador cancela, no hacemos nada.
+    if (!isConfirmed) {
         return;
     }
-    alert(`FUNCIONALIDAD PENDIENTE: Llamar a una Edge Function para borrar el usuario con ID: ${userId}.`);
+    
+    // Si el admin intenta borrarse a sí mismo
+    if (currentUserData && currentUserData.id === userId) {
+        alert('Error: No puedes eliminar tu propia cuenta de administrador.');
+        return;
+    }
+
+    // 4. Mostramos un loader mientras se procesa la solicitud.
+    const loadingSpinner = document.getElementById('loading-users');
+    loadingSpinner.style.display = 'block';
+
+    try {
+        // 5. Ejecutamos el comando de borrado en Supabase.
+        const { error } = await supabase
+            .from('usuarios')
+            .delete()
+            .eq('id', userId);
+
+        // 6. Si Supabase devuelve un error, lo mostramos.
+        if (error) {
+            throw error;
+        }
+
+        // 7. Si la eliminación fue exitosa, mostramos un mensaje y recargamos la lista.
+        alert(`Usuario "${userToDelete}" eliminado correctamente.`);
+        loadUsers(); // Recargamos la lista para que el usuario eliminado desaparezca.
+
+    } catch (error) {
+        console.error('Error al eliminar el usuario:', error.message);
+        alert(`Error al eliminar el usuario: ${error.message}\n\nVerifica los permisos (políticas RLS) en Supabase.`);
+    } finally {
+        // 8. Ocultamos el loader al finalizar, tanto si hubo éxito como si hubo error.
+        loadingSpinner.style.display = 'none';
+    }
 }
+
 
 // === FIN DEL CÓDIGO JAVASCRIPT ===
 
@@ -934,6 +983,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
