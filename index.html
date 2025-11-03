@@ -706,7 +706,9 @@ async function searchPatient() {
         // Filtra los resultados en el lado del cliente (en el navegador).
         // Esto nos permite usar nuestra función 'normalizeText'.
         currentSearchResults = allRecords.filter(record => {
-            const normalizedPatientName = normalizeText(record.nombre_paciente);
+           // ¡CORREGIDO! Usamos el nombre de columna correcto de tu tabla: "PACIENTE"
+const normalizedPatientName = normalizeText(record.PACIENTE);
+
             
             // Comprueba si el nombre normalizado contiene el término de búsqueda normalizado,
             // o si coincide con DNI, FUA o Episodio.
@@ -1043,6 +1045,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
