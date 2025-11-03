@@ -670,67 +670,127 @@ function returnToMainMenu() {
     contentViews.forEach(v => v.classList.remove('visible'));
 }
 
+
+// =====================================================================
+// === INICIO DEL BLOQUE DE BÚSQUEDA DE PACIENTES (VERSIÓN FINAL) ===
+// =====================================================================
+
+/**
+ * Función principal para buscar pacientes. Se activa con el botón o el formulario.
+ */
 async function searchPatient() {
-   const searchTerm = document.getElementById('search-input-field').value.trim();
+    // Lee el término de búsqueda del campo de texto correcto.
+    const searchTerm = document.getElementById('search-input-field').value.trim();
     
+    // Si no hay nada escrito, limpia los resultados y no hace nada más.
     if (!searchTerm) {
-        displayResults([]); // Muestra la lista vacía si no hay nada que buscar
+        displayPatientResults([]);
         return;
     }
 
-    showLoader('search-loader');
+    // Muestra el indicador de "Buscando...".
+    document.getElementById('loading-busqueda').style.display = 'block';
+    document.getElementById('results-container-busqueda').innerHTML = '';
 
-    // --- ¡AQUÍ ESTÁ EL CAMBIO PRINCIPAL! ---
-    // Normalizamos el término de búsqueda del usuario.
+    // Normaliza el término de búsqueda para ignorar tildes y mayúsculas.
     const normalizedSearchTerm = normalizeText(searchTerm);
 
     try {
-        // Obtenemos TODOS los registros. La búsqueda se hará en el lado del cliente.
+        // Pide todos los registros a Supabase.
         let { data: allRecords, error } = await supabase
             .from('registros')
             .select('*');
 
         if (error) throw error;
 
-        // Filtramos los resultados usando el texto normalizado.
-        const results = allRecords.filter(record => {
+        // Filtra los resultados en el lado del cliente (en el navegador).
+        // Esto nos permite usar nuestra función 'normalizeText'.
+        currentSearchResults = allRecords.filter(record => {
             const normalizedPatientName = normalizeText(record.nombre_paciente);
             
-            // Comprobamos si el nombre normalizado incluye el término de búsqueda normalizado.
-            // También mantenemos la búsqueda por DNI, FUA y Episodio.
-            return normalizedPatientName.includes(normalizedSearchTerm) ||
+            // Comprueba si el nombre normalizado contiene el término de búsqueda normalizado,
+            // o si coincide con DNI, FUA o Episodio.
+            return (normalizedPatientName && normalizedPatientName.includes(normalizedSearchTerm)) ||
                    record.dni == searchTerm ||
                    record.n_fua == searchTerm ||
                    record.n_episodio == searchTerm;
         });
 
-        displayResults(results);
+        // Llama a la función para mostrar los resultados encontrados.
+        displayPatientResults(currentSearchResults);
 
     } catch (error) {
         console.error('Error en la búsqueda:', error.message);
-        displayResults([]); // Muestra vacío en caso de error
+        displayPatientResults([]); // Limpia los resultados en caso de error.
         alert('Error al realizar la búsqueda: ' + error.message);
     } finally {
-        hideLoader('search-loader');
+        // Oculta el indicador de "Buscando..." al finalizar.
+        document.getElementById('loading-busqueda').style.display = 'none';
     }
 }
 
+/**
+ * ¡FUNCIÓN CORREGIDA Y AÑADIDA!
+ * Se encarga de "dibujar" los resultados de la búsqueda en el HTML.
+ */
+function displayPatientResults(results) {
+    const resultsContainer = document.getElementById('results-container-busqueda');
+    
+    if (!results || results.length === 0) {
+        resultsContainer.innerHTML = '<p class="no-results">No se encontraron resultados.</p>';
+        return;
+    }
 
-// Función para mostrar los detalles de un paciente
+    resultsContainer.innerHTML = results.map((patient, index) => {
+        // Determina si el paciente tiene consumos para mostrar un estado visual.
+        const consumoStatus = patient.consumo_farmacia || patient.consumo_laboratorio || patient.consumo_rayos_x ? 
+            '<span class="consumo-status con-consumo">Con Consumo</span>' : 
+            '<span class="consumo-status sin-consumo">Sin Consumo</span>';
+
+        // Crea el HTML para cada item de la lista de resultados.
+        return `
+            <div class="result-item" onclick="showPatientDetails(${index})">
+                <div class="result-item-name">${patient.nombre_paciente || 'Nombre no disponible'}</div>
+                <div class="result-item-sub">
+                    DNI: ${patient.dni || 'N/A'} - ${consumoStatus}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+/**
+ * Muestra la vista de detalles para un paciente seleccionado.
+ * (Esta función ya estaba bien, pero la incluimos para mantener el bloque completo).
+ */
 function showPatientDetails(index) {
     const patient = currentSearchResults[index];
     if (!patient) return;
+    
     const detailsContent = document.getElementById('details-content');
     let detailsHTML = '';
+    
+    // Itera sobre todas las propiedades del objeto paciente para mostrarlas.
     for (const key in patient) {
         if (Object.hasOwnProperty.call(patient, key) && key !== 'id') {
-            detailsHTML += `<div class="detail-item"><label>${key.replace(/_/g, ' ')}</label><span>${patient[key] || 'No especificado'}</span></div>`;
+            const label = key.replace(/_/g, ' ').toUpperCase(); // Formatea la etiqueta
+            const value = patient[key] || 'No especificado';
+            detailsHTML += `<div class="detail-item"><label>${label}</label><span>${value}</span></div>`;
         }
     }
+    
     detailsContent.innerHTML = detailsHTML;
     document.getElementById('search-main-view').style.display = 'none';
     document.getElementById('patient-details-view').style.display = 'flex';
 }
+
+// =====================================================================
+// === FIN DEL BLOQUE DE BÚSQUEDA DE PACIENTES ===
+// =====================================================================
+
+
+
+        
 
 // Función para volver a los resultados de búsqueda
 function backToResults() {
@@ -983,6 +1043,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
