@@ -29,16 +29,85 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background
 .header { position: absolute; top: 0; left: 0; right: 0; height: 90px; background: linear-gradient(135deg, var(--header-primary-start) 0%, var(--header-primary-end) 100%); z-index: 5; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 0 25px; box-sizing: border-box; }
 .header-title { color: white; font-size: 24px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); cursor: pointer; }
 .logout-button { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
-.menu-button { position: absolute; left: 25px; z-index: 10; background: var(--hch-blue); border: 2px solid var(--hch-blue); border-radius: 30px; padding: 15px 25px; font-size: 16px; font-weight: 600; color: white; cursor: pointer; box-shadow: 0 6px 15px rgba(26, 74, 138, 0.4); transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1); min-width: 180px; opacity: 0; transform: translateX(-30px); pointer-events: none; }
-.menu-button.visible { opacity: 1; transform: translateX(0); pointer-events: auto; }
-.menu-button.hidden-by-view { opacity: 0; transform: translateX(-30px); pointer-events: none; }
+
+
+    
+ /* === INICIO DEL NUEVO DISEÑO DE BOTONES === */
+
+.menu-button {
+    position: absolute;
+    left: 50%; /* Centra el punto de inicio del botón */
+    transform: translateX(-50%); /* Mueve el botón a la izquierda por la mitad de su propio ancho para centrarlo perfectamente */
+    
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Centra el texto dentro del botón */
+    
+    width: 65%; /* Ancho relativo a la pantalla del móvil */
+    max-width: 280px; /* Ancho máximo para que no sea demasiado grande */
+    
+    padding: 15px 20px;
+    background: var(--hch-blue); /* Usa el color azul que ya definimos */
+    color: white;
+    border: none;
+    border-radius: 15px; /* Bordes menos redondeados, más modernos */
+    
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    
+    box-shadow: 0 6px 15px rgba(26, 74, 138, 0.2);
+    transition: all 0.3s ease;
+    
+    /* Animación de entrada */
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px); /* Empieza un poco abajo para la animación */
+    pointer-events: none;
+}
+
+/* Controla la visibilidad y la animación de entrada */
+.menu-button.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0); /* Vuelve a su posición original */
+    pointer-events: auto;
+}
+
+/* Oculta los botones cuando se abre una vista */
+.menu-button.hidden-by-view {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Posicionamiento vertical de cada botón */
 #btn-servicios { top: 120px; transition-delay: 0.2s; }
 #btn-portafolio { top: 190px; transition-delay: 0.3s; }
 #btn-nosotros { top: 260px; transition-delay: 0.4s; }
 #btn-contacto { top: 330px; transition-delay: 0.5s; }
 #btn-administrar { top: 400px; transition-delay: 0.6s; }
-.menu-button.active { background: var(--hch-yellow); color: var(--hch-blue); border-color: var(--hch-yellow); font-weight: bold; }
-.menu-toggle { display: none; position: absolute; right: 25px; bottom: 35px; background: var(--hch-blue); width: 50px; height: 50px; border-radius: 50%; border: none; color: white; font-size: 24px; cursor: pointer; z-index: 12; box-shadow: 0 4px 10px rgba(0,0,0,0.2); justify-content: center; align-items: center; }
+
+/* Estilo para el botón activo (cuando está seleccionado) */
+.menu-button.active {
+    background: var(--hch-yellow);
+    color: var(--hch-blue);
+}
+
+/* Efecto al pasar el mouse o presionar */
+.menu-button:hover {
+    transform: translateX(-50%) translateY(-3px); /* Se eleva un poco */
+    box-shadow: 0 10px 25px rgba(26, 74, 138, 0.3);
+}
+
+.menu-button:active {
+    transform: translateX(-50%) translateY(-1px);
+    box-shadow: 0 4px 10px rgba(26, 74, 138, 0.2);
+}
+
+/* === FIN DEL NUEVO DISEÑO DE BOTONES === */
+
+    
+
+    .menu-toggle { display: none; position: absolute; right: 25px; bottom: 35px; background: var(--hch-blue); width: 50px; height: 50px; border-radius: 50%; border: none; color: white; font-size: 24px; cursor: pointer; z-index: 12; box-shadow: 0 4px 10px rgba(0,0,0,0.2); justify-content: center; align-items: center; }
 .menu-toggle.visible { display: flex; }
 
 .ad-container {
@@ -853,6 +922,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
