@@ -409,8 +409,7 @@ input:checked + .slider:before { transform: translateX(20px); }
         <div id="search-main-view">
             <h2>Búsqueda de Pacientes</h2>
             <p>Ingrese Paciente, NFUA o Episodio para buscar.</p>
-            <form class="search-form" onsubmit="event.preventDefault(); searchPatient();">
-
+            <form class="search-form" onsubmit="event.preventDefault(); searchPatients();">
                 <input type="text" id="search-input-field" class="search-input" placeholder="Buscar...">
                 <button type="submit" class="search-button"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar"></button>
             </form>
@@ -511,26 +510,6 @@ document.addEventListener('DOMContentLoaded', () => {
     assistantVideo.classList.add('hidden');
 });
 
-
-/**
- * Normaliza un texto: lo convierte a minúsculas y le quita las tildes.
- * Ejemplo: "Pérez García" -> "perez garcia"
- * @param {string} text El texto a normalizar.
- * @returns {string} El texto normalizado.
- */
-function normalizeText(text) {
-    if (!text) return '';
-    return text
-        .toLowerCase() // 1. Convierte todo a minúsculas
-        .normalize("NFD") // 2. Descompone los caracteres (ej: "é" en "e" y "´")
-        .replace(/[\u0300-\u036f]/g, ""); // 3. Elimina los acentos diacríticos
-}
-
-
-
-
-
-        
 // --- 4. FUNCIONES PRINCIPALES ---
 // Aquí van todas las funciones que la aplicación usará.
 
@@ -670,11 +649,6 @@ function returnToMainMenu() {
     contentViews.forEach(v => v.classList.remove('visible'));
 }
 
-
-// =====================================================================
-// === INICIO DEL BLOQUE DE BÚSQUEDA DE PACIENTES (VERSIÓN FINAL) ===
-// =====================================================================
-
 // Función para buscar pacientes
 async function searchPatients() {
     let searchTerm = document.getElementById('search-input-field').value.trim();
@@ -766,15 +740,6 @@ function showPatientDetails(index) {
     document.getElementById('search-main-view').style.display = 'none';
     document.getElementById('patient-details-view').style.display = 'flex';
 }
-
-
-// =====================================================================
-// === FIN DEL BLOQUE DE BÚSQUEDA DE PACIENTES ===
-// =====================================================================
-
-
-
-        
 
 // Función para volver a los resultados de búsqueda
 function backToResults() {
@@ -962,71 +927,22 @@ async function toggleUserStatus(userId, newStatus) {
 }
 
 // Función para eliminar un usuario (pendiente de implementación segura)
-/**
- * Elimina un usuario de la base de datos de Supabase después de una confirmación.
- * IMPORTANTE: Esto requiere que el borrado esté permitido en las políticas de RLS de Supabase.
- * @param {string} userId El ID del usuario a eliminar.
- */
 async function deleteUser(userId) {
-    // 1. Obtenemos el nombre del usuario para mostrarlo en el mensaje de confirmación.
-    const userToDelete = document.querySelector(`.delete-button[onclick="deleteUser('${userId}')"]`)
-                                .closest('.user-item')
-                                .querySelector('.user-name').innerText.split('(')[0].trim();
-
-    // 2. Mostramos un cuadro de diálogo de confirmación claro y específico.
-    const isConfirmed = confirm(`¿Estás seguro de que quieres eliminar permanentemente al usuario "${userToDelete}"?\n\nEsta acción es irreversible.`);
-
-    // 3. Si el administrador cancela, no hacemos nada.
-    if (!isConfirmed) {
+    if (!confirm('¿Estás seguro de que quieres eliminar a este usuario? Esta acción no se puede deshacer.')) {
         return;
     }
-    
-    // Si el admin intenta borrarse a sí mismo
-    if (currentUserData && currentUserData.id === userId) {
-        alert('Error: No puedes eliminar tu propia cuenta de administrador.');
-        return;
-    }
-
-    // 4. Mostramos un loader mientras se procesa la solicitud.
-    const loadingSpinner = document.getElementById('loading-users');
-    loadingSpinner.style.display = 'block';
-
-    try {
-        // 5. Ejecutamos el comando de borrado en Supabase.
-        const { error } = await supabase
-            .from('usuarios')
-            .delete()
-            .eq('id', userId);
-
-        // 6. Si Supabase devuelve un error, lo mostramos.
-        if (error) {
-            throw error;
-        }
-
-        // 7. Si la eliminación fue exitosa, mostramos un mensaje y recargamos la lista.
-        alert(`Usuario "${userToDelete}" eliminado correctamente.`);
-        loadUsers(); // Recargamos la lista para que el usuario eliminado desaparezca.
-
-    } catch (error) {
-        console.error('Error al eliminar el usuario:', error.message);
-        alert(`Error al eliminar el usuario: ${error.message}\n\nVerifica los permisos (políticas RLS) en Supabase.`);
-    } finally {
-        // 8. Ocultamos el loader al finalizar, tanto si hubo éxito como si hubo error.
-        loadingSpinner.style.display = 'none';
-    }
+    alert(`FUNCIONALIDAD PENDIENTE: Llamar a una Edge Function para borrar el usuario con ID: ${userId}.`);
 }
-
 
 // === FIN DEL CÓDIGO JAVASCRIPT ===
 
 
-// Temporizador para ir al login automáticamente después de 6 segundos.
-setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
-        
-
     </script>
 </body>
 </html>
+
+
+
 
 
 
