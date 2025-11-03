@@ -32,80 +32,73 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background
 
 
     
-/* === INICIO DEL NUEVO DISEÑO DE BOTONES (CON PROFUNDIDAD) === */
+/* === INICIO DEL NUEVO DISEÑO DE BOTONES (MÁS GRANDES Y SEPARADOS) === */
 
 .menu-button {
     position: absolute;
     left: 25px;
     z-index: 10;
-    width: 180px; 
-    padding: 18px 25px;
     
-    /* --- ¡AQUÍ ESTÁ LA MAGIA DEL NUEVO DISEÑO! --- */
-    background: linear-gradient(145deg, #1d4a8f, #183e7a); /* Degradado sutil para dar volumen */
-    border: 1px solid #163461; /* Borde oscuro para definir */
-    border-top-color: #2c63b5; /* Borde superior más claro para simular luz */
+    /* --- ¡CAMBIO 1: BOTONES MÁS ANCHOS! --- */
+    width: 200px; /* Aumentamos el ancho de 180px a 200px */
     
+    /* --- ¡CAMBIO 2: BOTONES MÁS ALTOS! --- */
+    padding: 20px 25px; /* Aumentamos el padding vertical de 18px a 20px */
+    
+    background: linear-gradient(145deg, #1d4a8f, #183e7a);
+    border: 1px solid #163461;
+    border-top-color: #2c63b5;
     color: white;
-    text-align: center; /* Centramos el texto */
+    text-align: center;
     border-radius: 30px;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    
-    /* Sombra más pronunciada para el efecto "flotante" */
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1);
-    
-    transition: all 0.2s ease-out; /* Transición más rápida y suave */
-    
-    /* Animación de entrada */
+    transition: all 0.2s ease-out;
     opacity: 0;
     transform: translateX(-30px);
     pointer-events: none;
 }
 
-/* Controla la visibilidad y la animación de entrada */
 .menu-button.visible {
     opacity: 1;
     transform: translateX(0);
     pointer-events: auto;
 }
 
-/* Oculta los botones cuando se abre una vista */
 .menu-button.hidden-by-view {
     opacity: 0;
     transform: translateX(-30px);
     pointer-events: none;
 }
 
-/* Posicionamiento vertical de cada botón (sin cambios) */
+/* --- ¡CAMBIO 3: MÁS SEPARACIÓN VERTICAL! --- */
 #btn-servicios { top: 120px; transition-delay: 0.2s; }
-#btn-portafolio { top: 200px; transition-delay: 0.3s; }
-#btn-nosotros { top: 280px; transition-delay: 0.4s; }
-#btn-contacto { top: 360px; transition-delay: 0.5s; }
-#btn-administrar { top: 440px; transition-delay: 0.6s; }
+#btn-portafolio { top: 210px; transition-delay: 0.3s; } /* Separación de 90px */
+#btn-nosotros { top: 300px; transition-delay: 0.4s; }  /* Separación de 90px */
+#btn-contacto { top: 390px; transition-delay: 0.5s; }  /* Separación de 90px */
+#btn-administrar { top: 480px; transition-delay: 0.6s; } /* Separación de 90px */
 
-/* Estilo para el botón activo (cuando está seleccionado) */
 .menu-button.active {
-    background: linear-gradient(145deg, #f2c744, #e6b833); /* Degradado amarillo */
+    background: linear-gradient(145deg, #f2c744, #e6b833);
     color: var(--hch-blue);
     border-color: #d3a52b;
     border-top-color: #fde088;
 }
 
-/* Efecto al pasar el mouse */
 .menu-button:hover {
-    transform: translateY(-4px); /* Se eleva un poco más */
+    transform: translateY(-4px);
     box-shadow: 0 12px 25px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.15);
 }
 
-/* Efecto al presionar (simula que se hunde) */
 .menu-button:active {
     transform: translateY(1px);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* === FIN DEL NUEVO DISEÑO DE BOTONES === */
+
 
 
 
@@ -929,6 +922,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
