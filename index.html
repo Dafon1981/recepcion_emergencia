@@ -40,8 +40,20 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background
 .menu-button.active { background: var(--hch-yellow); color: var(--hch-blue); border-color: var(--hch-yellow); font-weight: bold; }
 .menu-toggle { display: none; position: absolute; right: 25px; bottom: 35px; background: var(--hch-blue); width: 50px; height: 50px; border-radius: 50%; border: none; color: white; font-size: 24px; cursor: pointer; z-index: 12; box-shadow: 0 4px 10px rgba(0,0,0,0.2); justify-content: center; align-items: center; }
 .menu-toggle.visible { display: flex; }
-.ad-container { position: absolute; bottom: 25px; left: 15px; right: 15px; height: 150px; background-color: rgba(0, 0, 0, 0.5); border-radius: 20px; z-index: 4; display: flex; justify-content: center; align-items: center; color: white; font-size: 24px; font-weight: bold; backdrop-filter: blur(5px); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
 
+.ad-container {
+    position: absolute;
+    bottom: 25px;
+    left: 15px;
+    right: 15px;
+    height: 150px;
+    /* ... otros estilos ... */
+    padding: 0;
+    overflow: hidden;
+    display: none; /* <-- ¡AÑADE ESTA LÍNEA PARA OCULTARLO! */
+}
+
+    
 /* --- AÑADE ESTAS REGLAS CSS --- */
 
 .consumo-status {
@@ -841,6 +853,7 @@ async function deleteUser(userId) {
     </script>
 </body>
 </html>
+
 
 
 
