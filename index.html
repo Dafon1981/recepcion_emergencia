@@ -666,84 +666,72 @@ function normalizeText(text) {
 
 
 
+
+        
         
         
 // Función para buscar pacientes
-async function searchPatients() {
-    let searchTerm = document.getElementById('search-input-field').value.trim();
-    const resultsContainer = document.getElementById('results-container-busqueda');
-    const loadingSpinner = document.getElementById('loading-busqueda');
-
-    if (!searchTerm) {
-        resultsContainer.innerHTML = '<p class="no-results">Ingrese un término de búsqueda.</p>';
-        return;
-    }
-
-    const isNumeric = /^\d+$/.test(searchTerm);
-    let normalizedSearchTerm = searchTerm;
-    if (isNumeric) {
-        normalizedSearchTerm = parseInt(searchTerm, 10).toString();
-    }
+/**
+ * Función principal para buscar pacientes, insensible a mayúsculas y acentos.
+ */
+async function searchPatient() {
+    // Lee el término de búsqueda del campo de texto correcto.
+    const searchTerm = document.getElementById('search-input-field').value.trim();
     
-    loadingSpinner.style.display = 'block';
-    resultsContainer.innerHTML = '';
+    // Muestra el indicador de "Buscando...".
+    document.getElementById('loading-busqueda').style.display = 'block';
+    document.getElementById('results-container-busqueda').innerHTML = '';
 
-    const { data, error } = await supabase
-        .from('registros')
-        .select()
-        .or(`PACIENTE.ilike.%${searchTerm}%,NFUA.ilike.%${normalizedSearchTerm}%,Episodio.ilike.%${normalizedSearchTerm}%`);
-
-    loadingSpinner.style.display = 'none';
-
-    if (error) {
-        console.error('Error:', error);
-        resultsContainer.innerHTML = `<p class="no-results">Error: ${error.message}</p>`;
+    // Si no hay nada escrito, limpia los resultados y termina.
+    if (!searchTerm) {
+        displayPatientResults([]);
+        document.getElementById('loading-busqueda').style.display = 'none';
         return;
     }
 
-    currentSearchResults = data; 
-    if (data.length === 0) {
-        resultsContainer.innerHTML = '<p class="no-results">No se encontraron resultados.</p>';
-    } else {
-        resultsContainer.innerHTML = data.map((patient, index) => {
-            let ubicacionHTML = '';
-            if (patient.FechaRegistro) {
-                const fechaRegistro = new Date(patient.FechaRegistro);
-                const hoy = new Date();
-                fechaRegistro.setHours(0, 0, 0, 0);
-                hoy.setHours(0, 0, 0, 0);
-                
-                const diffTiempo = hoy.getTime() - fechaRegistro.getTime();
-                const diffDias = Math.ceil(diffTiempo / (1000 * 3600 * 24));
+    // Normaliza el término de búsqueda para ignorar tildes y mayúsculas.
+    const normalizedSearchTerm = normalizeText(searchTerm);
 
-                let ubicacion = '';
-                if (diffDias <= 1) { ubicacion = 'Recepción / Asignación'; } 
-                else if (diffDias <= 4) { ubicacion = 'Archivo Digitación'; } 
-                else if (diffDias <= 7) { ubicacion = 'Archivo Seguros'; } 
-                else { ubicacion = 'Archivo Central'; }
-                ubicacionHTML = `<span class="ubicacion-probable">Ubicación Probable: ${ubicacion}</span>`;
-            }
+    try {
+        // Pide TODOS los registros a Supabase.
+        let { data: allRecords, error } = await supabase
+            .from('registros')
+            .select('*');
 
-            const costo = parseFloat(patient.CostoTotal);
-            let consumoStatusHTML = (costo > 0) ? '<span class="consumo-status con-consumo">Con Consumo</span>' : '<span class="consumo-status sin-consumo">Sin Consumo</span>';
-            const fechaAtencion = patient.FecAte ? new Date(patient.FecAte).toLocaleDateString('es-ES') : 'N/A';
+        if (error) throw error;
 
-            return `
-                <div class="result-item" onclick="showPatientDetails(${index})">
-                    <div class="result-item-name">${patient.PACIENTE || 'N/A'}</div>
-                    <div class="result-item-sub">
-                        DNI: ${patient.NroDocumento || 'N/A'} | F. Atención: ${fechaAtencion}   
+        // Filtra los resultados en el NAVEGADOR.
+        // Esto nos permite usar nuestra función 'normalizeText'.
+        const results = allRecords.filter(record => {
+            // Normalizamos el nombre del paciente de la base de datos.
+            // ¡Usamos la columna correcta "PACIENTE"!
+            const normalizedPatientName = normalizeText(record.PACIENTE);
+            
+            // Comprueba si el nombre normalizado contiene el término de búsqueda normalizado,
+            // o si coincide con DNI, FUA o Episodio.
+            return (normalizedPatientName && normalizedPatientName.includes(normalizedSearchTerm)) ||
+                   record.dni == searchTerm ||
+                   record.n_fua == searchTerm ||
+                   record.n_episodio == searchTerm;
+        });
 
-                        ${consumoStatusHTML}   
+        // Llama a la función para mostrar los resultados encontrados.
+        displayPatientResults(results);
 
-                        ${ubicacionHTML}
-                    </div>
-                </div>
-            `;
-        }).join('');
+    } catch (error) {
+        console.error('Error en la búsqueda:', error.message);
+        displayPatientResults([]); // Limpia los resultados en caso de error.
+        alert('Error al realizar la búsqueda: ' + error.message);
+    } finally {
+        // Oculta el indicador de "Buscando..." al finalizar.
+        document.getElementById('loading-busqueda').style.display = 'none';
     }
 }
 
+
+
+
+        
 // Función para mostrar los detalles de un paciente
 function showPatientDetails(index) {
     const patient = currentSearchResults[index];
@@ -959,6 +947,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
