@@ -649,6 +649,25 @@ function returnToMainMenu() {
     contentViews.forEach(v => v.classList.remove('visible'));
 }
 
+
+/**
+ * Normaliza un texto: lo convierte a minúsculas y le quita las tildes.
+ * Ejemplo: "Pérez García" -> "perez garcia"
+ * @param {string} text El texto a normalizar.
+ * @returns {string} El texto normalizado.
+ */
+function normalizeText(text) {
+    if (!text) return '';
+    return text
+        .toLowerCase() // 1. Convierte todo a minúsculas
+        .normalize("NFD") // 2. Descompone los caracteres (ej: "é" en "e" y "´")
+        .replace(/[\u0300-\u036f]/g, ""); // 3. Elimina los acentos diacríticos
+}
+
+
+
+        
+        
 // Función para buscar pacientes
 async function searchPatients() {
     let searchTerm = document.getElementById('search-input-field').value.trim();
@@ -940,6 +959,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
