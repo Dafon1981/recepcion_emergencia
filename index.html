@@ -183,10 +183,23 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background
 #splash-container {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #fff; /* Color de fondo mientras carga el video */
-    z-index: 30; /* Por encima de todo lo demás */
-    transition: opacity 0.8s ease-out; /* Para la animación de desvanecimiento */
+    z-index: 30;
+    transition: opacity 0.8s ease-out;
+
+    /* --- ¡AQUÍ ESTÁ LA MAGIA! --- */
+    /* 1. Establecemos la imagen de fondo. Usamos la URL con ?raw=true */
+    background-image: url('https://github.com/Dafon1981/recepcion_emergencia/blob/main/fondoappregistro.jpg?raw=true' );
+    
+    /* 2. Nos aseguramos de que la imagen cubra todo el contenedor */
+    background-size: cover;
+    
+    /* 3. Centramos la imagen para que se vea bien en cualquier pantalla */
+    background-position: center center;
+    
+    /* 4. Ponemos un color de fondo oscuro por si la imagen también tarda en cargar */
+    background-color: #1A4A8A; 
 }
+
 
 #splash-video {
     width: 100%;
@@ -964,6 +977,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
