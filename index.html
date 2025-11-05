@@ -153,6 +153,24 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background
 }
 
 
+/* --- INICIO DE ESTILOS PARA UBICACIÓN PROBABLE --- */
+
+.ubicacion-probable {
+    font-weight: bold;
+    font-size: 12px;
+}
+
+/* Nuevas clases para los colores de estado */
+.ubicacion-asignacion { color: #28a745; } /* Verde */
+.ubicacion-auditoria { color: #fd7e14; } /* Naranja */
+.ubicacion-seguros { color: #dc3545; } /* Rojo */
+.ubicacion-central { color: #6f42c1; } /* Morado */
+
+/* --- FIN DE ESTILOS PARA UBICACIÓN PROBABLE --- */
+
+
+
+    
 /* --- AÑADE ESTA REGLA CSS --- */
 
 .ubicacion-probable {
@@ -683,81 +701,114 @@ function normalizeText(text) {
         
         
         
+/**
+ * Busca pacientes y muestra la ubicación probable con nuevos rangos de tiempo y colores.
+ */
 async function searchPatients() {
+    // Obtiene el término de búsqueda del input correcto.
     let searchTerm = document.getElementById('search-input-field').value.trim();
     const resultsContainer = document.getElementById('results-container-busqueda');
     const loadingSpinner = document.getElementById('loading-busqueda');
 
+    loadingSpinner.style.display = 'block';
+    resultsContainer.innerHTML = '';
+
     if (!searchTerm) {
+        loadingSpinner.style.display = 'none';
         resultsContainer.innerHTML = '<p class="no-results">Ingrese un término de búsqueda.</p>';
         return;
     }
 
-    const isNumeric = /^\d+$/.test(searchTerm);
-    let normalizedSearchTerm = searchTerm;
-    if (isNumeric) {
-        normalizedSearchTerm = parseInt(searchTerm, 10).toString();
-    }
-    
-    loadingSpinner.style.display = 'block';
-    resultsContainer.innerHTML = '';
+    // --- LÓGICA DE BÚSQUEDA INSENSIBLE A ACENTOS Y MAYÚSCULAS ---
+    const normalizedSearchTerm = normalizeText(searchTerm);
 
-    const { data, error } = await supabase
-        .from('registros')
-        .select()
-        .or(`PACIENTE.ilike.%${searchTerm}%,NFUA.ilike.%${normalizedSearchTerm}%,Episodio.ilike.%${normalizedSearchTerm}%`);
+    try {
+        // 1. Obtenemos TODOS los registros de Supabase.
+        const { data: allRecords, error } = await supabase
+            .from('registros')
+            .select('*');
 
-    loadingSpinner.style.display = 'none';
+        if (error) throw error;
 
-    if (error) {
-        console.error('Error:', error);
-        resultsContainer.innerHTML = `<p class="no-results">Error: ${error.message}</p>`;
-        return;
-    }
+        // 2. Filtramos los resultados en el navegador.
+        const results = allRecords.filter(record => {
+            const normalizedPatientName = normalizeText(record.PACIENTE);
+            const isNumeric = /^\d+$/.test(searchTerm);
+            
+            // Comparamos el nombre normalizado o los campos numéricos.
+            return (normalizedPatientName && normalizedPatientName.includes(normalizedSearchTerm)) ||
+                   (isNumeric && (record.NFUA == searchTerm || record.Episodio == searchTerm));
+        });
 
-    currentSearchResults = data; 
-    if (data.length === 0) {
-        resultsContainer.innerHTML = '<p class="no-results">No se encontraron resultados.</p>';
-    } else {
-        resultsContainer.innerHTML = data.map((patient, index) => {
-            let ubicacionHTML = '';
-            if (patient.FechaRegistro) {
-                const fechaRegistro = new Date(patient.FechaRegistro);
-                const hoy = new Date();
-                fechaRegistro.setHours(0, 0, 0, 0);
-                hoy.setHours(0, 0, 0, 0);
+        currentSearchResults = results; 
+
+        if (results.length === 0) {
+            resultsContainer.innerHTML = '<p class="no-results">No se encontraron resultados.</p>';
+        } else {
+            resultsContainer.innerHTML = results.map((patient, index) => {
                 
-                const diffTiempo = hoy.getTime() - fechaRegistro.getTime();
-                const diffDias = Math.ceil(diffTiempo / (1000 * 3600 * 24));
+                // --- INICIO DE LA NUEVA LÓGICA DE UBICACIÓN Y COLORES ---
+                
+                let ubicacionHTML = '';
+                // Usamos la columna "FechaRegistro" que tienes en tu tabla.
+                if (patient.FechaRegistro) {
+                    const fechaRegistro = new Date(patient.FechaRegistro);
+                    const hoy = new Date();
+                    fechaRegistro.setHours(0, 0, 0, 0);
+                    hoy.setHours(0, 0, 0, 0);
+                    
+                    const diffTiempo = hoy.getTime() - fechaRegistro.getTime();
+                    // Calculamos la diferencia en días.
+                    const diffDias = Math.ceil(diffTiempo / (1000 * 3600 * 24));
 
-                let ubicacion = '';
-                if (diffDias <= 1) { ubicacion = 'Recepción / Asignación'; } 
-                else if (diffDias <= 4) { ubicacion = 'Archivo Digitación'; } 
-                else if (diffDias <= 7) { ubicacion = 'Archivo Seguros'; } 
-                else { ubicacion = 'Archivo Central'; }
-                ubicacionHTML = `<span class="ubicacion-probable">Ubicación Probable: ${ubicacion}</span>`;
-            }
+                    let ubicacion = '';
+                    let colorClass = '';
 
-            const costo = parseFloat(patient.CostoTotal);
-            let consumoStatusHTML = (costo > 0) ? '<span class="consumo-status con-consumo">Con Consumo</span>' : '<span class="consumo-status sin-consumo">Sin Consumo</span>';
-            const fechaAtencion = patient.FecAte ? new Date(patient.FecAte).toLocaleDateString('es-ES') : 'N/A';
+                    // Aplicamos las nuevas reglas de tiempo y asignamos ubicación y color.
+                    if (diffDias <= 5) { // De 0 a 5 días
+                        ubicacion = 'Asignación';
+                        colorClass = 'ubicacion-asignacion'; // Verde
+                    } else if (diffDias <= 18) { // De 6 a 18 días (aprox. 2.5 semanas)
+                        ubicacion = 'Auditoría';
+                        colorClass = 'ubicacion-auditoria'; // Naranja
+                    } else if (diffDias <= 35) { // De 19 a 35 días (aprox. 5 semanas)
+                        ubicacion = 'Registro y Archivo de Seguros';
+                        colorClass = 'ubicacion-seguros'; // Rojo
+                    } else { // Más de 35 días
+                        ubicacion = 'Archivo Central';
+                        colorClass = 'ubicacion-central'; // Morado
+                    }
+                    
+                    // Creamos el HTML con la clase de color correspondiente.
+                    ubicacionHTML = `  
+<span class="ubicacion-probable ${colorClass}">Ubicación Probable: ${ubicacion}</span>`;
+                }
+                
+                // --- FIN DE LA NUEVA LÓGICA ---
 
-            return `
-                <div class="result-item" onclick="showPatientDetails(${index})">
-                    <div class="result-item-name">${patient.PACIENTE || 'N/A'}</div>
-                    <div class="result-item-sub">
-                        DNI: ${patient.NroDocumento || 'N/A'} | F. Atención: ${fechaAtencion}   
+                const costo = parseFloat(patient.CostoTotal);
+                let consumoStatusHTML = (costo > 0) ? '<span class="consumo-status con-consumo">Con Consumo</span>' : '<span class="consumo-status sin-consumo">Sin Consumo</span>';
+                const fechaAtencion = patient.FecAte ? new Date(patient.FecAte).toLocaleDateString('es-ES') : 'N/A';
 
-                        ${consumoStatusHTML}   
-
-                        ${ubicacionHTML}
+                return `
+                    <div class="result-item" onclick="showPatientDetails(${index})">
+                        <div class="result-item-name">${patient.PACIENTE || 'N/A'}</div>
+                        <div class="result-item-sub">
+                            DNI: ${patient.NroDocumento || 'N/A'} | F. Atención: ${fechaAtencion}
+                            ${consumoStatusHTML}
+                            ${ubicacionHTML}
+                        </div>
                     </div>
-                </div>
-            `;
-        }).join('');
+                `;
+            }).join('');
+        }
+    } catch (error) {
+        console.error('Error en la búsqueda:', error.message);
+        resultsContainer.innerHTML = `<p class="no-results">Error: ${error.message}</p>`;
+    } finally {
+        loadingSpinner.style.display = 'none';
     }
 }
-
 
 
 
@@ -977,6 +1028,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
