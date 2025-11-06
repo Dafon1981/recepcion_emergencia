@@ -335,30 +335,50 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background
 
 /* --- FIN DE ESTILOS PARA "ACERCA DE NOSOTROS" --- */
 
-/* --- ESTILO PARA EL BOTÓN DE CERRAR SESIÓN --- */
 
-.logout-button {
-    background: #e74c3c; /* Rojo para la acción de salir */
-    border: none;
-    color: white;
-    font-size: 20px; /* Ajustamos el tamaño del ícono */
-    cursor: pointer;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%; /* Lo hacemos perfectamente circular */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    transition: background-color 0.2s ease;
+
+.logout-button { 
+    background: none; 
+    border: none; 
+    color: white; 
+    font-size: 24px; 
+    cursor: pointer; 
 }
+
 
 .logout-button:hover {
     background-color: #c0392b; /* Rojo más oscuro al pasar el mouse */
 }
 
-/* --- FIN DE ESTILOS --- */
 
+
+/* --- INICIO DE ESTILOS PARA EL NUEVO BOTÓN DE CERRAR SESIÓN --- */
+
+/* Posicionamos el nuevo botón más abajo y con más separación */
+#btn-logout {
+    top: 580px; /* Aumentamos la separación (antes el último estaba en 480px) */
+    transition-delay: 0.7s;
+}
+
+/* Estilo específico para el botón de logout */
+.logout-style {
+    /* Lo hacemos un poco más pequeño */
+    width: 180px; 
+    padding: 15px 25px;
+    font-size: 15px;
+
+    /* Le damos el color rojo de "peligro/salida" */
+    background: linear-gradient(145deg, #e74c3c, #c0392b);
+    border-color: #a53125;
+    border-top-color: #f18a7e;
+}
+
+/* Efecto hover específico para el botón rojo */
+.logout-style:hover {
+    background: linear-gradient(145deg, #f18a7e, #e74c3c);
+}
+
+/* --- FIN DE ESTILOS --- */
 
 
     
@@ -547,7 +567,9 @@ input:checked + .slider:before { transform: translateX(20px); }
     <div class="header-title" onclick="returnToMainMenu()">Recepcion Emergencia</div>
     <!-- Esta línea ahora llama a la función de volver al menú principal -->
    <!-- BOTÓN DE CERRAR SESIÓN MEJORADO -->
-<button class="logout-button" onclick="handleLogout()">&#x23FB;</button> 
+<!-- Botón para volver al menú principal desde una vista -->
+<button class="logout-button" onclick="returnToMainMenu()">&#x27A4;</button> 
+
 
 </header>
 
@@ -561,6 +583,8 @@ input:checked + .slider:before { transform: translateX(20px); }
         <button id="btn-nosotros" class="menu-button" onclick="handleMenuClick('Nosotros', this)">Conocimiento</button>
         <button id="btn-contacto" class="menu-button" onclick="handleMenuClick('Contacto', this)">Contacto</button>
         <button id="btn-administrar" class="menu-button" onclick="handleMenuClick('Administrar', this)">Administrar</button>
+        <!-- ¡NUEVO BOTÓN DE CERRAR SESIÓN! -->
+<button id="btn-logout" class="menu-button logout-style" onclick="handleLogout()">Cerrar Sesión</button>
         <button id="menu-toggle" class="menu-toggle" onclick="returnToMainMenu()">≡</button>
         <!-- Contenedor de publicidad ahora con un video -->
 
@@ -1345,6 +1369,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
