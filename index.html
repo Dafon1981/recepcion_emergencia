@@ -922,13 +922,29 @@ function handleMenuClick(section, clickedButton) {
 
         
 // Función para volver al menú principal desde una vista
+/**
+ * Vuelve al menú principal desde cualquier vista de contenido.
+ * CORREGIDO: Se eliminó la referencia al '.ad-container' que ya no existe.
+ */
 function returnToMainMenu() {
+    // Oculta el botón de menú hamburguesa (≡).
     menuToggle.classList.remove('visible');
-    menuButtons.forEach(button => { button.classList.remove('hidden-by-view', 'active'); button.classList.add('visible'); });
+    
+    // Vuelve a hacer visibles todos los botones del menú principal.
+    menuButtons.forEach(button => {
+        button.classList.remove('hidden-by-view', 'active');
+        button.classList.add('visible');
+    });
+    
+    // Muestra de nuevo el video del asistente.
     assistantVideo.classList.remove('hidden');
-    document.querySelector('.ad-container').style.display = 'flex';
+    
+    // La línea que hacía referencia a '.ad-container' ha sido eliminada.
+    
+    // Oculta todas las vistas de contenido (Búsqueda, Conocimiento, etc.).
     contentViews.forEach(v => v.classList.remove('visible'));
 }
+
 
 
 /**
@@ -1281,6 +1297,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
