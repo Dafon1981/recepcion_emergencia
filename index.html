@@ -875,22 +875,52 @@ function showMainMenu() {
     searchObservados(true);
 }
 
+
+        
 // Función para manejar los clics en los botones del menú
+/**
+ * Maneja los clics en los botones del menú.
+ * CORREGIDO: Se eliminó la referencia al '.ad-container' que ya no existe.
+ */
 function handleMenuClick(section, clickedButton) {
     menuButtons.forEach(button => button.classList.remove('active'));
     if(clickedButton) clickedButton.classList.add('active');
-    if (section === 'Contacto') { window.open('https://wa.me/51967188120', '_blank'  ); setTimeout(() => { if(clickedButton) clickedButton.classList.remove('active'); }, 500); return; }
+    
+    if (section === 'Contacto') { 
+        window.open('https://wa.me/51967188120', '_blank' );
+        setTimeout(() => { if(clickedButton) clickedButton.classList.remove('active'); }, 500);
+        return; 
+    }
+    
     menuButtons.forEach(button => button.classList.add('hidden-by-view'));
     menuToggle.classList.add('visible');
     assistantVideo.classList.add('hidden');
-    document.querySelector('.ad-container').style.display = 'none';
+    
+    // La línea que hacía referencia a '.ad-container' ha sido eliminada.
+    
     contentViews.forEach(v => v.classList.remove('visible'));
-    let viewId = `view-${section.toLowerCase().replace(/ /g, '-')}`;
+    
+    // Corregimos el nombre de la sección para que coincida con el id del div.
+    let sectionId = section;
+    if (section === 'Conocimiento') {
+        sectionId = 'Nosotros';
+    }
+    
+    let viewId = `view-${sectionId.toLowerCase().replace(/ /g, '-')}`;
     const viewToShow = document.getElementById(viewId);
-    if (viewToShow) { viewToShow.classList.add('visible'); }
-    if (section === 'Administrar') { loadUsers(); }
+    
+    if (viewToShow) { 
+        viewToShow.classList.add('visible'); 
+    }
+    
+    if (section === 'Administrar') { 
+        loadUsers(); 
+    }
 }
 
+
+
+        
 // Función para volver al menú principal desde una vista
 function returnToMainMenu() {
     menuToggle.classList.remove('visible');
@@ -1251,6 +1281,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
