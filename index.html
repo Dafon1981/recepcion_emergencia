@@ -30,6 +30,20 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background
 .header-title { color: white; font-size: 24px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); cursor: pointer; }
 .logout-button { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
 
+/* --- ESTILO PARA AÑADIR IMAGEN DE FONDO AL MENÚ PRINCIPAL --- */
+
+#main-content {
+    /* 1. Establecemos la imagen de fondo. ¡IMPORTANTE usar la URL con ?raw=true! */
+    background-image: url('https://github.com/Dafon1981/recepcion_emergencia/blob/main/fondoappregistro.jpg?raw=true' );
+    
+    /* 2. Nos aseguramos de que la imagen cubra todo el espacio disponible */
+    background-size: cover;
+    
+    /* 3. Centramos la imagen para que siempre se vea la parte más importante */
+    background-position: center center;
+}
+
+/* --- FIN DE ESTILOS --- */
 
     
 /* === INICIO DEL NUEVO DISEÑO DE BOTONES (MÁS GRANDES Y SEPARADOS) === */
@@ -1369,6 +1383,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
