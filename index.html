@@ -226,6 +226,47 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background
 }
 
 
+/* --- INICIO DE ESTILOS PARA BÚSQUEDA POR FECHA --- */
+
+/* Hacemos que el formulario sea vertical */
+.search-form.vertical {
+    flex-direction: column;
+    gap: 15px; /* Espacio entre la fila de búsqueda y la de fecha */
+}
+
+/* Contenedor para la búsqueda principal (texto y botón) */
+.main-search-row {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+}
+
+/* Contenedor para la búsqueda por fecha */
+.date-search-row {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 5px;
+}
+
+.date-search-row label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--hch-blue);
+}
+
+/* Estilo para el input de fecha */
+.date-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    box-sizing: border-box;
+}
+
+/* --- FIN DE ESTILOS PARA BÚSQUEDA POR FECHA --- */
 
     
 .content-view { position: absolute; top: 100px; left: 15px; right: 15px; bottom: 25px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); border-radius: 30px; z-index: 11; opacity: 0; transform: translateY(30px); pointer-events: none; transition: all 0.5s ease-out; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; }
@@ -440,10 +481,19 @@ input:checked + .slider:before { transform: translateX(20px); }
         <div id="search-main-view">
             <h2>Búsqueda de Pacientes</h2>
             <p>Ingrese Paciente, NFUA o Episodio para buscar.</p>
-            <form class="search-form" onsubmit="event.preventDefault(); searchPatients();">
-                <input type="text" id="search-input-field" class="search-input" placeholder="Buscar...">
-                <button type="submit" class="search-button"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar"></button>
-            </form>
+            <!-- El formulario ahora tendrá una clase para manejar mejor la disposición vertical -->
+<form class="search-form vertical" onsubmit="event.preventDefault( ); searchPatients();">
+    <div class="main-search-row">
+        <input type="text" id="search-input-field" class="search-input" placeholder="Buscar...">
+        <button type="submit" class="search-button"><img src="https://cdn-icons-png.flaticon.com/512/11367/11367109.png" alt="Buscar"></button>
+    </div>
+    <!-- ¡NUEVO CAMPO DE FECHA! -->
+    <div class="date-search-row">
+        <label for="search-date-field">Buscar por Fecha de Atención:</label>
+        <input type="date" id="search-date-field" class="date-input">
+    </div>
+</form>
+
             <div class="loading-spinner" id="loading-busqueda">Buscando...</div>
             <div class="search-results-container" id="results-container-busqueda"></div>
         </div>
@@ -756,20 +806,23 @@ function normalizeText(text) {
         
         
 /**
- * Busca pacientes y muestra la ubicación probable.
- * CORREGIDO: Ahora busca en PACIENTE, NFUA y Episodio en todos los casos.
+ * Busca pacientes por texto y/o fecha de atención.
  */
 async function searchPatients() {
-    let searchTerm = document.getElementById('search-input-field').value.trim();
+    // 1. Leemos los valores de AMBOS campos de búsqueda.
+    const searchTerm = document.getElementById('search-input-field').value.trim();
+    const searchDate = document.getElementById('search-date-field').value; // Formato AAAA-MM-DD
+
     const resultsContainer = document.getElementById('results-container-busqueda');
     const loadingSpinner = document.getElementById('loading-busqueda');
 
     loadingSpinner.style.display = 'block';
     resultsContainer.innerHTML = '';
 
-    if (!searchTerm) {
+    // Si ambos campos están vacíos, no hacemos nada.
+    if (!searchTerm && !searchDate) {
         loadingSpinner.style.display = 'none';
-        resultsContainer.innerHTML = '<p class="no-results">Ingrese un término de búsqueda.</p>';
+        resultsContainer.innerHTML = '<p class="no-results">Ingrese un término o seleccione una fecha para buscar.</p>';
         return;
     }
 
@@ -782,27 +835,33 @@ async function searchPatients() {
 
         if (error) throw error;
 
-        // --- INICIO DE LA LÓGICA DE FILTRADO CORREGIDA ---
+        // 2. Filtramos los resultados.
         const results = allRecords.filter(record => {
-            // Normalizamos los campos de la base de datos para la comparación.
-            const normalizedPatientName = normalizeText(record.PACIENTE);
-            const normalizedEpisodio = normalizeText(String(record.Episodio)); // Convertimos a String por si acaso
-            const normalizedNfua = normalizeText(String(record.NFUA));
+            // --- Lógica de filtro de texto ---
+            const textMatch = !searchTerm ? true : (
+                (normalizeText(record.PACIENTE) || '').includes(normalizedSearchTerm) ||
+                (normalizeText(String(record.Episodio)) || '').includes(normalizedSearchTerm) ||
+                (normalizeText(String(record.NFUA)) || '').includes(normalizedSearchTerm)
+            );
 
-            // Comparamos el término de búsqueda normalizado con todos los campos relevantes.
-            return (normalizedPatientName && normalizedPatientName.includes(normalizedSearchTerm)) ||
-                   (normalizedEpisodio && normalizedEpisodio.includes(normalizedSearchTerm)) ||
-                   (normalizedNfua && normalizedNfua.includes(normalizedSearchTerm));
+            // --- Lógica de filtro de fecha ---
+            // Viendo tu tabla, la columna se llama "FecAte".
+            const dateMatch = !searchDate ? true : (
+                record.FecAte === searchDate
+            );
+
+            // El registro debe cumplir AMBAS condiciones (texto Y fecha).
+            return textMatch && dateMatch;
         });
-        // --- FIN DE LA LÓGICA DE FILTRADO CORREGIDA ---
 
         currentSearchResults = results; 
 
         if (results.length === 0) {
-            resultsContainer.innerHTML = '<p class="no-results">No se encontraron resultados.</p>';
+            resultsContainer.innerHTML = '<p class="no-results">No se encontraron resultados para los criterios seleccionados.</p>';
         } else {
-            // El resto de la función para mostrar los resultados no necesita cambios.
+            // El resto de la función para mostrar los resultados no cambia.
             resultsContainer.innerHTML = results.map((patient, index) => {
+                // ... (toda la lógica para mostrar ubicación, consumo, etc. queda igual)
                 let ubicacionHTML = '';
                 if (patient.FechaRegistro) {
                     const fechaRegistro = new Date(patient.FechaRegistro);
@@ -816,19 +875,10 @@ async function searchPatients() {
                     let ubicacion = '';
                     let colorClass = '';
 
-                    if (diffDias <= 5) {
-                        ubicacion = 'Asignación';
-                        colorClass = 'ubicacion-asignacion';
-                    } else if (diffDias <= 18) {
-                        ubicacion = 'Auditoría';
-                        colorClass = 'ubicacion-auditoria';
-                    } else if (diffDias <= 35) {
-                        ubicacion = 'Registro y Archivo de Seguros';
-                        colorClass = 'ubicacion-seguros';
-                    } else {
-                        ubicacion = 'Archivo Central';
-                        colorClass = 'ubicacion-central';
-                    }
+                    if (diffDias <= 5) { ubicacion = 'Asignación'; colorClass = 'ubicacion-asignacion'; } 
+                    else if (diffDias <= 18) { ubicacion = 'Auditoría'; colorClass = 'ubicacion-auditoria'; } 
+                    else if (diffDias <= 35) { ubicacion = 'Registro y Archivo de Seguros'; colorClass = 'ubicacion-seguros'; } 
+                    else { ubicacion = 'Archivo Central'; colorClass = 'ubicacion-central'; }
                     
                     ubicacionHTML = `  
 <span class="ubicacion-probable ${colorClass}">Ubicación Probable: ${ubicacion}</span>`;
@@ -857,8 +907,6 @@ async function searchPatients() {
         loadingSpinner.style.display = 'none';
     }
 }
-
-
 
 
         
@@ -1077,6 +1125,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
