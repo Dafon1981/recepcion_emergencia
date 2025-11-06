@@ -807,10 +807,7 @@ function normalizeText(text) {
         
 /**
  * Busca pacientes por texto y/o fecha de atención.
- */
-/**
- * Busca pacientes por texto y/o fecha de atención.
- * CORREGIDO: Ahora compara las fechas correctamente, ignorando la hora.
+ * VERSIÓN DEFINITIVA: Evita problemas de zona horaria tratando las fechas como texto.
  */
 async function searchPatients() {
     const searchTerm = document.getElementById('search-input-field').value.trim();
@@ -844,29 +841,21 @@ async function searchPatients() {
                 (normalizeText(String(record.NFUA)) || '').includes(normalizedSearchTerm)
             );
 
-            // --- INICIO DE LA LÓGICA DE FECHA CORREGIDA ---
-            let dateMatch = true; // Asumimos que coincide por defecto
-            if (searchDate) { // Solo filtramos por fecha si el usuario ha seleccionado una
+            // --- INICIO DE LA LÓGICA DE FECHA A PRUEBA DE ZONAS HORARIAS ---
+            let dateMatch = true;
+            if (searchDate) {
                 if (record.FecAte) {
-                    // 1. Convertimos la fecha de la base de datos a un objeto Date.
-                    const recordDate = new Date(record.FecAte);
+                    // 1. Tomamos la fecha de la BD (ej: "2025-10-24T00:00:00").
+                    // 2. La cortamos para quedarnos solo con los primeros 10 caracteres ("AAAA-MM-DD").
+                    const recordDateAsString = record.FecAte.substring(0, 10);
                     
-                    // 2. Extraemos el año, mes y día.
-                    const year = recordDate.getFullYear();
-                    const month = String(recordDate.getMonth() + 1).padStart(2, '0'); // +1 porque los meses van de 0-11
-                    const day = String(recordDate.getDate()).padStart(2, '0');
-                    
-                    // 3. Reconstruimos la fecha en formato AAAA-MM-DD.
-                    const formattedRecordDate = `${year}-${month}-${day}`;
-                    
-                    // 4. Comparamos las cadenas de texto.
-                    dateMatch = (formattedRecordDate === searchDate);
+                    // 3. Comparamos directamente las cadenas de texto.
+                    dateMatch = (recordDateAsString === searchDate);
                 } else {
-                    // Si el registro no tiene fecha, no coincide.
                     dateMatch = false;
                 }
             }
-            // --- FIN DE LA LÓGICA DE FECHA CORREGIDA ---
+            // --- FIN DE LA LÓGICA DE FECHA ---
 
             return textMatch && dateMatch;
         });
@@ -882,6 +871,7 @@ async function searchPatients() {
                 if (patient.FechaRegistro) {
                     const fechaRegistro = new Date(patient.FechaRegistro);
                     const hoy = new Date();
+                    // Para el cálculo de días, la conversión de zona horaria no es tan problemática.
                     fechaRegistro.setHours(0, 0, 0, 0);
                     hoy.setHours(0, 0, 0, 0);
                     
@@ -902,7 +892,8 @@ async function searchPatients() {
 
                 const costo = parseFloat(patient.CostoTotal);
                 let consumoStatusHTML = (costo > 0) ? '<span class="consumo-status con-consumo">Con Consumo</span>' : '<span class="consumo-status sin-consumo">Sin Consumo</span>';
-                const fechaAtencion = patient.FecAte ? new Date(patient.FecAte).toLocaleDateString('es-ES') : 'N/A';
+                // Para mostrar la fecha al usuario, sí usamos new Date para que la formatee bien.
+                const fechaAtencion = patient.FecAte ? new Date(patient.FecAte).toLocaleDateString('es-ES', { timeZone: 'UTC' }) : 'N/A';
 
                 return `
                     <div class="result-item" onclick="showPatientDetails(${index})">
@@ -923,7 +914,6 @@ async function searchPatients() {
         loadingSpinner.style.display = 'none';
     }
 }
-
 
 
 
@@ -1144,6 +1134,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
