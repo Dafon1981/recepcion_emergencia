@@ -951,21 +951,32 @@ async function handleRegister() {
 }
 
 // Función para mostrar el menú principal después del login
+// Función para mostrar el menú principal después del login
 function showMainMenu() {
     mainContent.style.display = 'block';
     document.getElementById('btn-administrar').style.display = (currentUserData && currentUserData.estatus === 'admin') ? 'block' : 'none';
     
     assistantVideo.classList.remove('hidden');
     assistantVideo.classList.add('initial-state');
- //   document.querySelector('.ad-container').style.display = 'flex';
+    
     setTimeout(() => {
         assistantVideo.classList.remove('initial-state');
         assistantVideo.classList.add('side-state');
         document.querySelectorAll('.menu-button').forEach(button => button.classList.add('visible'));
+        
+        // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
+        // 1. Mostramos la primera diapositiva del carrusel.
+        showSlide(0); 
+        // 2. Iniciamos el movimiento automático.
+        startAutoSlide();
+        
     }, 500);
+    
     searchObservados(true);
 }
 
+
+        
 // Función para manejar los clics en los botones del menú
 function handleMenuClick(section, clickedButton) {
     menuButtons.forEach(button => button.classList.remove('active'));
@@ -1379,22 +1390,23 @@ function moveSlide(n) {
 }
 
 // Función para iniciar el carrusel automático
+// Función para iniciar el carrusel automático
 function startAutoSlide() {
+    // Detenemos cualquier intervalo anterior por si acaso
+    clearInterval(slideInterval); 
     slideInterval = setInterval(() => {
-        moveSlide(1); // Avanza una diapositiva cada 5 segundos
-    }, 5000); // 5000 milisegundos = 5 segundos
+        moveSlide(1); // Avanza una diapositiva
+    }, 4000); // 4000 milisegundos = 4 segundos
 }
+
 
 // Función para detener el carrusel automático
 function stopAutoSlide() {
     clearInterval(slideInterval);
 }
 
-// Inicia el carrusel cuando se carga la página
-document.addEventListener('DOMContentLoaded', () => {
-    showSlide(currentSlideIndex);
-    startAutoSlide();
-});
+
+
 
 // --- FIN DE LA LÓGICA DEL CARRUSEL ---
 
@@ -1407,6 +1419,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
