@@ -73,6 +73,79 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background
     pointer-events: none;
 }
 
+
+/* --- INICIO DE ESTILOS PARA EL CARRUSEL DE BIENVENIDA --- */
+
+.carousel-container {
+    position: absolute;
+    bottom: 25px;
+    left: 15px;
+    right: 15px;
+    height: 120px; /* Altura del carrusel */
+    background-color: #ffffff;
+    border: 3px solid #F2C744; /* Borde dorado (usando el amarillo HCH) */
+    border-radius: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    overflow: hidden; /* Oculta las diapositivas que no están activas */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.carousel-slide {
+    display: flex;
+    width: 100%;
+    transition: transform 0.5s ease-in-out; /* Animación de deslizamiento */
+}
+
+.carousel-item {
+    min-width: 100%;
+    box-sizing: border-box;
+    padding: 20px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold; /* Letras en negrita */
+    color: var(--hch-blue); /* Letras azules */
+    display: none; /* Ocultos por defecto */
+}
+
+.carousel-item.active {
+    display: block; /* Solo se muestra el activo */
+}
+
+/* Estilos para los botones de control (flechas) */
+.carousel-control {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(26, 74, 138, 0.5); /* Azul semitransparente */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    z-index: 15;
+}
+
+.carousel-control:hover {
+    background-color: var(--hch-blue); /* Azul sólido al pasar el mouse */
+}
+
+.carousel-control.prev {
+    left: 10px;
+}
+
+.carousel-control.next {
+    right: 10px;
+}
+
+/* --- FIN DE ESTILOS PARA EL CARRUSEL --- */
+
+
+    
 /* --- ¡CAMBIO 3: MÁS SEPARACIÓN VERTICAL! --- */
 #btn-servicios { top: 120px; transition-delay: 0.2s; }
 #btn-portafolio { top: 210px; transition-delay: 0.3s; } /* Separación de 90px */
@@ -537,6 +610,24 @@ input:checked + .slider:before { transform: translateX(20px); }
         <!-- Contenedor de publicidad ahora con un video -->
 
 
+<!-- === INICIO DEL CARRUSEL DE BIENVENIDA === -->
+<div id="welcome-carousel" class="carousel-container">
+    <div class="carousel-slide">
+        <div class="carousel-item active">Bienvenidos a App Recepción Emergencias</div>
+        <div class="carousel-item">Área Seguros</div>
+        <div class="carousel-item">Aquí podrás buscar el 90% de las FUAs que se registran...</div>
+        <div class="carousel-item">...las otras son de seguimiento y regularización.</div>
+    </div>
+    <!-- Controles de navegación -->
+    <button class="carousel-control prev" onclick="moveSlide(-1)">&#10094;</button>
+    <button class="carousel-control next" onclick="moveSlide(1)">&#10095;</button>
+</div>
+<!-- === FIN DEL CARRUSEL DE BIENVENIDA === -->
+
+
+
+
+        
     </div>
     
     <div id="view-busqueda" class="content-view">
@@ -1245,12 +1336,78 @@ async function deleteUser(userId) {
     alert(`FUNCIONALIDAD PENDIENTE: Llamar a una Edge Function para borrar el usuario con ID: ${userId}.`);
 }
 
+
+        
 // === FIN DEL CÓDIGO JAVASCRIPT ===
+
+// --- INICIO DE LA LÓGICA DEL CARRUSEL ---
+
+let currentSlideIndex = 0;
+let slideInterval; // Variable para guardar el intervalo automático
+
+const slides = document.querySelectorAll('.carousel-item');
+const totalSlides = slides.length;
+
+// Función para mostrar una diapositiva específica
+function showSlide(index) {
+    slides.forEach((slide, i) => {
+        slide.classList.remove('active');
+        if (i === index) {
+            slide.classList.add('active');
+        }
+    });
+    // Mueve el contenedor del carrusel
+    const slideContainer = document.querySelector('.carousel-slide');
+    slideContainer.style.transform = `translateX(-${index * 100}%)`;
+}
+
+// Función para mover a la siguiente o anterior diapositiva
+function moveSlide(n) {
+    // Detiene el carrusel automático cuando el usuario interactúa
+    stopAutoSlide(); 
+    
+    currentSlideIndex += n;
+    
+    if (currentSlideIndex >= totalSlides) {
+        currentSlideIndex = 0; // Vuelve al principio
+    }
+    if (currentSlideIndex < 0) {
+        currentSlideIndex = totalSlides - 1; // Va al final
+    }
+    
+    showSlide(currentSlideIndex);
+}
+
+// Función para iniciar el carrusel automático
+function startAutoSlide() {
+    slideInterval = setInterval(() => {
+        moveSlide(1); // Avanza una diapositiva cada 5 segundos
+    }, 5000); // 5000 milisegundos = 5 segundos
+}
+
+// Función para detener el carrusel automático
+function stopAutoSlide() {
+    clearInterval(slideInterval);
+}
+
+// Inicia el carrusel cuando se carga la página
+document.addEventListener('DOMContentLoaded', () => {
+    showSlide(currentSlideIndex);
+    startAutoSlide();
+});
+
+// --- FIN DE LA LÓGICA DEL CARRUSEL ---
+
+
+
+
+        
 setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
 
     </script>
 </body>
 </html>
+
 
 
 
