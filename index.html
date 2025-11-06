@@ -968,13 +968,13 @@ function normalizeText(text) {
         
         
 /**
- * Busca pacientes por texto y/o fecha, descargando hasta 10,000 registros
- * y filtrando en el navegador.
+ * VERSIÓN FINAL Y PROFESIONAL de la búsqueda de pacientes.
+ * Realiza la búsqueda directamente en el servidor de Supabase, permitiendo
+ * buscar en TODA la tabla (más de 10,000 registros) de forma instantánea.
  */
 async function searchPatients() {
-    // 1. Leemos los valores de AMBOS campos de búsqueda.
     const searchTerm = document.getElementById('search-input-field').value.trim();
-    const searchDate = document.getElementById('search-date-field').value; // Formato AAAA-MM-DD
+    const searchDate = document.getElementById('search-date-field').value;
 
     const resultsContainer = document.getElementById('results-container-busqueda');
     const loadingSpinner = document.getElementById('loading-busqueda');
@@ -982,51 +982,51 @@ async function searchPatients() {
     loadingSpinner.style.display = 'block';
     resultsContainer.innerHTML = '';
 
-    // Si ambos campos están vacíos, no hacemos nada.
     if (!searchTerm && !searchDate) {
         loadingSpinner.style.display = 'none';
         resultsContainer.innerHTML = '<p class="no-results">Ingrese un término o seleccione una fecha para buscar.</p>';
         return;
     }
 
-    const normalizedSearchTerm = normalizeText(searchTerm);
-
     try {
-        // Pedimos hasta 10,000 registros para buscar en toda la tabla.
-        const { data: allRecords, error } = await supabase
-            .from('registros')
-            .select('*')
-            .limit(10000);
+        // 1. Empezamos a construir la consulta a Supabase.
+        let query = supabase.from('registros').select('*');
+
+        // 2. Si hay un término de búsqueda de texto, añadimos los filtros.
+        if (searchTerm) {
+            // .ilike() es para búsquedas de texto "insensibles a mayúsculas/minúsculas".
+            // El formato es: 'columna.ilike.%texto%'
+            // El .or() le dice a Supabase: "encuentra si coincide con ESTO O ESTO OTRO".
+            query = query.or(
+                `PACIENTE.ilike.%${searchTerm}%,` +
+                `Episodio.ilike.%${searchTerm}%,` +
+                `NFUA.ilike.%${searchTerm}%`
+            );
+        }
+
+        // 3. Si hay una fecha seleccionada, añadimos un filtro de fecha EXACTA.
+        if (searchDate) {
+            // .eq() significa "exactamente igual a".
+            query = query.eq('FecAte', searchDate);
+        }
+
+        // 4. Añadimos un límite a los RESULTADOS, no a la búsqueda.
+        // Esto es una buena práctica para no mostrar miles de resultados si la búsqueda es muy genérica.
+        query = query.limit(200);
+
+        // 5. Ejecutamos la consulta ya construida.
+        const { data: results, error } = await query;
 
         if (error) throw error;
 
-        // 2. Filtramos los resultados en el navegador.
-        const results = allRecords.filter(record => {
-            // --- Lógica de filtro de texto ---
-            const textMatch = !searchTerm ? true : (
-                (normalizeText(record.PACIENTE) || '').includes(normalizedSearchTerm) ||
-                (normalizeText(String(record.Episodio)) || '').includes(normalizedSearchTerm) ||
-                (normalizeText(String(record.NFUA)) || '').includes(normalizedSearchTerm)
-            );
-
-            // --- Lógica de filtro de fecha (versión simple y correcta) ---
-            let dateMatch = true;
-            if (searchDate) {
-                // Comparamos directamente las cadenas de texto "AAAA-MM-DD".
-                dateMatch = (record.FecAte === searchDate);
-            }
-
-            // El registro debe cumplir AMBAS condiciones (texto Y fecha).
-            return textMatch && dateMatch;
-        });
-
+        // El resto de la función para mostrar los resultados es exactamente la misma.
         currentSearchResults = results; 
 
         if (results.length === 0) {
             resultsContainer.innerHTML = '<p class="no-results">No se encontraron resultados para los criterios seleccionados.</p>';
         } else {
-            // El resto de la función para mostrar los resultados no cambia.
             resultsContainer.innerHTML = results.map((patient, index) => {
+                // ... (el resto de tu código para generar el HTML del resultado no cambia)
                 let ubicacionHTML = '';
                 if (patient.FechaRegistro) {
                     const fechaRegistro = new Date(patient.FechaRegistro);
@@ -1077,8 +1077,6 @@ async function searchPatients() {
         loadingSpinner.style.display = 'none';
     }
 }
-
-
 
 
         
@@ -1297,6 +1295,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
