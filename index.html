@@ -124,17 +124,7 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background
     .menu-toggle { display: none; position: absolute; right: 25px; bottom: 35px; background: var(--hch-blue); width: 50px; height: 50px; border-radius: 50%; border: none; color: white; font-size: 24px; cursor: pointer; z-index: 12; box-shadow: 0 4px 10px rgba(0,0,0,0.2); justify-content: center; align-items: center; }
 .menu-toggle.visible { display: flex; }
 
-.ad-container {
-    position: absolute;
-    bottom: 25px;
-    left: 15px;
-    right: 15px;
-    height: 150px;
-    /* ... otros estilos ... */
-    padding: 0;
-    overflow: hidden;
-    display: none; /* <-- ¡AÑADE ESTA LÍNEA PARA OCULTARLO! */
-}
+
 
     
 /* --- AÑADE ESTAS REGLAS CSS --- */
@@ -190,11 +180,7 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background
 }
 
 /* Estilo para el video dentro del contenedor */
-.ad-video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Hace que el video cubra todo el espacio sin deformarse */
-}
+
 
 /* --- AÑADE ESTAS REGLAS CSS --- */
 
@@ -549,12 +535,7 @@ input:checked + .slider:before { transform: translateX(20px); }
         <button id="btn-administrar" class="menu-button" onclick="handleMenuClick('Administrar', this)">Administrar</button>
         <button id="menu-toggle" class="menu-toggle" onclick="returnToMainMenu()">≡</button>
         <!-- Contenedor de publicidad ahora con un video -->
-<div class="ad-container">
-    <video class="ad-video" autoplay muted loop playsinline>
-        <source src="https://github.com/Dafon1981/recepcion_emergencia/blob/main/modelopublicidad1.mp4?raw=true" type="video/mp4">
-        Tu navegador no soporta el vídeo.
-    </video>
-</div>
+
 
     </div>
     
@@ -1270,6 +1251,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
