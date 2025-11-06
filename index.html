@@ -807,11 +807,11 @@ function normalizeText(text) {
         
 /**
  * Busca pacientes por texto y/o fecha de atención.
- * VERSIÓN DEFINITIVA: Evita problemas de zona horaria tratando las fechas como texto.
+ * VERSIÓN FINAL CORREGIDA: Compara directamente las cadenas de fecha.
  */
 async function searchPatients() {
     const searchTerm = document.getElementById('search-input-field').value.trim();
-    const searchDate = document.getElementById('search-date-field').value;
+    const searchDate = document.getElementById('search-date-field').value; // Formato: "AAAA-MM-DD"
 
     const resultsContainer = document.getElementById('results-container-busqueda');
     const loadingSpinner = document.getElementById('loading-busqueda');
@@ -841,19 +841,12 @@ async function searchPatients() {
                 (normalizeText(String(record.NFUA)) || '').includes(normalizedSearchTerm)
             );
 
-            // --- INICIO DE LA LÓGICA DE FECHA A PRUEBA DE ZONAS HORARIAS ---
+            // --- INICIO DE LA LÓGICA DE FECHA SIMPLIFICADA Y CORRECTA ---
             let dateMatch = true;
             if (searchDate) {
-                if (record.FecAte) {
-                    // 1. Tomamos la fecha de la BD (ej: "2025-10-24T00:00:00").
-                    // 2. La cortamos para quedarnos solo con los primeros 10 caracteres ("AAAA-MM-DD").
-                    const recordDateAsString = record.FecAte.substring(0, 10);
-                    
-                    // 3. Comparamos directamente las cadenas de texto.
-                    dateMatch = (recordDateAsString === searchDate);
-                } else {
-                    dateMatch = false;
-                }
+                // Como la columna FecAte es de tipo 'date', Supabase devuelve "AAAA-MM-DD".
+                // Simplemente comparamos las cadenas de texto directamente.
+                dateMatch = (record.FecAte === searchDate);
             }
             // --- FIN DE LA LÓGICA DE FECHA ---
 
@@ -869,9 +862,9 @@ async function searchPatients() {
             resultsContainer.innerHTML = results.map((patient, index) => {
                 let ubicacionHTML = '';
                 if (patient.FechaRegistro) {
+                    // Aquí sí usamos new Date para el cálculo de días, que es menos sensible.
                     const fechaRegistro = new Date(patient.FechaRegistro);
                     const hoy = new Date();
-                    // Para el cálculo de días, la conversión de zona horaria no es tan problemática.
                     fechaRegistro.setHours(0, 0, 0, 0);
                     hoy.setHours(0, 0, 0, 0);
                     
@@ -892,8 +885,13 @@ async function searchPatients() {
 
                 const costo = parseFloat(patient.CostoTotal);
                 let consumoStatusHTML = (costo > 0) ? '<span class="consumo-status con-consumo">Con Consumo</span>' : '<span class="consumo-status sin-consumo">Sin Consumo</span>';
-                // Para mostrar la fecha al usuario, sí usamos new Date para que la formatee bien.
-                const fechaAtencion = patient.FecAte ? new Date(patient.FecAte).toLocaleDateString('es-ES', { timeZone: 'UTC' }) : 'N/A';
+                
+                // Para mostrar la fecha, necesitamos "deshacer" el problema de la zona horaria.
+                let fechaAtencion = 'N/A';
+                if (patient.FecAte) {
+                    const parts = patient.FecAte.split('-'); // [AAAA, MM, DD]
+                    fechaAtencion = `${parts[2]}/${parts[1]}/${parts[0]}`; // DD/MM/AAAA
+                }
 
                 return `
                     <div class="result-item" onclick="showPatientDetails(${index})">
@@ -1134,6 +1132,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
