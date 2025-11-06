@@ -268,6 +268,82 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background
 
 /* --- FIN DE ESTILOS PARA BÚSQUEDA POR FECHA --- */
 
+
+    /* --- INICIO DE ESTILOS PARA LA SECCIÓN "ACERCA DE NOSOTROS" --- */
+
+#view-nosotros .intro-text {
+    text-align: left;
+    margin-bottom: 25px;
+    padding: 0 10px;
+}
+
+#view-nosotros h3 {
+    font-size: 18px;
+    color: var(--hch-blue);
+    margin-bottom: 5px;
+}
+
+#view-nosotros p {
+    text-align: left;
+    font-size: 15px;
+    line-height: 1.5;
+    margin-top: 0;
+}
+
+/* Estilo para los botones desplegables (preguntas frecuentes) */
+.faq-item {
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    overflow: hidden; /* Para que el contenido no se salga de los bordes redondeados */
+}
+
+.faq-item summary {
+    padding: 15px 20px;
+    font-weight: 600;
+    color: var(--hch-blue);
+    background-color: #f0f4f8;
+    cursor: pointer;
+    list-style: none; /* Quita el triángulo por defecto */
+    position: relative;
+    outline: none;
+}
+
+/* Añadimos nuestro propio ícono de flecha */
+.faq-item summary::after {
+    content: '▼';
+    font-size: 12px;
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: transform 0.2s ease-in-out;
+}
+
+/* Giramos la flecha cuando el elemento está abierto */
+.faq-item[open] > summary::after {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.faq-content {
+    padding: 0px 20px 20px 20px;
+    background-color: #ffffff;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333;
+}
+
+.faq-content ul {
+    padding-left: 20px;
+    margin-top: 10px;
+}
+
+.faq-content li {
+    margin-bottom: 8px;
+}
+
+/* --- FIN DE ESTILOS PARA "ACERCA DE NOSOTROS" --- */
+
     
 .content-view { position: absolute; top: 100px; left: 15px; right: 15px; bottom: 25px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); border-radius: 30px; z-index: 11; opacity: 0; transform: translateY(30px); pointer-events: none; transition: all 0.5s ease-out; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; }
 .content-view.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
@@ -463,7 +539,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 
         <button id="btn-servicios" class="menu-button" onclick="handleMenuClick('Busqueda', this )">Busqueda</button>
         <button id="btn-portafolio" class="menu-button" onclick="handleMenuClick('Observados', this)">Observados</button>
-        <button id="btn-nosotros" class="menu-button" onclick="handleMenuClick('Nosotros', this)">Acerca de nosotros</button>
+        <button id="btn-nosotros" class="menu-button" onclick="handleMenuClick('Nosotros', this)">Conocimiento</button>
         <button id="btn-contacto" class="menu-button" onclick="handleMenuClick('Contacto', this)">Contacto</button>
         <button id="btn-administrar" class="menu-button" onclick="handleMenuClick('Administrar', this)">Administrar</button>
         <button id="menu-toggle" class="menu-toggle" onclick="returnToMainMenu()">≡</button>
@@ -517,10 +593,64 @@ input:checked + .slider:before { transform: translateX(20px); }
         </div>
     </div>
 
-    <div id="view-nosotros" class="content-view">
-        <h2>Acerca de Nosotros</h2>
-        <p>Somos un equipo dedicado a optimizar la gestión de emergencias en seguros, facilitando el acceso rápido y seguro a la información crítica de los pacientes.</p>
+   <div id="view-nosotros" class="content-view">
+    <h2>Acerca de Nosotros</h2>
+
+    <!-- Sección de Misión y Meta -->
+    <div class="intro-text">
+        <h3>Nuestra Misión</h3>
+        <p>Registrar, auditar y contabilizar cada Formato Único de Atención (FUA) de Emergencia para asegurar su correcto procesamiento. Nuestra labor es ser el primer filtro de calidad, garantizando que cada FUA cumpla con todos los requisitos normativos del SIS antes de iniciar su ciclo de cobro, maximizando así la recuperación de costos para el hospital y manteniendo la integridad de nuestros registros.</p>
+        
+        <h3>Nuestra Meta</h3>
+        <p>Alcanzar un procesamiento de FUAs con cero errores, eliminando las devoluciones y observaciones por parte de las oficinas de auditoría. Esta aplicación es un reflejo de ese compromiso: una herramienta diseñada para estandarizar nuestro flujo de trabajo, documentar cada paso y proporcionar una trazabilidad completa que demuestre la eficiencia y precisión de nuestra gestión diaria.</p>
     </div>
+
+    <!-- Sección de Preguntas Frecuentes Interactivas -->
+    <div class="faq-container">
+        
+        <details class="faq-item">
+            <summary><strong>¿Qué FUAs NO se deben registrar?</strong></summary>
+            <div class="faq-content">
+                <p>Es crucial identificar y separar los FUAs que no pertenecen al flujo de cobro de Emergencia SIS. Un FUA debe ser <strong>devuelto inmediatamente a Cuentas Corrientes</strong> si cumple alguna de estas condiciones:</p>
+                <ul>
+                    <li><strong>No es SIS:</strong> Si el FUA pertenece a un seguro SOAT, es Pagante, de un Trabajador del Hospital o cualquier otro convenio que no sea el Seguro Integral de Salud.</li>
+                    <li><strong>No es de Emergencia:</strong> Si el FUA no corresponde al código de servicio de Emergencia (062).</li>
+                    <li><strong>Faltan Sellos Esenciales:</strong> Si falta el sello y firma del médico tratante o la firma/huella del paciente o apoderado (salvo excepciones específicas).</li>
+                </ul>
+                <p><em>Esta separación inicial es el paso más importante para evitar errores en todo el proceso posterior.</em></p>
+            </div>
+        </details>
+
+        <details class="faq-item">
+            <summary><strong>¿Cuál es el flujo de trabajo completo?</strong></summary>
+            <div class="faq-content">
+                <p>El viaje de un FUA es un proceso secuencial donde cada etapa cumple un rol específico. Conocerlo nos permite entender la importancia de nuestro trabajo.</p>
+                <ol>
+                    <li><strong>Consultorios / Módulo 9 (Origen):</strong> Aquí se genera el FUA durante la atención médica de emergencia.</li>
+                    <li><strong>Cuentas Corrientes (Acopio):</strong> Agrupan los FUAs generados antes de pasarlos a nuestra área.</li>
+                    <li><strong>Recepción / Nosotros (Filtro y Clasificación):</strong> ¡Nuestra etapa clave! Auditamos y clasificamos los FUAs según el destino del paciente.</li>
+                    <li><strong>Asignación (Ruta Alterna):</strong> Recibe los FUAs de pacientes hospitalizados/transferidos para un proceso de facturación distinto.</li>
+                    <li><strong>Auditoría (Revisión Final):</strong> La oficina de Seguros realiza la revisión final antes del cobro al Estado.</li>
+                    <li><strong>Archivo:</strong> Una vez procesado, el FUA se almacena, completando su ciclo de vida.</li>
+                </ol>
+            </div>
+        </details>
+
+        <details class="faq-item">
+            <summary><strong>Pautas Clave para la Firma del Paciente</strong></summary>
+            <div class="faq-content">
+                <p>La firma del paciente o apoderado es un requisito indispensable, pero tiene reglas específicas que debemos dominar:</p>
+                <ul>
+                    <li><strong>Si firma el Titular (el propio paciente):</strong> Basta con su firma y/o huella digital en el espacio designado del FUA.</li>
+                    <li><strong>Si firma un Acompañante/Apoderado:</strong> Es OBLIGATORIO que en el reverso del FUA (o en la historia clínica) se registren los datos completos del firmante: Nombres, DNI, Firma, Huella y Parentezco.</li>
+                    <li><strong>¿Cuándo NO es necesaria la firma?</strong> Si el FUA no tiene procedimientos, recetas, ni indicaciones médicas. En estos casos excepcionales, se puede procesar sin firma, aunque siempre es preferible tenerla.</li>
+                </ul>
+            </div>
+        </details>
+
+    </div>
+</div>
+
 
     <div id="view-administrar" class="content-view">
         <h2>Administrar</h2>
@@ -1135,6 +1265,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
