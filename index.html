@@ -335,6 +335,32 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background
 
 /* --- FIN DE ESTILOS PARA "ACERCA DE NOSOTROS" --- */
 
+/* --- ESTILO PARA EL BOTÓN DE CERRAR SESIÓN --- */
+
+.logout-button {
+    background: #e74c3c; /* Rojo para la acción de salir */
+    border: none;
+    color: white;
+    font-size: 20px; /* Ajustamos el tamaño del ícono */
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%; /* Lo hacemos perfectamente circular */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: background-color 0.2s ease;
+}
+
+.logout-button:hover {
+    background-color: #c0392b; /* Rojo más oscuro al pasar el mouse */
+}
+
+/* --- FIN DE ESTILOS --- */
+
+
+
     
 .content-view { position: absolute; top: 100px; left: 15px; right: 15px; bottom: 25px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); border-radius: 30px; z-index: 11; opacity: 0; transform: translateY(30px); pointer-events: none; transition: all 0.5s ease-out; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; }
 .content-view.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
@@ -520,7 +546,9 @@ input:checked + .slider:before { transform: translateX(20px); }
         <header id="main-header" class="header">
     <div class="header-title" onclick="returnToMainMenu()">Recepcion Emergencia</div>
     <!-- Esta línea ahora llama a la función de volver al menú principal -->
-    <button class="logout-button" onclick="returnToMainMenu()">&#x27A4;</button> 
+   <!-- BOTÓN DE CERRAR SESIÓN MEJORADO -->
+<button class="logout-button" onclick="handleLogout()">&#x23FB;</button> 
+
 </header>
 
        <video id="assistant-video" class="initial-state" autoplay muted loop playsinline>
@@ -758,6 +786,28 @@ function toggleAuthForms() {
 }
 
 
+/**
+ * Cierra la sesión del usuario y reinicia la aplicación.
+ */
+function handleLogout() {
+    // 1. Preguntamos al usuario si realmente quiere salir.
+    const isConfirmed = confirm('¿Estás seguro de que quieres cerrar la sesión?');
+
+    // 2. Si el usuario cancela, no hacemos nada.
+    if (!isConfirmed) {
+        return;
+    }
+
+    // 3. Limpiamos los datos del usuario actual.
+    currentUserData = null;
+    
+    // 4. Eliminamos el nombre de usuario guardado para que el próximo login empiece de cero.
+    localStorage.removeItem('lastUsername');
+
+    // 5. Recargamos la página. Esto es lo más simple y efectivo para reiniciar
+    //    el estado de la aplicación y volver a la pantalla de inicio/login.
+    location.reload();
+}
 
 
         
@@ -1295,6 +1345,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
