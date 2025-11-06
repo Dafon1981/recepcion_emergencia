@@ -756,52 +756,54 @@ function normalizeText(text) {
         
         
 /**
- * Busca pacientes y muestra la ubicación probable.
- * CORREGIDO: Ahora busca en PACIENTE, NFUA y Episodio en todos los casos.
+ * Busca pacientes delegando la búsqueda a la base de datos para máxima eficiencia.
+ * Limita los resultados a 200 para mantener la interfaz rápida y útil.
  */
 async function searchPatients() {
-    let searchTerm = document.getElementById('search-input-field').value.trim();
+    const searchTerm = document.getElementById('search-input-field').value.trim();
+    const searchDate = document.getElementById('search-date-field').value;
+
     const resultsContainer = document.getElementById('results-container-busqueda');
     const loadingSpinner = document.getElementById('loading-busqueda');
 
     loadingSpinner.style.display = 'block';
     resultsContainer.innerHTML = '';
 
-    if (!searchTerm) {
+    if (!searchTerm && !searchDate) {
         loadingSpinner.style.display = 'none';
-        resultsContainer.innerHTML = '<p class="no-results">Ingrese un término de búsqueda.</p>';
+        resultsContainer.innerHTML = '<p class="no-results">Ingrese un término o seleccione una fecha para buscar.</p>';
         return;
     }
 
-    const normalizedSearchTerm = normalizeText(searchTerm);
-
     try {
-        const { data: allRecords, error } = await supabase
-            .from('registros')
-            .select('*');
+        // 1. Empezamos a construir la consulta a Supabase.
+        let query = supabase.from('registros').select('*');
+
+        // 2. Si hay un término de búsqueda de texto, construimos el filtro 'or'.
+        if (searchTerm) {
+            const textQuery = `PACIENTE.ilike.%${searchTerm}%,Episodio.ilike.%${searchTerm}%,NFUA.ilike.%${searchTerm}%`;
+            query = query.or(textQuery);
+        }
+
+        // 3. Si hay una fecha seleccionada, añadimos un filtro 'eq' (equals).
+        if (searchDate) {
+            query = query.eq('FecAte', searchDate);
+        }
+        
+        // 4. ¡LÍMITE AJUSTADO! Limitamos los resultados a 200.
+        query = query.limit(200);
+
+        // 5. Ejecutamos la consulta ya construida.
+        const { data: results, error } = await query;
 
         if (error) throw error;
-
-        // --- INICIO DE LA LÓGICA DE FILTRADO CORREGIDA ---
-        const results = allRecords.filter(record => {
-            // Normalizamos los campos de la base de datos para la comparación.
-            const normalizedPatientName = normalizeText(record.PACIENTE);
-            const normalizedEpisodio = normalizeText(String(record.Episodio)); // Convertimos a String por si acaso
-            const normalizedNfua = normalizeText(String(record.NFUA));
-
-            // Comparamos el término de búsqueda normalizado con todos los campos relevantes.
-            return (normalizedPatientName && normalizedPatientName.includes(normalizedSearchTerm)) ||
-                   (normalizedEpisodio && normalizedEpisodio.includes(normalizedSearchTerm)) ||
-                   (normalizedNfua && normalizedNfua.includes(normalizedSearchTerm));
-        });
-        // --- FIN DE LA LÓGICA DE FILTRADO CORREGIDA ---
 
         currentSearchResults = results; 
 
         if (results.length === 0) {
-            resultsContainer.innerHTML = '<p class="no-results">No se encontraron resultados.</p>';
+            resultsContainer.innerHTML = '<p class="no-results">No se encontraron resultados para los criterios seleccionados.</p>';
         } else {
-            // El resto de la función para mostrar los resultados no necesita cambios.
+            // El resto de la función para mostrar los resultados no cambia.
             resultsContainer.innerHTML = results.map((patient, index) => {
                 let ubicacionHTML = '';
                 if (patient.FechaRegistro) {
@@ -816,19 +818,10 @@ async function searchPatients() {
                     let ubicacion = '';
                     let colorClass = '';
 
-                    if (diffDias <= 5) {
-                        ubicacion = 'Asignación';
-                        colorClass = 'ubicacion-asignacion';
-                    } else if (diffDias <= 18) {
-                        ubicacion = 'Auditoría';
-                        colorClass = 'ubicacion-auditoria';
-                    } else if (diffDias <= 35) {
-                        ubicacion = 'Registro y Archivo de Seguros';
-                        colorClass = 'ubicacion-seguros';
-                    } else {
-                        ubicacion = 'Archivo Central';
-                        colorClass = 'ubicacion-central';
-                    }
+                    if (diffDias <= 5) { ubicacion = 'Asignación'; colorClass = 'ubicacion-asignacion'; } 
+                    else if (diffDias <= 18) { ubicacion = 'Auditoría'; colorClass = 'ubicacion-auditoria'; } 
+                    else if (diffDias <= 35) { ubicacion = 'Registro y Archivo de Seguros'; colorClass = 'ubicacion-seguros'; } 
+                    else { ubicacion = 'Archivo Central'; colorClass = 'ubicacion-central'; }
                     
                     ubicacionHTML = `  
 <span class="ubicacion-probable ${colorClass}">Ubicación Probable: ${ubicacion}</span>`;
@@ -836,7 +829,12 @@ async function searchPatients() {
 
                 const costo = parseFloat(patient.CostoTotal);
                 let consumoStatusHTML = (costo > 0) ? '<span class="consumo-status con-consumo">Con Consumo</span>' : '<span class="consumo-status sin-consumo">Sin Consumo</span>';
-                const fechaAtencion = patient.FecAte ? new Date(patient.FecAte).toLocaleDateString('es-ES') : 'N/A';
+                
+                let fechaAtencion = 'N/A';
+                if (patient.FecAte) {
+                    const parts = patient.FecAte.split('-');
+                    fechaAtencion = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                }
 
                 return `
                     <div class="result-item" onclick="showPatientDetails(${index})">
@@ -1077,6 +1075,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
