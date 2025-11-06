@@ -808,10 +808,13 @@ function normalizeText(text) {
 /**
  * Busca pacientes por texto y/o fecha de atención.
  */
+/**
+ * Busca pacientes por texto y/o fecha de atención.
+ * CORREGIDO: Ahora compara las fechas correctamente, ignorando la hora.
+ */
 async function searchPatients() {
-    // 1. Leemos los valores de AMBOS campos de búsqueda.
     const searchTerm = document.getElementById('search-input-field').value.trim();
-    const searchDate = document.getElementById('search-date-field').value; // Formato AAAA-MM-DD
+    const searchDate = document.getElementById('search-date-field').value;
 
     const resultsContainer = document.getElementById('results-container-busqueda');
     const loadingSpinner = document.getElementById('loading-busqueda');
@@ -819,7 +822,6 @@ async function searchPatients() {
     loadingSpinner.style.display = 'block';
     resultsContainer.innerHTML = '';
 
-    // Si ambos campos están vacíos, no hacemos nada.
     if (!searchTerm && !searchDate) {
         loadingSpinner.style.display = 'none';
         resultsContainer.innerHTML = '<p class="no-results">Ingrese un término o seleccione una fecha para buscar.</p>';
@@ -835,22 +837,37 @@ async function searchPatients() {
 
         if (error) throw error;
 
-        // 2. Filtramos los resultados.
         const results = allRecords.filter(record => {
-            // --- Lógica de filtro de texto ---
             const textMatch = !searchTerm ? true : (
                 (normalizeText(record.PACIENTE) || '').includes(normalizedSearchTerm) ||
                 (normalizeText(String(record.Episodio)) || '').includes(normalizedSearchTerm) ||
                 (normalizeText(String(record.NFUA)) || '').includes(normalizedSearchTerm)
             );
 
-            // --- Lógica de filtro de fecha ---
-            // Viendo tu tabla, la columna se llama "FecAte".
-            const dateMatch = !searchDate ? true : (
-                record.FecAte === searchDate
-            );
+            // --- INICIO DE LA LÓGICA DE FECHA CORREGIDA ---
+            let dateMatch = true; // Asumimos que coincide por defecto
+            if (searchDate) { // Solo filtramos por fecha si el usuario ha seleccionado una
+                if (record.FecAte) {
+                    // 1. Convertimos la fecha de la base de datos a un objeto Date.
+                    const recordDate = new Date(record.FecAte);
+                    
+                    // 2. Extraemos el año, mes y día.
+                    const year = recordDate.getFullYear();
+                    const month = String(recordDate.getMonth() + 1).padStart(2, '0'); // +1 porque los meses van de 0-11
+                    const day = String(recordDate.getDate()).padStart(2, '0');
+                    
+                    // 3. Reconstruimos la fecha en formato AAAA-MM-DD.
+                    const formattedRecordDate = `${year}-${month}-${day}`;
+                    
+                    // 4. Comparamos las cadenas de texto.
+                    dateMatch = (formattedRecordDate === searchDate);
+                } else {
+                    // Si el registro no tiene fecha, no coincide.
+                    dateMatch = false;
+                }
+            }
+            // --- FIN DE LA LÓGICA DE FECHA CORREGIDA ---
 
-            // El registro debe cumplir AMBAS condiciones (texto Y fecha).
             return textMatch && dateMatch;
         });
 
@@ -861,7 +878,6 @@ async function searchPatients() {
         } else {
             // El resto de la función para mostrar los resultados no cambia.
             resultsContainer.innerHTML = results.map((patient, index) => {
-                // ... (toda la lógica para mostrar ubicación, consumo, etc. queda igual)
                 let ubicacionHTML = '';
                 if (patient.FechaRegistro) {
                     const fechaRegistro = new Date(patient.FechaRegistro);
@@ -907,6 +923,9 @@ async function searchPatients() {
         loadingSpinner.style.display = 'none';
     }
 }
+
+
+
 
 
         
@@ -1125,6 +1144,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
