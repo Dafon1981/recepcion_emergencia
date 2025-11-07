@@ -87,6 +87,19 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background
     pointer-events: none;
 }
 
+/* --- REGLA PARA OCULTAR TEMPORALMENTE EL BOTÓN "OBSERVADOS" --- */
+
+#btn-portafolio {
+    display: none !important;
+}
+
+/* --- FIN DE LA REGLA --- */
+
+
+
+    
+
+    
 /* --- ¡CAMBIO 3: MÁS SEPARACIÓN VERTICAL! --- */
 #btn-servicios { top: 120px; transition-delay: 0.2s; }
 #btn-portafolio { top: 210px; transition-delay: 0.3s; } /* Separación de 90px */
@@ -593,7 +606,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 </video>
 
         <button id="btn-servicios" class="menu-button" onclick="handleMenuClick('Busqueda', this )">Busqueda</button>
-        <button id="btn-portafolio" class="menu-button" onclick="handleMenuClick('Observados', this)">Observados</button>
+    <button id="btn-portafolio" class="menu-button" onclick="handleMenuClick('Observados', this)">Observados</button>
         <button id="btn-nosotros" class="menu-button" onclick="handleMenuClick('Nosotros', this)">Conocimiento</button>
         <button id="btn-contacto" class="menu-button" onclick="handleMenuClick('Contacto', this)">Contacto</button>
         <button id="btn-administrar" class="menu-button" onclick="handleMenuClick('Administrar', this)">Administrar</button>
@@ -1440,6 +1453,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
