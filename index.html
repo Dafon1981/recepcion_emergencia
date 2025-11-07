@@ -100,12 +100,14 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: var(--background
     
 
     
-/* --- ¡CAMBIO 3: MÁS SEPARACIÓN VERTICAL! --- */
-#btn-servicios { top: 120px; transition-delay: 0.2s; }
-#btn-portafolio { top: 210px; transition-delay: 0.3s; } /* Separación de 90px */
-#btn-nosotros { top: 300px; transition-delay: 0.4s; }  /* Separación de 90px */
-#btn-contacto { top: 390px; transition-delay: 0.5s; }  /* Separación de 90px */
-#btn-administrar { top: 480px; transition-delay: 0.6s; } /* Separación de 90px */
+/* --- ¡CAMBIO 3: MÁS SEPARACIÓN VERTICAL! (REAJUSTADO) --- */
+#btn-servicios { top: 120px; transition-delay: 0.2s; }   /* Búsqueda */
+/* #btn-portafolio está oculto */
+#btn-nosotros { top: 210px; transition-delay: 0.3s; }   /* Conocimiento (sube a la posición de Observados) */
+#btn-contacto { top: 300px; transition-delay: 0.4s; }   /* Contacto (sube a la posición de Conocimiento) */
+#btn-administrar { top: 390px; transition-delay: 0.5s; } /* Administrar (sube a la posición de Contacto) */
+#btn-logout { top: 520px; transition-delay: 0.6s; }      /* Cerrar Sesión (lo subimos un poco también) */
+
 
 .menu-button.active {
     background: linear-gradient(145deg, #f2c744, #e6b833);
@@ -1453,6 +1455,7 @@ setTimeout(goToLogin, 6000); // 6000 milisegundos = 6 segundos
     </script>
 </body>
 </html>
+
 
 
 
